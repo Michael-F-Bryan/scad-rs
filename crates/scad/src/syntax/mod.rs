@@ -7,6 +7,21 @@
 use m_lexer::{Lexer, LexerBuilder};
 use num_traits::FromPrimitive;
 
+#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct Scad;
+
+impl rowan::Language for Scad {
+    type Kind = SyntaxKind;
+
+    fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
+        SyntaxKind::from_u16(raw.0).unwrap()
+    }
+
+    fn kind_to_raw(kind: Self::Kind) -> rowan::SyntaxKind {
+        kind.into()
+    }
+}
+
 #[derive(
     Debug,
     Copy,
@@ -32,11 +47,13 @@ pub enum SyntaxKind {
     COMMA,
     DOT,
     EQUALS,
+    EXPONENT,
     FALSE,
     FOR,
     FUNCTION,
     GREATER_THAN_EQUAL,
     GREATER_THAN,
+    HASH,
     IDENTIFIER,
     IF,
     INCLUDE_KW,
@@ -145,14 +162,17 @@ fn lexer() -> Lexer {
         .token(COLON.into(), ":")
         .token(COMMA.into(), ",")
         .token(COMMENT.into(), r"//[^\n]*")
+        .external_token(COMMENT.into(), r"/\*", block_comment)
         .token(DOT.into(), r"\.")
         .token(EQUALS.into(), "=")
+        .token(EXPONENT.into(), r"\^")
         .token(FALSE.into(), "false")
         .token(FOR.into(), "for")
         .token(FUNCTION.into(), "function")
         .token(GREATER_THAN_EQUAL.into(), ">=")
         .token(GREATER_THAN.into(), ">")
-        .token(IDENTIFIER.into(), r"\w[\w\d]*")
+        .token(HASH.into(), "#")
+        .token(IDENTIFIER.into(), r"\$?\w[\w\d]*")
         .token(IF.into(), "if")
         .token(INCLUDE_KW.into(), "include")
         .token(LESS_THAN_EQUAL.into(), "<=")
@@ -180,6 +200,13 @@ fn lexer() -> Lexer {
         .token(USE_KW.into(), "use")
         .token(WHITESPACE.into(), r"\s+")
         .build()
+}
+
+fn block_comment(text: &str) -> Option<usize> {
+    debug_assert!(text.starts_with("/*"));
+    let end_token = "*/";
+    let len = text.find(end_token)?;
+    Some(len + end_token.len())
 }
 
 #[cfg(test)]

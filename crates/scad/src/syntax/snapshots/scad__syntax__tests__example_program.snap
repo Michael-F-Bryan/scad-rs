@@ -1,5 +1,5 @@
 ---
-source: crates/scad/src/lexer/mod.rs
+source: crates/scad/src/syntax/mod.rs
 expression: tokens
 ---
 [

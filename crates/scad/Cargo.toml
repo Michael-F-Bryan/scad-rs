@@ -18,3 +18,4 @@ rowan = "0.15.8"
 
 [dev-dependencies]
 insta = "1.16.0"
+walkdir = "2.3.2"
