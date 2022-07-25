@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-    - main
+      - main
 
 env:
   DEFAULT_CRATE_NAME: scad
@@ -119,10 +119,9 @@ jobs:
         run: 'echo ''<meta http-equiv="refresh" content="0; url=${{ env.DEFAULT_CRATE_NAME }}/index.html" />'' > target/doc/index.html'
         shell: bash
       - name: Upload API Docs
-        uses: JamesIves/github-pages-deploy-action@4.4.0
+        uses: JamesIves/github-pages-deploy-action@v4.4.0
         if: github.ref == 'refs/heads/main'
         with:
           branch: gh-pages
           folder: target/doc
           single-commit: true
-

@@ -238,4 +238,15 @@ mod tests {
             .for_each(|(kind, text)| assert_ne!(kind, UNKNOWN, "Invalid token: {text:?}"));
         insta::assert_debug_snapshot!(tokens);
     }
+
+    #[test]
+    fn block_comments() {
+        let src = "/* This is a
+            block comment*/";
+        let expected = vec![(SyntaxKind::COMMENT, src)];
+
+        let tokens = tokenize(src);
+
+        assert_eq!(tokens, expected);
+    }
 }
