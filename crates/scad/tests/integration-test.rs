@@ -7,7 +7,7 @@ use once_cell::sync::Lazy;
 use scad::syntax::SyntaxKind::UNKNOWN;
 use walkdir::WalkDir;
 
-const OPENSCAD_REPO: &str = "git@github.com:openscad/openscad.git";
+const OPENSCAD_REPO: &str = "https://github.com/openscad/openscad";
 const OPENSCAD_TAG: &str = "openscad-2021.01";
 static OPENSCAD: Lazy<Repo> = Lazy::new(Repo::checkout);
 
