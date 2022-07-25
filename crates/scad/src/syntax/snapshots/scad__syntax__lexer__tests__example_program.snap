@@ -1,5 +1,5 @@
 ---
-source: crates/scad/src/syntax/mod.rs
+source: crates/scad/src/syntax/lexer.rs
 expression: tokens
 ---
 [
@@ -20,7 +20,7 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        NUMBER,
         "10",
     ),
     (
@@ -48,7 +48,7 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        NUMBER,
         "10",
     ),
     (
@@ -76,7 +76,7 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        NUMBER,
         "10",
     ),
     (
@@ -292,7 +292,7 @@ expression: tokens
         "[",
     ),
     (
-        IDENTIFIER,
+        NUMBER,
         "0",
     ),
     (
