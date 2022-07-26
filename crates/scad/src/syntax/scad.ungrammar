@@ -1,0 +1,115 @@
+
+Package = Statement*
+
+Statement =
+  Include
+| Use
+| Assignment ';'
+| NamedFunctionDefinition
+| NamedModuleDefinition
+| ModuleInstantiation
+
+Include = 'include' 'file'
+
+Use = 'use' 'file'
+
+Expressions = Expr (',' Expr)*
+
+Expr =
+  'true'
+| 'false'
+| 'undef'
+| 'number'
+| 'string'
+| Lookup
+| RangeExpression
+| ListExpression
+| BinOp
+| UnaryExpr
+| TernaryExpr
+| IndexExpr
+| ParenExpr
+| ListComprehensionExpr
+| LetClause Expr
+| FunctionCall
+
+TernaryExpr = condition:Expr '?' truthy:Expr ':' falsy:Expr
+
+IndexExpr = array:Expr '[' index:Expr ']'
+
+ParenExpr = '(' Expr ')'
+
+ListComprehensionExpr = '(' ListComprehensionElements ')'
+
+BinExpr = lhs:Expr '<=' rhs:Expr
+BinOp =
+  '+'
+| '-'
+| '*'
+| '/'
+| '%'
+| '>='
+| '>'
+| '='
+| '<='
+| '<'
+| '&&'
+| '||'
+
+UnaryExpr = UnaryOp Expr
+
+UnaryOp = '!' | '+' | '-'
+
+Lookup = 'ident'
+
+RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep
+
+RangeExpressionFromTo = '[' from:Expr ':' to:Expr ']'
+
+RangeExpressionFromToStep = '[' from:Expr ':' step_by:Expr ':' to:Expr ']'
+
+ListExpression = '[' Expressions ']'
+
+ListComprehensionElements =
+  LetClause
+| ForClause
+| IfClause
+
+ListComprehensionElementsOrExpr = ListComprehensionElements | Expr
+
+LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements
+
+ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr
+
+IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementsOrExpr
+
+NamedFunctionDefinition = 'function' 'ident' '(' params:Parameters? ')' '=' body:Expr ';'
+
+NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' body:Statement
+
+FunctionCall = 'ident' '(' args:Arguments? ')'
+
+ModuleInstantiation = 'ident' '(' args:Arguments? ')'
+
+Children = Child*
+
+Child =
+  ';'
+| BracedChildren
+| ModuleInstantiation
+
+BracedChildren = '{' Children '}'
+
+Parameters = Parameter (',' Parameter)*
+
+Parameter = Lookup | Assignment
+
+Arguments = Argument (',' Argument)*
+
+Argument = Expr | Assignment
+
+AssignmentsOpt = Assignments?
+
+Assignments = Assignment (',' Assignment)*
+
+Assignment = 'ident' '=' value:Expr

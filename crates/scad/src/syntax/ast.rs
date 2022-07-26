@@ -7,6 +7,21 @@ use crate::syntax::{lexer::OpenSCAD, SyntaxKind};
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct Package(SyntaxNode<OpenSCAD>);
 
+impl Package {
+    pub fn statements(&self) -> impl Iterator<Item = Statement> {
+        self.0.children().filter_map(Statement::cast)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+pub struct Statement(SyntaxNode<OpenSCAD>);
+
+impl Statement {
+    pub fn as_assignment(&self) -> Option<Assignment> {
+        self.0.children().find_map(Assignment::cast)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct Assignment(SyntaxNode<OpenSCAD>);
 
@@ -38,18 +53,15 @@ impl Expr {
     }
 
     pub fn boolean(&self) -> Option<Boolean> {
-        self.0.children().map(|c| dbg!(c)).find_map(Boolean::cast)
+        self.0.children().find_map(Boolean::cast)
     }
 
     pub fn string(&self) -> Option<StringLiteral> {
-        self.0
-            .children()
-            .map(|c| dbg!(c))
-            .find_map(StringLiteral::cast)
+        self.0.children().find_map(StringLiteral::cast)
     }
 
     pub fn undef(&self) -> Option<Undefined> {
-        self.0.children().map(|c| dbg!(c)).find_map(Undefined::cast)
+        self.0.children().find_map(Undefined::cast)
     }
 }
 
@@ -77,8 +89,8 @@ impl Boolean {
 
     pub fn value(&self) -> bool {
         match self.0.kind() {
-            SyntaxKind::TRUE => true,
-            SyntaxKind::FALSE => false,
+            SyntaxKind::TRUE_KW => true,
+            SyntaxKind::FALSE_KW => false,
             _ => unreachable!(),
         }
     }
@@ -149,8 +161,9 @@ impl_ast_node! {
     Ident => SyntaxKind::IDENTIFIER,
     Expr => SyntaxKind::EXPR,
     Assignment => SyntaxKind::ASSIGNMENT,
-    Number => SyntaxKind::NUMBER,
-    Boolean => SyntaxKind::TRUE | SyntaxKind::FALSE,
-    StringLiteral => SyntaxKind::STRING,
-    Undefined => SyntaxKind::UNDEF,
+    Number => SyntaxKind::NUMBER_LIT,
+    Boolean => SyntaxKind::TRUE_KW | SyntaxKind::FALSE_KW,
+    StringLiteral => SyntaxKind::STRING_LIT,
+    Undefined => SyntaxKind::UNDEF_KW,
+    Statement => SyntaxKind::STATEMENT,
 }

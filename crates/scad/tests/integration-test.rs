@@ -4,7 +4,7 @@ use std::{
 };
 
 use once_cell::sync::Lazy;
-use scad::syntax::SyntaxKind::UNKNOWN;
+use scad::syntax::SyntaxKind::ERROR;
 use walkdir::WalkDir;
 
 const OPENSCAD_REPO: &str = "https://github.com/openscad/openscad";
@@ -36,7 +36,7 @@ fn tokenize_known_files() {
         let mut line_number = 1;
 
         for (kind, text) in tokens {
-            if kind == UNKNOWN {
+            if kind == ERROR {
                 panic!("Invalid token on line {line_number}: {text:?}");
             }
 

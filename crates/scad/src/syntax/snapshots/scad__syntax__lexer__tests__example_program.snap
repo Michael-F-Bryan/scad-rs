@@ -20,7 +20,7 @@ expression: tokens
         " ",
     ),
     (
-        NUMBER,
+        NUMBER_LIT,
         "10",
     ),
     (
@@ -48,7 +48,7 @@ expression: tokens
         " ",
     ),
     (
-        NUMBER,
+        NUMBER_LIT,
         "10",
     ),
     (
@@ -76,7 +76,7 @@ expression: tokens
         " ",
     ),
     (
-        NUMBER,
+        NUMBER_LIT,
         "10",
     ),
     (
@@ -116,11 +116,11 @@ expression: tokens
         "norm",
     ),
     (
-        OPEN_PAREN,
+        L_PAREN,
         "(",
     ),
     (
-        OPEN_SQUARE,
+        L_BRACKET,
         "[",
     ),
     (
@@ -144,11 +144,11 @@ expression: tokens
         "z",
     ),
     (
-        CLOSE_SQUARE,
+        R_BRACKET,
         "]",
     ),
     (
-        CLOSE_PAREN,
+        R_PAREN,
         ")",
     ),
     (
@@ -188,7 +188,7 @@ expression: tokens
         "acos",
     ),
     (
-        OPEN_PAREN,
+        L_PAREN,
         "(",
     ),
     (
@@ -204,7 +204,7 @@ expression: tokens
         "length",
     ),
     (
-        CLOSE_PAREN,
+        R_PAREN,
         ")",
     ),
     (
@@ -244,7 +244,7 @@ expression: tokens
         "atan2",
     ),
     (
-        OPEN_PAREN,
+        L_PAREN,
         "(",
     ),
     (
@@ -260,7 +260,7 @@ expression: tokens
         "x",
     ),
     (
-        CLOSE_PAREN,
+        R_PAREN,
         ")",
     ),
     (
@@ -284,15 +284,15 @@ expression: tokens
         "rotate",
     ),
     (
-        OPEN_PAREN,
+        L_PAREN,
         "(",
     ),
     (
-        OPEN_SQUARE,
+        L_BRACKET,
         "[",
     ),
     (
-        NUMBER,
+        NUMBER_LIT,
         "0",
     ),
     (
@@ -320,11 +320,11 @@ expression: tokens
         "c",
     ),
     (
-        CLOSE_SQUARE,
+        R_BRACKET,
         "]",
     ),
     (
-        CLOSE_PAREN,
+        R_PAREN,
         ")",
     ),
     (
@@ -336,7 +336,7 @@ expression: tokens
         "cylinder",
     ),
     (
-        OPEN_PAREN,
+        L_PAREN,
         "(",
     ),
     (
@@ -368,11 +368,11 @@ expression: tokens
         "=",
     ),
     (
-        NUMBER,
+        NUMBER_LIT,
         "0.5",
     ),
     (
-        CLOSE_PAREN,
+        R_PAREN,
         ")",
     ),
     (
@@ -392,11 +392,11 @@ expression: tokens
         "cube",
     ),
     (
-        OPEN_PAREN,
+        L_PAREN,
         "(",
     ),
     (
-        OPEN_SQUARE,
+        L_BRACKET,
         "[",
     ),
     (
@@ -420,11 +420,11 @@ expression: tokens
         "z",
     ),
     (
-        CLOSE_SQUARE,
+        R_BRACKET,
         "]",
     ),
     (
-        CLOSE_PAREN,
+        R_PAREN,
         ")",
     ),
     (

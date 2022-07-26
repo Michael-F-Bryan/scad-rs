@@ -33,50 +33,58 @@ impl rowan::Language for OpenSCAD {
 #[allow(non_camel_case_types)]
 #[repr(u16)]
 pub enum SyntaxKind {
+    // Punctuation
     AND,
     ASTERISK,
     BANG,
-    CLOSE_CURLY,
-    CLOSE_PAREN,
-    CLOSE_SQUARE,
+    R_CURLY,
+    R_PAREN,
+    R_BRACKET,
     COLON,
     COMMA,
     DOT,
     EQUALS,
     EXPONENT,
-    FALSE,
-    FOR,
-    FUNCTION,
     GREATER_THAN_EQUAL,
     GREATER_THAN,
     HASH,
     IDENTIFIER,
-    IF,
-    INCLUDE_KW,
     LESS_THAN_EQUAL,
     LESS_THAN,
-    LET,
     MINUS,
-    NUMBER,
-    OPEN_CURLY,
-    OPEN_PAREN,
-    OPEN_SQUARE,
+    L_CURLY,
+    L_PAREN,
+    L_BRACKET,
     OR,
     PERCENT,
     PLUS,
     QUESTION_MARK,
     SEMICOLON,
     SLASH,
-    STRING,
-    TRUE,
-    UNDEF,
+
+    // literals
+    NUMBER_LIT,
+    STRING_LIT,
+
+    // keywords
+    FALSE_KW,
+    FOR_KW,
+    FUNCTION_KW,
+    MODULE_KW,
     USE_KW,
+    TRUE_KW,
+    UNDEF_KW,
+    LET_KW,
+    IF_KW,
+    INCLUDE_KW,
 
     // Special tokens
     /// Unknown input.
-    UNKNOWN,
+    INVALID_TOKEN,
+    ERROR,
     WHITESPACE,
     COMMENT,
+    EOF,
 
     // Composite nodes
     PACKAGE,
@@ -156,13 +164,13 @@ pub fn tokenize(input: &str) -> impl Iterator<Item = (SyntaxKind, &'_ str)> {
 
 fn lexer() -> Lexer {
     LexerBuilder::new()
-        .error_token(UNKNOWN.into())
+        .error_token(INVALID_TOKEN.into())
         .token(AND.into(), "&&")
         .token(ASTERISK.into(), r"\*")
         .token(BANG.into(), "!")
-        .token(CLOSE_CURLY.into(), r"\}")
-        .token(CLOSE_PAREN.into(), r"\)")
-        .token(CLOSE_SQUARE.into(), r"\]")
+        .token(R_CURLY.into(), r"\}")
+        .token(R_PAREN.into(), r"\)")
+        .token(R_BRACKET.into(), r"\]")
         .token(COLON.into(), ":")
         .token(COMMA.into(), ",")
         .token(COMMENT.into(), r"//[^\n]*")
@@ -170,26 +178,27 @@ fn lexer() -> Lexer {
         .token(DOT.into(), r"\.")
         .token(EQUALS.into(), "=")
         .token(EXPONENT.into(), r"\^")
-        .token(FALSE.into(), "false")
-        .token(FOR.into(), "for")
-        .token(FUNCTION.into(), "function")
+        .token(FALSE_KW.into(), "false")
+        .token(FOR_KW.into(), "for")
+        .token(FUNCTION_KW.into(), "function")
+        .token(MODULE_KW.into(), "module")
         .token(GREATER_THAN_EQUAL.into(), ">=")
         .token(GREATER_THAN.into(), ">")
         .token(HASH.into(), "#")
-        .token(IF.into(), "if")
+        .token(IF_KW.into(), "if")
         .token(INCLUDE_KW.into(), "include")
         .token(LESS_THAN_EQUAL.into(), "<=")
         .token(LESS_THAN.into(), "<")
-        .token(LET.into(), "let")
+        .token(LET_KW.into(), "let")
         .token(MINUS.into(), "-")
         // https://stackoverflow.com/a/55592455
         .token(
-            NUMBER.into(),
+            NUMBER_LIT.into(),
             r"\d+([.]\d*)?([eE][+-]?\d+)?|[.]\d+([eE][+-]?\d+)?",
         )
-        .token(OPEN_CURLY.into(), r"\{")
-        .token(OPEN_PAREN.into(), r"\(")
-        .token(OPEN_SQUARE.into(), r"\[")
+        .token(L_CURLY.into(), r"\{")
+        .token(L_PAREN.into(), r"\(")
+        .token(L_BRACKET.into(), r"\[")
         .token(OR.into(), r"\|\|")
         .token(PERCENT.into(), "%")
         .token(PLUS.into(), r"\+")
@@ -197,10 +206,10 @@ fn lexer() -> Lexer {
         .token(SEMICOLON.into(), ";")
         .token(SLASH.into(), "/")
         // https://wordaligned.org/articles/string-literals-and-regular-expressions
-        .token(STRING.into(), r#""([^"\\]|\\.)*""#)
-        .token(TRUE.into(), "true")
+        .token(STRING_LIT.into(), r#""([^"\\]|\\.)*""#)
+        .token(TRUE_KW.into(), "true")
         .token(USE_KW.into(), "use")
-        .token(UNDEF.into(), "undef")
+        .token(UNDEF_KW.into(), "undef")
         .token(WHITESPACE.into(), r"\s+")
         // Note: push this to the bottom so it's the lowest precedence
         .token(IDENTIFIER.into(), r"[\$\p{Alphabetic}][\w_]*")
@@ -240,7 +249,7 @@ mod tests {
         tokens
             .iter()
             .copied()
-            .for_each(|(kind, text)| assert_ne!(kind, UNKNOWN, "Invalid token: {text:?}"));
+            .for_each(|(kind, text)| assert_ne!(kind, ERROR, "Invalid token: {text:?}"));
         insta::assert_debug_snapshot!(tokens);
     }
 
@@ -262,7 +271,7 @@ mod tests {
         for input in inputs {
             let tokens: Vec<_> = tokenize(input).collect();
 
-            let expected = vec![(SyntaxKind::NUMBER, input)];
+            let expected = vec![(SyntaxKind::NUMBER_LIT, input)];
             assert_eq!(tokens, expected);
         }
     }
