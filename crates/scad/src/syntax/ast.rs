@@ -63,6 +63,27 @@ impl Expr {
     pub fn undef(&self) -> Option<Undefined> {
         self.0.children().find_map(Undefined::cast)
     }
+
+    pub fn binary_op(&self) -> Option<(Expr, SyntaxNode<OpenSCAD>, Expr)> {
+        dbg!(self.0.children().collect::<Vec<_>>());
+
+        let useful_nodes: Vec<_> = self
+            .0
+            .children()
+            .filter(|c| match c.kind() {
+                SyntaxKind::COMMENT | SyntaxKind::WHITESPACE => false,
+                _ => true,
+            })
+            .collect();
+
+        dbg!(&useful_nodes);
+        let [left, op, right]: [SyntaxNode<OpenSCAD>; 3] = dbg!(useful_nodes.try_into().ok()?);
+
+        let left = Expr::cast(left)?;
+        let right = Expr::cast(right)?;
+
+        Some((left, op, right))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
