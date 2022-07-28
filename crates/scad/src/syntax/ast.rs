@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use rowan::{ast::AstNode, SyntaxNode, SyntaxText, TextRange, TextSize};
+use rowan::{ast::AstNode, SyntaxNode, SyntaxText, TextSize};
 
 use crate::syntax::{lexer::OpenSCAD, SyntaxKind};
 
@@ -65,8 +65,6 @@ impl Expr {
     }
 
     pub fn binary_op(&self) -> Option<(Expr, SyntaxNode<OpenSCAD>, Expr)> {
-        dbg!(self.0.children().collect::<Vec<_>>());
-
         let useful_nodes: Vec<_> = self
             .0
             .children()
@@ -76,13 +74,64 @@ impl Expr {
             })
             .collect();
 
-        dbg!(&useful_nodes);
         let [left, op, right]: [SyntaxNode<OpenSCAD>; 3] = dbg!(useful_nodes.try_into().ok()?);
 
         let left = Expr::cast(left)?;
         let right = Expr::cast(right)?;
 
         Some((left, op, right))
+    }
+
+    pub fn lookup(&self) -> Option<Lookup> {
+        self.0.children().find_map(Lookup::cast)
+    }
+
+    pub fn function_call(&self) -> Option<FunctionCall> {
+        self.0.children().find_map(FunctionCall::cast)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+pub struct Lookup(SyntaxNode<OpenSCAD>);
+
+impl Lookup {
+    pub fn ident(&self) -> Option<Ident> {
+        self.0.children().find_map(Ident::cast)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+pub struct FunctionCall(SyntaxNode<OpenSCAD>);
+
+impl FunctionCall {
+    pub fn ident(&self) -> Option<Ident> {
+        self.0.children().find_map(Ident::cast)
+    }
+
+    pub fn parameters(&self) -> Option<Parameters> {
+        self.0.children().find_map(Parameters::cast)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+pub struct Parameters(SyntaxNode<OpenSCAD>);
+
+impl Parameters {
+    pub fn iter(&self) -> impl Iterator<Item = Parameter> {
+        self.0.children().filter_map(Parameter::cast)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+pub struct Parameter(SyntaxNode<OpenSCAD>);
+
+impl Parameter {
+    pub fn named(&self) -> Option<Assignment> {
+        self.0.children().find_map(Assignment::cast)
+    }
+
+    pub fn positional(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
     }
 }
 
@@ -128,11 +177,9 @@ impl StringLiteral {
     pub fn value(&self) -> String {
         let full_range = self.0.text_range();
 
-        let range = TextRange::new(
-            full_range.start() + TextSize::from(1),
-            full_range.end() - TextSize::from(1),
-        );
-        self.literal().slice(range).to_string()
+        self.literal()
+            .slice(TextSize::from(1)..full_range.len() - TextSize::from(1))
+            .to_string()
     }
 }
 
@@ -187,4 +234,8 @@ impl_ast_node! {
     StringLiteral => SyntaxKind::STRING_LIT,
     Undefined => SyntaxKind::UNDEF_KW,
     Statement => SyntaxKind::STATEMENT,
+    Lookup => SyntaxKind::LOOKUP,
+    FunctionCall => SyntaxKind::FUNCTION_CALL,
+    Parameters => SyntaxKind::PARAMETERS,
+    Parameter => SyntaxKind::PARAMETER,
 }

@@ -147,7 +147,7 @@ impl PartialEq<SyntaxKind> for rowan::SyntaxKind {
 
 /// Split the input text into its tokens.
 ///
-/// Unknown input will be preserved as an [`UNKNOWN`] token.
+/// Unknown input will be preserved as an [`INVALID_TOKEN`] token.
 pub fn tokenize(input: &str) -> impl Iterator<Item = (SyntaxKind, &'_ str)> {
     static LEXER: Lazy<Lexer> = Lazy::new(lexer);
 

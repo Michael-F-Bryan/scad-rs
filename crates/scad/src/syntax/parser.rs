@@ -220,7 +220,19 @@ fn parse_atom(parser: &mut Parser<'_>, cp: Checkpoint) -> Result<(), ParseError>
     let mut parser = parser.start_node_at(cp, SyntaxKind::EXPR);
 
     match parser.current() {
-        SyntaxKind::IDENTIFIER => todo!(),
+        SyntaxKind::IDENTIFIER => {
+            parse_ident(&mut parser)?;
+            skip_whitespace(&mut parser);
+
+            if parser.current() == SyntaxKind::L_PAREN {
+                let mut parser = parser.start_node_at(cp, SyntaxKind::FUNCTION_CALL);
+                parse_parameters(&mut parser)?;
+            } else {
+                let parser = parser.start_node_at(cp, SyntaxKind::LOOKUP);
+                // explicitly end the LOOKUP node
+                drop(parser);
+            }
+        }
         kind @ (SyntaxKind::STRING_LIT
         | SyntaxKind::NUMBER_LIT
         | SyntaxKind::TRUE_KW
@@ -230,6 +242,57 @@ fn parse_atom(parser: &mut Parser<'_>, cp: Checkpoint) -> Result<(), ParseError>
     }
 
     Ok(())
+}
+
+fn parse_parameters(parser: &mut Parser<'_>) -> Result<(), ParseError> {
+    let mut parser = parser.start_node(SyntaxKind::PARAMETERS);
+    parser.expect(SyntaxKind::L_PAREN)?;
+
+    loop {
+        skip_whitespace(&mut parser);
+
+        match parser.current() {
+            SyntaxKind::R_PAREN => break,
+            SyntaxKind::EOF => return Err(ParseError),
+            _ => parse_parameter(&mut parser)?,
+        }
+
+        skip_whitespace(&mut parser);
+
+        match parser.current() {
+            SyntaxKind::R_PAREN => break,
+            SyntaxKind::COMMA => parser.bump(),
+            _ => todo!(),
+        }
+    }
+
+    parser.expect(SyntaxKind::R_PAREN)?;
+
+    Ok(())
+}
+
+fn parse_parameter(parser: &mut Parser<'_>) -> Result<(), ParseError> {
+    let mut parser = parser.start_node(SyntaxKind::PARAMETER);
+    skip_whitespace(&mut parser);
+
+    if parser.current() == SyntaxKind::IDENTIFIER {
+        // we need to look ahead to see whether we are parsing a named argument
+        // or positional one
+        let next_token = parser
+            .tokens
+            .iter()
+            .map(|(kind, _)| *kind)
+            .skip(1)
+            .skip_while(|&kind| kind == SyntaxKind::WHITESPACE)
+            .next()
+            .unwrap_or(SyntaxKind::EOF);
+
+        if next_token == SyntaxKind::EQUALS {
+            return parse_assignment(&mut parser);
+        }
+    }
+
+    parse_expr(&mut parser)
 }
 
 fn parse_terminal_node(parser: &mut Parser<'_>, kind: SyntaxKind) -> Result<(), ParseError> {
@@ -282,129 +345,179 @@ pub struct ParseError;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fmt::Debug;
 
-    #[cfg(test)]
-    mod tests {
-        use super::*;
+    struct TestCase<T> {
+        assertions: Vec<Box<dyn FnOnce(&T)>>,
+        src: String,
+    }
 
-        macro_rules! parse_test {
-            ($(#[$meta:meta])* $name:ident, $src:expr, $parse:expr, $assertions:expr) => {
-                #[test]
-                $(#[$meta])*
-                fn $name() {
-                    let mut parser = Parser::new($src);
-
-                    let p: fn(&mut Parser) = $parse;
-                    p(&mut parser);
-
-                    let value = parser.finish();
-
-                    println!("{value:#?}");
-                    $assertions(&value);
-
-                    for node in value.syntax().descendants() {
-                        if node.green().kind() == SyntaxKind::ERROR {
-                            panic!("Error node {node:#?}");
-                        }
-                    }
-                }
-            };
+    impl<T> TestCase<T>
+    where
+        T: AstNode<Language = OpenSCAD> + Debug,
+    {
+        fn new(src: &str) -> Self {
+            TestCase {
+                assertions: Vec::new(),
+                src: src.into(),
+            }
         }
 
-        parse_test!(
-            parse_basic_assignment,
-            "x = 42",
-            |p| parse_assignment(p).unwrap(),
-            |a: &Assignment| {
+        fn assert(mut self, assertion: impl FnOnce(&T) + 'static) -> Self {
+            self.assertions.push(Box::new(assertion));
+            self
+        }
+
+        #[track_caller]
+        fn run(self, parse: impl FnOnce(&mut Parser)) {
+            let TestCase { assertions, src } = self;
+            let mut parser = Parser::new(&src);
+
+            parse(&mut parser);
+            let value: T = parser.finish();
+
+            println!("{value:#?}");
+
+            for assertion in assertions {
+                assertion(&value);
+            }
+
+            for node in value.syntax().descendants() {
+                if node.green().kind() == SyntaxKind::ERROR {
+                    panic!("Error node {node:#?}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn parse_basic_assignment() {
+        TestCase::new("x = 42")
+            .assert(|a: &Assignment| {
                 assert_eq!(a.identifier().unwrap().name(), "x");
                 assert_eq!(a.expression().unwrap().number().unwrap().literal(), "42");
-            }
-        );
+            })
+            .run(|p| parse_assignment(p).unwrap());
+    }
 
-        parse_test!(
-            parse_true,
-            "true",
-            |p| parse_expr(p).unwrap(),
-            |expr: &Expr| {
+    #[test]
+    fn parse_true() {
+        TestCase::new("true")
+            .assert(|expr: &Expr| {
                 let b = expr.boolean().unwrap();
                 assert_eq!(b.value(), true);
-            }
-        );
+            })
+            .run(|p| parse_expr(p).unwrap());
+    }
 
-        parse_test!(
-            parse_false,
-            "false",
-            |p| parse_expr(p).unwrap(),
-            |expr: &Expr| {
+    #[test]
+    fn parse_false() {
+        TestCase::new("false")
+            .assert(|expr: &Expr| {
                 let b = expr.boolean().unwrap();
                 assert_eq!(b.value(), false);
-            }
-        );
+            })
+            .run(|p| parse_expr(p).unwrap());
+    }
 
-        parse_test!(
-            parse_string_literal,
-            r#""Hello, World!""#,
-            |p| parse_expr(p).unwrap(),
-            |expr: &Expr| {
+    #[test]
+    fn parse_string_literal() {
+        TestCase::new(r#""Hello, World!""#)
+            .assert(|expr: &Expr| {
                 let s = expr.string().unwrap();
                 assert_eq!(s.value(), "Hello, World!");
-            }
-        );
+            })
+            .run(|p| parse_expr(p).unwrap());
+    }
 
-        parse_test!(
-            parse_undef,
-            "undef",
-            |p| parse_expr(p).unwrap(),
-            |expr: &Expr| {
+    #[test]
+    fn parse_undef() {
+        TestCase::new("undef")
+            .assert(|expr: &Expr| {
                 let _ = expr.undef().unwrap();
-            }
-        );
+            })
+            .run(|p| parse_expr(p).unwrap());
+    }
 
-        parse_test!(
-            parse_addition,
-            "1 + 2",
-            |p| parse_expr(p).unwrap(),
-            |expr: &Expr| {
+    #[test]
+    fn parse_addition() {
+        TestCase::new("1 + 2")
+            .assert(|expr: &Expr| {
                 let (left, op, right) = expr.binary_op().unwrap();
                 assert_eq!(left.number().unwrap().literal(), "1");
                 assert_eq!(op.kind(), SyntaxKind::PLUS);
                 assert_eq!(right.number().unwrap().literal(), "2");
-            }
-        );
+            })
+            .run(|p| parse_expr(p).unwrap());
+    }
 
-        parse_test!(
-            #[ignore = "Parentheses are broken"]
-            parse_expr_in_parens,
-            "(true)",
-            |p| parse_expr(p).unwrap(),
-            |expr: &Expr| {
+    #[test]
+    fn parse_variable_reference() {
+        TestCase::new("foo")
+            .assert(|expr: &Expr| {
+                let lookup = expr.lookup().unwrap();
+                assert_eq!(lookup.ident().unwrap().name(), "foo");
+            })
+            .run(|p| parse_expr(p).unwrap());
+    }
+
+    #[test]
+    fn parse_function_call() {
+        TestCase::new("print(\"Hello, World!\", dest = \"stdout\")")
+            .assert(|expr: &Expr| {
+                let call = expr.function_call().unwrap();
+
+                let ident = call.ident().unwrap();
+                assert_eq!(ident.name(), "print");
+
+                let parameters: Vec<_> = call.parameters().unwrap().iter().collect();
+                assert_eq!(parameters.len(), 2);
+
+                let first_arg = parameters[0].positional().unwrap();
+                assert_eq!(first_arg.string().unwrap().value(), "Hello, World!");
+
+                let second_arg = parameters[1].named().unwrap();
+                assert_eq!(second_arg.identifier().unwrap().name(), "dest");
+                assert_eq!(
+                    second_arg.expression().unwrap().string().unwrap().value(),
+                    "stdout"
+                );
+            })
+            .run(|p| parse_expr(p).unwrap());
+    }
+
+    #[test]
+    #[ignore = "Parentheses are broken"]
+    fn parse_expr_in_parens() {
+        TestCase::new("(true)")
+            .assert(|expr: &Expr| {
                 let b = expr.boolean().unwrap();
                 assert_eq!(b.value(), true);
-            }
-        );
+            })
+            .run(|p| parse_expr(p).unwrap());
+    }
 
-        parse_test!(
-            package_with_one_assignment,
-            "x = 42;",
-            |p| parse_package(p),
-            |pkg: &Package| {
+    #[test]
+    fn package_with_one_assignment() {
+        TestCase::new("x = 42;")
+            .assert(|pkg: &Package| {
                 let statements: Vec<_> = pkg.statements().collect();
                 assert_eq!(statements.len(), 1);
                 let stmt = &statements[0];
                 let assignment = stmt.as_assignment().unwrap();
                 assert_eq!(assignment.identifier().unwrap().name(), "x");
-            }
-        );
+            })
+            .run(|p| parse_package(p))
+    }
 
-        parse_test!(
-            package_with_multiple_assignments,
-            "x = 42; y = 1; z = 2;",
-            |p| parse_package(p),
-            |pkg: &Package| {
+    #[test]
+    fn package_with_multiple_assignments() {
+        TestCase::new("x = 42; y = 1; z = 2;")
+            .assert(|pkg: &Package| {
                 let statements: Vec<_> = pkg.statements().collect();
                 assert_eq!(statements.len(), 3);
                 assert!(statements.iter().all(|stmt| stmt.as_assignment().is_some()));
-            }
-        );
+            })
+            .run(|p| parse_package(p))
     }
 }
