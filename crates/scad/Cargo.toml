@@ -10,6 +10,7 @@ rust-version = "1.62.1"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+im = "15.1.0"
 m_lexer = "0.0.4"
 num-derive = "0.3.3"
 num-traits = "0.2.15"

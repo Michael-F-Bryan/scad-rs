@@ -1,14 +1,14 @@
-//! A lexer and parser for the OpenSCAD programming language.
+//! The lexer and parser for the OpenSCAD programming language.
 //!
-//! See the [grammar file][grammar] for more.
+//! The language grammar is derived from [this railroad diagram][grammar], with
+//! tweaks to allow `LL(k)` parsing.
 //!
 //! [grammar]: https://files.openscad.org/grammar.xhtml
 
-pub mod ast;
 mod lexer;
 mod parser;
 
 pub use self::{
-    lexer::{tokenize, SyntaxKind},
+    lexer::{tokenize, OpenSCAD, SyntaxKind},
     parser::parse,
 };

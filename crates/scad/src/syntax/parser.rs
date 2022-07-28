@@ -5,7 +5,10 @@ use std::{
 
 use rowan::{ast::AstNode, Checkpoint, GreenNodeBuilder, SyntaxNode};
 
-use crate::syntax::{ast::*, lexer::OpenSCAD, SyntaxKind, SyntaxKind::*};
+use crate::{
+    ast::*,
+    syntax::{lexer::OpenSCAD, SyntaxKind, SyntaxKind::*},
+};
 
 pub fn parse(text: &str) -> Package {
     let mut parser = Parser::new(text);

@@ -1,8 +1,12 @@
+//! The *Abstract Syntax Tree* representation of a program.
+//!
+//! Every program lives in a [`Package`].
+
 use std::str::FromStr;
 
 use rowan::{ast::AstNode, SyntaxNode, SyntaxText, TextSize};
 
-use crate::syntax::{lexer::OpenSCAD, SyntaxKind};
+use crate::syntax::{OpenSCAD, SyntaxKind};
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct Package(SyntaxNode<OpenSCAD>);
