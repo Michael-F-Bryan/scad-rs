@@ -3,4 +3,4 @@
 
 mod query;
 
-pub use self::query::Lowering;
+pub use self::query::{Lower, LoweringStorage};

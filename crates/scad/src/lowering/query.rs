@@ -6,11 +6,11 @@ use crate::{
 };
 
 #[salsa::query_group(LoweringStorage)]
-pub trait Lowering: Parse {
+pub trait Lower: Parse {
     fn hir_package(&self) -> (hir::Package, Diagnostics);
 }
 
-fn hir_package(db: &dyn Lowering) -> (hir::Package, Diagnostics) {
+fn hir_package(db: &dyn Lower) -> (hir::Package, Diagnostics) {
     let (ast, _) = db.ast();
     let mut pkg = hir::Package::default();
     let diags = Diagnostics::empty();
@@ -55,7 +55,7 @@ mod tests {
     use super::*;
 
     #[derive(Default)]
-    #[salsa::database(crate::syntax::ParseStorage, LoweringStorage)]
+    #[salsa::database(crate::syntax::ParsingStorage, LoweringStorage)]
     struct Db {
         storage: salsa::Storage<Self>,
     }

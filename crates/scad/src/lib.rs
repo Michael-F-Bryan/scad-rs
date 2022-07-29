@@ -6,6 +6,7 @@ pub mod hir;
 pub mod lowering;
 pub mod syntax;
 mod text;
+pub mod runtime;
 
 pub use crate::{
     diagnostics::{Diagnostic, Diagnostics, Severity},

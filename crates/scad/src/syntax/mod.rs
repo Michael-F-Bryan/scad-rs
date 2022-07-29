@@ -12,5 +12,5 @@ mod query;
 pub use self::{
     lexer::{tokenize, OpenSCAD, SyntaxKind},
     parser::{parse, ParseError},
-    query::{Parse, ParseStorage},
+    query::{Parse, ParsingStorage},
 };

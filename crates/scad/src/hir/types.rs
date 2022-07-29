@@ -46,6 +46,7 @@ pub struct ControlFlowNode {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Continuation {
     Return,
+    Jump(usize),
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -127,7 +128,7 @@ pub enum FloatLiteral {
 }
 
 impl FloatLiteral {
-    fn value(self) -> f64 {
+    pub fn value(self) -> f64 {
         match self {
             FloatLiteral::Real(f) => f.raw(),
             FloatLiteral::NaN => f64::NAN,
@@ -139,18 +140,29 @@ impl FromStr for FloatLiteral {
     type Err = <f64 as FromStr>::Err;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let float = s.parse()?;
-
-        match R64::try_new(float) {
-            Some(f) => Ok(FloatLiteral::Real(f)),
-            None => Ok(FloatLiteral::NaN),
-        }
+        let float: f64 = s.parse()?;
+        Ok(float.into())
     }
 }
 
 impl PartialEq<f64> for FloatLiteral {
     fn eq(&self, other: &f64) -> bool {
         self.value() == *other
+    }
+}
+
+impl From<FloatLiteral> for f64 {
+    fn from(f: FloatLiteral) -> Self {
+        f.value()
+    }
+}
+
+impl From<f64> for FloatLiteral {
+    fn from(f: f64) -> Self {
+        match R64::try_new(f) {
+            Some(f) => FloatLiteral::Real(f),
+            None => FloatLiteral::NaN,
+        }
     }
 }
 
@@ -167,8 +179,14 @@ impl Namespace {
         self.names.insert(name.into(), value);
     }
 
-    pub fn get(&self, name: &str) -> Option<Value> {
-        self.names.get(name).cloned()
+    pub fn get(&self, name: &str) -> Option<&Value> {
+        self.names.get(name)
+    }
+
+    pub fn get_name(&self, id: &Id) -> Option<&Text> {
+        self.names
+            .iter()
+            .find_map(|(name, v)| if v == id { Some(name) } else { None })
     }
 
     pub fn is_empty(&self) -> bool {
@@ -184,15 +202,21 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn id(self) -> Id {
+    pub fn id(&self) -> &Id {
         match self {
             Value::Function(id) | Value::Module(id) | Value::Constant(id) => id,
         }
     }
 }
 
+impl PartialEq<Id> for Value {
+    fn eq(&self, other: &Id) -> bool {
+        self.id() == other
+    }
+}
+
 impl From<Value> for Id {
     fn from(v: Value) -> Self {
-        v.id()
+        v.id().clone()
     }
 }

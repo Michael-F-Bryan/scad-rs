@@ -2,7 +2,7 @@ use im::Vector;
 
 use crate::{ast::Package, syntax::ParseError, Text};
 
-#[salsa::query_group(ParseStorage)]
+#[salsa::query_group(ParsingStorage)]
 pub trait Parse {
     #[salsa::input]
     fn source_code(&self) -> Text;
