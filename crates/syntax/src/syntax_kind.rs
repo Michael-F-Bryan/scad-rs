@@ -8,7 +8,19 @@ impl From<rowan::SyntaxKind> for SyntaxKind {
 
 impl From<SyntaxKind> for rowan::SyntaxKind {
     fn from(k: SyntaxKind) -> Self {
-        rowan::SyntaxKind(k as u16)
+        rowan::SyntaxKind(k.into())
+    }
+}
+
+impl From<SyntaxKind> for u16 {
+    fn from(k: SyntaxKind) -> Self {
+        k as u16
+    }
+}
+
+impl From<SyntaxKind> for m_lexer::TokenKind {
+    fn from(k: SyntaxKind) -> m_lexer::TokenKind {
+        m_lexer::TokenKind(k.into())
     }
 }
 
@@ -38,6 +50,13 @@ macro_rules! generate_syntax_kind {
         #[repr(u16)]
         #[allow(non_camel_case_types)]
         pub enum SyntaxKind {
+            COMMENT,
+            WHITESPACE,
+            LITERAL,
+            IDENTIFIER,
+            ERROR,
+            EOF,
+
             $(
                 #[doc = concat!("The `", as_str!($punctuation), "` symbol.")]
                 $punctuation_name,
@@ -50,23 +69,20 @@ macro_rules! generate_syntax_kind {
 
             $($literal_name,)*
             $($internal_name,)*
-
-            COMMENT,
-            WHITESPACE,
-            ERROR,
-            EOF,
         }
 
         impl SyntaxKind {
             const VARIANTS: &[SyntaxKind] = &[
+                SyntaxKind::COMMENT,
+                SyntaxKind::WHITESPACE,
+                SyntaxKind::LITERAL,
+                SyntaxKind::IDENTIFIER,
+                SyntaxKind::ERROR,
+                SyntaxKind::EOF,
                 $(SyntaxKind::$punctuation_name,)*
                 $(SyntaxKind::$keyword_name,)*
                 $(SyntaxKind::$literal_name,)*
                 $(SyntaxKind::$internal_name,)*
-                SyntaxKind::COMMENT,
-                SyntaxKind::WHITESPACE,
-                SyntaxKind::ERROR,
-                SyntaxKind::EOF,
             ];
 
             pub const fn is_punctuation(self) -> bool {
@@ -169,7 +185,7 @@ generate_syntax_kind! {
     keywords: {
         false => FALSE_KW,
         for => FOR_KW,
-        function => FN_KW,
+        function => FUNCTION_KW,
         if => IF_KW,
         include => INCLUDE_KW,
         let => LET_KW,
@@ -186,4 +202,17 @@ generate_syntax_kind! {
     internal_nodes: [
         PACKAGE,
     ],
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn variants_have_the_correct_indices() {
+        for (i, &variant) in SyntaxKind::VARIANTS.iter().enumerate() {
+            let integer_value = variant as usize;
+            assert_eq!(i, integer_value, "{variant:?}");
+        }
+    }
 }
