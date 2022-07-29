@@ -3,6 +3,7 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
+use im::Vector;
 use rowan::{ast::AstNode, Checkpoint, GreenNodeBuilder, SyntaxNode};
 
 use crate::{
@@ -10,10 +11,12 @@ use crate::{
     syntax::{lexer::OpenSCAD, SyntaxKind, SyntaxKind::*},
 };
 
-pub fn parse(text: &str) -> Package {
+pub fn parse(text: &str) -> (Package, Vector<ParseError>) {
     let mut parser = Parser::new(text);
     parse_package(&mut parser);
-    parser.finish()
+    let pkg = parser.finish();
+
+    (pkg, Vector::new())
 }
 
 #[derive(Debug)]
@@ -342,7 +345,7 @@ fn parse_package(parser: &mut Parser<'_>) {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct ParseError;
 
 #[cfg(test)]

@@ -7,8 +7,10 @@
 
 mod lexer;
 mod parser;
+mod query;
 
 pub use self::{
     lexer::{tokenize, OpenSCAD, SyntaxKind},
-    parser::parse,
+    parser::{parse, ParseError},
+    query::{Parse, ParseStorage},
 };

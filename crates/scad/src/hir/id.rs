@@ -1,44 +1,31 @@
 use im::Vector;
 
-use crate::hir::Text;
+use crate::Text;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub struct Id(Vector<Segment>);
+pub struct Id(Vector<Text>);
 
-impl Id {
-    pub(crate) fn root() -> Self {
-        Id(Vector::new())
-    }
-
-    pub(crate) fn with_function(&self, name: impl Into<Text>) -> Self {
-        let mut id = self.clone();
-        id.0.push_back(Segment::Function(name.into()));
-        id
-    }
-
-    pub(crate) fn with_module(&self, name: impl Into<Text>) -> Self {
-        let mut id = self.clone();
-        id.0.push_back(Segment::Module(name.into()));
-        id
-    }
-
-    pub(crate) fn with_index(&self, index: usize) -> Self {
-        let mut id = self.clone();
-        id.0.push_back(Segment::Index(index));
-        id
-    }
-
-    pub(crate) fn with_cfg_node(&self, index: usize) -> Self {
-        let mut id = self.clone();
-        id.0.push_back(Segment::CfgNode(index));
-        id
-    }
+#[derive(Debug, PartialEq)]
+pub struct Identifiers {
+    segments: Vector<Text>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-enum Segment {
-    Function(Text),
-    Module(Text),
-    Index(usize),
-    CfgNode(usize),
+impl Identifiers {
+    pub fn root() -> Self {
+        Identifiers {
+            segments: Vector::new(),
+        }
+    }
+
+    pub fn enter(&self, scope: impl Into<Text>) -> Self {
+        let mut segments = self.segments.clone();
+        segments.push_back(scope.into());
+        Identifiers { segments }
+    }
+
+    pub fn create(&self, name: impl Into<Text>) -> Id {
+        let mut segments = self.segments.clone();
+        segments.push_back(name.into());
+        Id(segments)
+    }
 }

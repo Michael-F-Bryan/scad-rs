@@ -7,7 +7,9 @@
 //! [cfg]: https://en.wikipedia.org/wiki/Control-flow_graph
 
 mod id;
-mod text;
 mod types;
 
-pub use self::{id::Id, text::Text, types::*};
+pub use self::{
+    id::{Id, Identifiers},
+    types::*,
+};
