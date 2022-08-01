@@ -21,7 +21,7 @@ Expr =
 | 'undef'
 | 'number'
 | 'string'
-| Lookup
+| variable:'ident'
 | RangeExpression
 | ListExpression
 | BinOp
@@ -30,7 +30,7 @@ Expr =
 | IndexExpr
 | ParenExpr
 | ListComprehensionExpr
-| LetClause Expr
+| LetClause
 | FunctionCall
 
 TernaryExpr = condition:Expr '?' truthy:Expr ':' falsy:Expr
@@ -60,8 +60,6 @@ UnaryExpr = UnaryOp Expr
 
 UnaryOp = '!' | '+' | '-'
 
-Lookup = 'ident'
-
 RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep
 
 RangeExpressionFromTo = '[' from:Expr ':' to:Expr ']'
@@ -77,7 +75,7 @@ ListComprehensionElements =
 
 ListComprehensionElementsOrExpr = ListComprehensionElements | Expr
 
-LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements
+LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements Expr
 
 ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr
 
@@ -102,7 +100,7 @@ BracedChildren = '{' Children '}'
 
 Parameters = Parameter (',' Parameter)*
 
-Parameter = Lookup | Assignment
+Parameter = variable:'ident' | Assignment
 
 Arguments = Argument (',' Argument)*
 
