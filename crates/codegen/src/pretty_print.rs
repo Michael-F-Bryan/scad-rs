@@ -5,8 +5,6 @@ use std::{
     process::{Command, Output, Stdio},
 };
 
-const INDENT: &str = "    ";
-
 /// Use `rustfmt` to pretty-print the tokens.
 pub fn pretty_print(tokens: TokenStream) -> Result<String, Error> {
     let tokens = tokens.to_string();
@@ -14,6 +12,7 @@ pub fn pretty_print(tokens: TokenStream) -> Result<String, Error> {
     let mut child = Command::new("rustfmt")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .spawn()
         .context("Unable to start `rustfmt`. Is it installed?")?;
 

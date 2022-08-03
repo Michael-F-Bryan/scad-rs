@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
     use scad_codegen::Syntax;
 
     #[test]
@@ -15,6 +14,6 @@ mod tests {
 
         let generated = syntax.kind();
 
-        insta::assert_display_snapshot!(generated);
+        insta::assert_display_snapshot!(scad_codegen::pretty_print(generated).unwrap());
     }
 }

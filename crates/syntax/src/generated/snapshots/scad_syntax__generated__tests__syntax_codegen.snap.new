@@ -1,6 +1,0 @@
----
-source: crates/syntax/src/generated/mod.rs
-assertion_line: 18
-expression: generated
----
-pub enum SyntaxKind { }

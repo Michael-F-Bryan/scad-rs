@@ -1,20 +1,49 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 use anyhow::{Context as _, Error};
+use heck::ToShoutySnekCase;
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{format_ident, quote, ToTokens};
 use ungrammar::{Grammar, Rule};
+
+const PUNCTUATION_NAMES: &[(&str, &str)] = &[
+    (";", "SEMICOLON"),
+    (":", "COLON"),
+    (",", "COMMA"),
+    (".", "DOT"),
+    ("?", "QUESTION_MARK"),
+    ("(", "L_PAREN"),
+    ("{", "L_CURLY"),
+    ("[", "L_BRACE"),
+    (")", "R_PAREN"),
+    ("}", "R_CURLY"),
+    ("]", "R_BRACE"),
+    ("!", "BANG"),
+    ("+", "PLUS"),
+    ("-", "MINUS"),
+    ("*", "STAR"),
+    ("/", "SLASH"),
+    ("^", "CARET"),
+    ("%", "PERCENT"),
+    ("&&", "AND"),
+    ("||", "OR"),
+    ("<", "LESS_THAN"),
+    ("<=", "LESS_THAN_EQUALS"),
+    (">", "GREATER_THAN"),
+    (">=", "GREATER_THAN_EQUALS"),
+    ("=", "EQUALS"),
+];
 
 #[derive(Debug)]
 pub struct Syntax {
-    nodes: HashMap<String, AstNode>,
-    tokens: HashSet<String>,
+    nodes: BTreeMap<String, AstNode>,
+    syntax_kind: SyntaxKind,
 }
 
 impl Syntax {
     pub fn from_grammar(grammar: &Grammar) -> Result<Self, Error> {
-        let mut nodes = HashMap::new();
-        let mut tokens = HashSet::new();
+        let mut nodes = BTreeMap::new();
+        let mut tokens = BTreeSet::new();
 
         for id in grammar.iter() {
             let node = &grammar[id];
@@ -28,7 +57,22 @@ impl Syntax {
             nodes.insert(name.clone(), ast_node);
         }
 
-        Ok(Syntax { nodes, tokens })
+        let (keywords, symbols): (Vec<_>, Vec<_>) = tokens
+            .into_iter()
+            .partition(|name| name.chars().all(|c| c.is_alphabetic()));
+
+        let syntax_kind = SyntaxKind {
+            keywords: keywords.into_iter().map(Keyword).collect(),
+            symbols: symbols
+                .into_iter()
+                .map(|s| Punctuation {
+                    name: symbol_name(&s).to_string(),
+                    symbol: s,
+                })
+                .collect(),
+        };
+
+        Ok(Syntax { nodes, syntax_kind })
     }
 
     pub fn internal_rules(&self) -> impl Iterator<Item = &'_ str> + '_ {
@@ -36,25 +80,106 @@ impl Syntax {
     }
 
     pub fn kind(&self) -> TokenStream {
+        let kind = syntax_kind_definition(self);
+        let methods = syntax_kind_methods(self);
+
         quote! {
-            pub enum SyntaxKind {}
+            #kind
+            #methods
         }
     }
 
     pub fn punctuation(&self) -> impl Iterator<Item = &'_ str> + '_ {
-        let keywords: HashSet<_> = self.keywords().collect();
-        self.tokens
-            .iter()
-            .map(|s| s.as_str())
-            .filter(move |tok| !keywords.contains(tok))
+        self.syntax_kind.symbols.iter().map(|s| s.symbol.as_str())
     }
 
     pub fn keywords(&self) -> impl Iterator<Item = &'_ str> + '_ {
-        self.tokens
-            .iter()
-            .filter(|s| s.chars().all(|c| c.is_alphanumeric()))
-            .map(|s| s.as_str())
+        self.syntax_kind.keywords.iter().map(|k| k.0.as_str())
     }
+}
+
+fn syntax_kind_methods(syntax: &Syntax) -> TokenStream {
+    let punctuation: Vec<_> = syntax
+        .punctuation()
+        .map(symbol_name)
+        .map(|name| format_ident!("{name}"))
+        .collect();
+    let keywords: Vec<_> = syntax
+        .punctuation()
+        .map(symbol_name)
+        .map(|name| format_ident!("{name}"))
+        .collect();
+
+    let symbol_lookups = PUNCTUATION_NAMES.iter().map(|(symbol, name)| {
+        let name = format_ident!("{}", name.TO_SHOUTY_SNEK_CASE());
+        quote!(#symbol => Some(SyntaxKind::#name))
+    });
+
+    quote! {
+        impl SyntaxKind {
+            pub const fn is_punctuation(self) -> bool {
+                match self {
+                    #(SyntaxKind::#punctuation)|* => true,
+                    _ => false,
+                }
+            }
+
+            pub const fn is_keyword(self) -> bool {
+                match self {
+                    #(SyntaxKind::#keywords)|* => true,
+                    _ => false,
+                }
+            }
+
+            pub const fn from_symbol(symbol: &str) -> Option<SyntaxKind> {
+                match symbol {
+                    #(#symbol_lookups,)*
+                    _ => None,
+                }
+            }
+        }
+    }
+}
+
+fn syntax_kind_definition(syntax: &Syntax) -> TokenStream {
+    let special_variants = ["IDENT", "ERROR", "WHITESPACE", "COMMENT"]
+        .iter()
+        .map(|name| format_ident!("{name}").to_token_stream());
+    let literals = ["INTEGER_LIT", "FLOAT_LIT"]
+        .iter()
+        .map(|name| format_ident!("{name}").to_token_stream());
+
+    let punctuation = syntax.punctuation().map(|symbol| {
+        let name = symbol_name(symbol).TO_SHOUTY_SNEK_CASE();
+        let docs = format!("The `{symbol}` symbol.");
+        let ident = format_ident!("{name}");
+
+        quote! {
+            #[doc = #docs]
+            #ident
+        }
+    });
+
+    let variants = special_variants
+        .into_iter()
+        .chain(literals)
+        .chain(punctuation);
+
+    quote! {
+        pub enum SyntaxKind {
+            #(
+                #variants,
+            )*
+        }
+    }
+}
+
+fn symbol_name(symbol: &str) -> &'static str {
+    PUNCTUATION_NAMES
+        .iter()
+        .copied()
+        .find_map(|(s, n)| if s == symbol { Some(n) } else { None })
+        .unwrap_or_else(|| unreachable!("No symbol for \"{symbol}\""))
 }
 
 fn all_tokens(rule: &Rule, grammar: &Grammar) -> HashSet<String> {
@@ -251,4 +376,19 @@ enum Multiplicity {
     Optional,
     One,
     Multiple,
+}
+
+#[derive(Debug, Clone)]
+struct SyntaxKind {
+    keywords: Vec<Keyword>,
+    symbols: Vec<Punctuation>,
+}
+
+#[derive(Debug, Clone)]
+struct Keyword(String);
+
+#[derive(Debug, Clone)]
+struct Punctuation {
+    symbol: String,
+    name: String,
 }
