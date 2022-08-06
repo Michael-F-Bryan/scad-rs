@@ -48,8 +48,6 @@ fn all_tokens(rule: &Rule, grammar: &Grammar) -> BTreeSet<String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::add_preamble;
-
     use super::*;
 
     #[test]
@@ -62,12 +60,8 @@ mod tests {
 
         let Syntax { ast, syntax_kind } = Syntax::from_grammar(&grammar).unwrap();
 
-        let syntax_kind = crate::pretty_print(&syntax_kind).unwrap();
-        let syntax_kind = add_preamble(env!("CARGO_PKG_NAME"), syntax_kind);
-        crate::ensure_file_contents(&syntax_kind_rs, &syntax_kind);
-
-        let ast = crate::pretty_print(&ast).unwrap();
-        let ast = add_preamble(env!("CARGO_PKG_NAME"), ast);
-        crate::ensure_file_contents(&ast_rs, &ast);
+        let generator = env!("CARGO_PKG_NAME");
+        crate::ensure_file_contents(&syntax_kind_rs, &syntax_kind, generator);
+        crate::ensure_file_contents(&ast_rs, &ast, generator);
     }
 }
