@@ -1,6 +1,6 @@
 ---
 source: crates/syntax/src/grammar/top_level.rs
-expression: children
+description: statement(x = 42;)
 ---
 [
     Node(

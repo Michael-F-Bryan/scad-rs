@@ -1,6 +1,6 @@
 ---
 source: crates/syntax/src/grammar/expressions.rs
-expression: single
+description: expr(x)
 ---
 Token(
     IDENT@0..1 "x",

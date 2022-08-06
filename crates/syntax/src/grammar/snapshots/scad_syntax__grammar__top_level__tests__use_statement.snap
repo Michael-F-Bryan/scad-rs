@@ -1,6 +1,6 @@
 ---
 source: crates/syntax/src/grammar/top_level.rs
-expression: single
+description: "statement(use \"./foo/bar\")"
 ---
 Node(
     USE@0..14

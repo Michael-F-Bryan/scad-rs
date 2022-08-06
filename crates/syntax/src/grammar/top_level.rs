@@ -66,11 +66,11 @@ mod tests {
     use super::*;
 
     parse_tests! {
-        empty_package => package(""),
-        include_statement => statement(r#"include "./foo/bar""#),
-        use_statement => statement(r#"use "./foo/bar""#),
-        assignment_statement => statement("x = 42;"),
-        kitchen_sink => package(r#"
+        empty_package: package(""),
+        include_statement: statement(r#"include "./foo/bar""#),
+        use_statement: statement(r#"use "./foo/bar""#),
+        assignment_statement: statement("x = 42;"),
+        kitchen_sink: package(r#"
             include "foo/bar.scad"
             use "baz.scad"
             a = 42;

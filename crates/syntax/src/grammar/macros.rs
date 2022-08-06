@@ -1,5 +1,5 @@
 macro_rules! parse_tests {
-    ( $( $name:ident => $func:ident ($src:expr) ),* $(,)?) => {
+    ( $( $name:ident : $func:ident ($src:expr) ),* $(,)?) => {
         $(
             #[test]
             fn $name() {
@@ -20,9 +20,17 @@ macro_rules! parse_tests {
 
                 let children: Vec<_> = node.children_with_tokens().collect();
 
-                match children.as_slice() {
-                    [single] => insta::assert_debug_snapshot!(single),
-                    _ => insta::assert_debug_snapshot!(children),
+                insta::with_settings! {
+                    {
+                        description => format!("{}({})", stringify!($func), $src),
+                        omit_expression => true,
+                    },
+                    {
+                        match children.as_slice() {
+                            [single] => insta::assert_debug_snapshot!(single),
+                            _ => insta::assert_debug_snapshot!(children),
+                        }
+                    }
                 }
             }
         )*

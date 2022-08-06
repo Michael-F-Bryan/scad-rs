@@ -1,6 +1,6 @@
 ---
 source: crates/syntax/src/grammar/expressions.rs
-expression: children
+description: expr((42))
 ---
 [
     Token(

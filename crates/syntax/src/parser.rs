@@ -128,26 +128,25 @@ impl<'a> Parser<'a> {
     }
 }
 
+/// A wrapper around a list of `(`[`SyntaxKind`]`, &str)` pairs which gives
+/// us some useful methods.
 #[derive(Debug)]
-struct Input<'a> {
-    tokens: Vec<(SyntaxKind, &'a str)>,
-}
+struct Input<'a>(Vec<(SyntaxKind, &'a str)>);
 
 impl<'a> Input<'a> {
     fn new(tokens: impl IntoIterator<Item = (SyntaxKind, &'a str)>) -> Self {
-        Input {
-            tokens: tokens
-                .into_iter()
-                .filter(|(k, _)| *k != SyntaxKind::WHITESPACE && *k != SyntaxKind::COMMENT)
-                .collect(),
-        }
+        // FIXME: Blindly skipping whitespace and comments like this means
+        // Rowan will never see them, so all our token spans will be wrong.
+        let tokens = tokens
+            .into_iter()
+            .filter(|(k, _)| *k != SyntaxKind::WHITESPACE && *k != SyntaxKind::COMMENT)
+            .collect();
+
+        Input(tokens)
     }
 
     fn at(&self, index: usize) -> (SyntaxKind, &'a str) {
-        self.tokens
-            .get(index)
-            .copied()
-            .unwrap_or((SyntaxKind::EOF, ""))
+        self.0.get(index).copied().unwrap_or((SyntaxKind::EOF, ""))
     }
 
     fn kind(&self, index: usize) -> SyntaxKind {
@@ -155,11 +154,12 @@ impl<'a> Input<'a> {
         kind
     }
 
+    /// Get the [`TextRange`] which specifies the item at a particular location.
     fn span(&self, index: usize) -> Option<TextRange> {
-        let previous = self.tokens.get(..index)?;
+        let previous = self.0.get(..index)?;
         let start_index = previous.iter().copied().map(|(_, t)| TextSize::of(t)).sum();
 
-        let (_, target) = self.tokens.get(index)?;
+        let (_, target) = self.0.get(index)?;
         let end_index = start_index + TextSize::of(*target);
 
         Some(TextRange::new(start_index, end_index))

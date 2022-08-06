@@ -30,8 +30,7 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
             p.bump(p.current());
             binary_op(p, m);
         }
-        T![true] | T![false] | T![undef] | STRING | INTEGER | FLOAT | IDENT
-        => {
+        T![true] | T![false] | T![undef] | STRING | INTEGER | FLOAT | IDENT => {
             p.bump(p.current());
         }
         L_PAREN => {
@@ -39,7 +38,10 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
             expr(p);
             p.expect(T![")"]);
         }
-        _ => todo!(),
+        other => {
+            p.error(format!("Expected an expression but found {other:?}"));
+            p.do_bump(1);
+        }
     }
 }
 
@@ -56,9 +58,14 @@ mod tests {
     use super::*;
 
     parse_tests! {
-        single_number => expr("42"),
-        one_plus_one => expr("1 + 1"),
-        parens => expr("(42)"),
-        variable_lookup => expr("x"),
+        single_number: expr("42"),
+        one_plus_one: expr("1+ 1"),
+        parens: expr("(42)"),
+        variable_lookup: expr("x"),
+        true_expr: expr("true"),
+        false_expr: expr("false"),
+        undef_expr: expr("undef"),
+        string_expr: expr(r#""Hello, World!""#),
+        negative_number: expr("-42"),
     }
 }

@@ -1,6 +1,6 @@
 ---
 source: crates/syntax/src/grammar/top_level.rs
-expression: single
+description: "package(\n            include \"foo/bar.scad\"\n            use \"baz.scad\"\n            a = 42;\n            b = (42);\n            c = 1 + 1;\n        )"
 ---
 Node(
     PACKAGE@0..52

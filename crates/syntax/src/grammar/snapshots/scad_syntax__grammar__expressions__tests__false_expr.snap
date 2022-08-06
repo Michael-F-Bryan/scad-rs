@@ -1,7 +1,7 @@
 ---
 source: crates/syntax/src/grammar/expressions.rs
-description: expr(42)
+description: expr(false)
 ---
 Token(
-    INTEGER@0..2 "42",
+    FALSE_KW@0..5 "false",
 )

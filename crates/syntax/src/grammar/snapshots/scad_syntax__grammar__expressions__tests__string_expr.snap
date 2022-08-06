@@ -1,0 +1,7 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: "expr(\"Hello, World!\")"
+---
+Token(
+    STRING@0..15 "\"Hello, World!\"",
+)

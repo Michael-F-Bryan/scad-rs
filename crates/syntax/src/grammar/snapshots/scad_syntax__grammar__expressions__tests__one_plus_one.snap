@@ -1,6 +1,6 @@
 ---
 source: crates/syntax/src/grammar/expressions.rs
-expression: single
+description: expr(1+ 1)
 ---
 Node(
     BIN_EXPR@0..3

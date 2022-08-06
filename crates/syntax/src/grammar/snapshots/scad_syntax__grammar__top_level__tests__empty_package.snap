@@ -1,6 +1,6 @@
 ---
 source: crates/syntax/src/grammar/top_level.rs
-expression: single
+description: package()
 ---
 Node(
     PACKAGE@0..0

@@ -1,7 +1,7 @@
 ---
 source: crates/syntax/src/grammar/expressions.rs
-description: expr(42)
+description: expr(undef)
 ---
 Token(
-    INTEGER@0..2 "42",
+    UNDEF_KW@0..5 "undef",
 )
