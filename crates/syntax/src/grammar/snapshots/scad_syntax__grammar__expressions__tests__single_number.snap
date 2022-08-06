@@ -1,0 +1,7 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+expression: single
+---
+Token(
+    INTEGER@0..2 "42",
+)

@@ -1,0 +1,7 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+expression: single
+---
+Token(
+    IDENT@0..1 "x",
+)

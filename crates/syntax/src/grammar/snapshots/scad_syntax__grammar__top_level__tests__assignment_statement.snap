@@ -1,0 +1,16 @@
+---
+source: crates/syntax/src/grammar/top_level.rs
+expression: children
+---
+[
+    Node(
+        ASSIGNMENT@0..4
+          IDENT@0..1 "x"
+          EQUALS@1..2 "="
+          INTEGER@2..4 "42"
+        ,
+    ),
+    Token(
+        SEMICOLON@4..5 ";",
+    ),
+]

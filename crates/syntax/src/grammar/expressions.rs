@@ -1,7 +1,7 @@
 use crate::{
     grammar::TokenSet,
     parser::{Mark, Parser},
-    SyntaxKind::{*},
+    SyntaxKind::*,
 };
 
 const BINARY_OPERANDS: TokenSet = TokenSet::new([
@@ -19,36 +19,46 @@ const BINARY_OPERANDS: TokenSet = TokenSet::new([
     T![||],
 ]);
 
-pub(crate) fn expr(p: &mut Parser<'_>) -> bool {
+pub(crate) fn expr(p: &mut Parser<'_>) {
     let lookahead = p.nth(1);
 
     match p.current() {
-        INTEGER | FLOAT if BINARY_OPERANDS.contains(lookahead) => {
+        T![true] | T![false] | T![undef] | STRING | INTEGER | FLOAT | IDENT
+            if BINARY_OPERANDS.contains(lookahead) =>
+        {
             let m = p.start();
             p.bump(p.current());
-            binary_op(p, m)
+            binary_op(p, m);
         }
-        INTEGER | FLOAT => {
+        T![true] | T![false] | T![undef] | STRING | INTEGER | FLOAT | IDENT
+        => {
             p.bump(p.current());
-            true
         }
         L_PAREN => {
             p.bump(T!["("]);
             expr(p);
-            p.expect(T![")"])
+            p.expect(T![")"]);
         }
         _ => todo!(),
     }
 }
 
-fn binary_op(p: &mut Parser<'_>, m: Mark) -> bool {
+fn binary_op(p: &mut Parser<'_>, m: Mark) {
     assert!(BINARY_OPERANDS.contains(p.current()));
     p.bump(p.current());
 
-    if expr(p) {
-        p.complete(m, BIN_EXPR);
-        true
-    } else {
-        todo!();
+    expr(p);
+    p.complete(m, BIN_EXPR);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    parse_tests! {
+        single_number => expr("42"),
+        one_plus_one => expr("1 + 1"),
+        parens => expr("(42)"),
+        variable_lookup => expr("x"),
     }
 }

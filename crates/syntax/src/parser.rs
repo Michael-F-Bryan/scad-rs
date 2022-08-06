@@ -72,12 +72,9 @@ impl<'a> Parser<'a> {
         );
     }
 
-    pub(crate) fn expect(&mut self, kind: SyntaxKind) -> bool {
-        if self.eat(kind) {
-            true
-        } else {
+    pub(crate) fn expect(&mut self, kind: SyntaxKind) {
+        if !self.eat(kind) {
             self.error(format!("Expected {kind:?}"));
-            false
         }
     }
 

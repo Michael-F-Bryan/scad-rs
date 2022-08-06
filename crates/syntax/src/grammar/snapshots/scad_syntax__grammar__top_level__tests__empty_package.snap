@@ -1,0 +1,8 @@
+---
+source: crates/syntax/src/grammar/top_level.rs
+expression: single
+---
+Node(
+    PACKAGE@0..0
+    ,
+)

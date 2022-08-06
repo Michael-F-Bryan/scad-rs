@@ -1,8 +1,8 @@
 ---
-source: crates/syntax/src/grammar/mod.rs
-expression: pkg
+source: crates/syntax/src/grammar/top_level.rs
+expression: single
 ---
-Package(
+Node(
     PACKAGE@0..52
       INCLUDE@0..21
         INCLUDE_KW@0..7 "include"

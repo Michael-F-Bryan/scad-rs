@@ -1,0 +1,10 @@
+---
+source: crates/syntax/src/grammar/top_level.rs
+expression: single
+---
+Node(
+    INCLUDE@0..18
+      INCLUDE_KW@0..7 "include"
+      STRING@7..18 "\"./foo/bar\""
+    ,
+)
