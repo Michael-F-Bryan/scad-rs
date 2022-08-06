@@ -1,6 +1,6 @@
 # OpenSCAD Rust
 
-[![Continuous integration](https://github.com/Michael-F-Bryan/scad-rs/workflows/Continuous%20integration/badge.svg?branch=main)](https://github.com/Michael-F-Bryan/scad-rs/actions)
+[![Continuous integration](https://github.com/Michael-F-Bryan/scad-rs/workflows/Continuous%20Integration/badge.svg?branch=main)](https://github.com/Michael-F-Bryan/scad-rs/actions)
 
 ([API Docs][api-docs])
 
