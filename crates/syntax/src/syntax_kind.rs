@@ -4,7 +4,16 @@
 #[doc = r" OpenSCAD language grammar."]
 #[allow(bad_style)]
 #[derive(
-    Debug, Copy, Clone, PartialEq, Eq, Hash, num_derive :: FromPrimitive, num_derive :: ToPrimitive,
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    PartialOrd,
+    Ord,
+    num_derive :: FromPrimitive,
+    num_derive :: ToPrimitive,
 )]
 #[repr(u16)]
 #[non_exhaustive]
@@ -95,6 +104,33 @@ pub enum SyntaxKind {
     UNDEF_KW,
     #[doc = "The `use` keyword."]
     USE_KW,
+    PACKAGE,
+    INCLUDE,
+    USE,
+    ASSIGNMENT,
+    NAMED_FUNCTION_DEFINITION,
+    NAMED_MODULE_DEFINITION,
+    MODULE_INSTANTIATION,
+    EXPRESSIONS,
+    LIST_EXPRESSION,
+    BIN_EXPR,
+    UNARY_EXPR,
+    TERNARY_EXPR,
+    INDEX_EXPR,
+    PAREN_EXPR,
+    LIST_COMPREHENSION_EXPR,
+    LET_CLAUSE,
+    FUNCTION_CALL,
+    RANGE_EXPRESSION_FROM_TO,
+    RANGE_EXPRESSION_FROM_TO_STEP,
+    FOR_CLAUSE,
+    IF_CLAUSE,
+    ASSIGNMENTS_OPT,
+    ASSIGNMENTS,
+    PARAMETERS,
+    ARGUMENTS,
+    CHILDREN,
+    BRACED_CHILDREN,
 }
 impl SyntaxKind {
     #[doc = r" Is this [`SyntaxKind`] a piece of punctuation?"]

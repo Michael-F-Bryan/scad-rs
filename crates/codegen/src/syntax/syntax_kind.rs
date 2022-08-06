@@ -35,10 +35,14 @@ pub struct SyntaxKind {
     keywords: Vec<Keyword>,
     symbols: Vec<Punctuation>,
     special: Vec<SpecialToken>,
+    non_terminals: Vec<NonTerminal>,
 }
 
 impl SyntaxKind {
-    pub fn from_tokens(tokens: impl IntoIterator<Item = String>) -> Self {
+    pub fn from_tokens(
+        tokens: impl IntoIterator<Item = String>,
+        non_terminals: impl IntoIterator<Item = Ident>,
+    ) -> Self {
         let (keywords, symbols): (Vec<_>, Vec<_>) = tokens
             .into_iter()
             .partition(|name| name.chars().all(|c| c.is_alphabetic()));
@@ -89,12 +93,13 @@ impl SyntaxKind {
                 .collect(),
             symbols: symbols
                 .into_iter()
-                .map(|s| Punctuation {
+                .map(|s: String| Punctuation {
                     ident: format_ident!("{}", symbol_name(&s)),
                     symbol: s,
                 })
                 .collect(),
             special: special_tokens,
+            non_terminals: non_terminals.into_iter().map(NonTerminal).collect(),
         }
     }
 
@@ -103,19 +108,21 @@ impl SyntaxKind {
             keywords,
             symbols,
             special,
+            non_terminals,
         } = self;
 
         let symbols = symbols.iter().map(|p| p.variant());
         let special = special.iter().map(|s| s.variant());
         let keywords = keywords.iter().map(|kw| kw.variant());
+        let non_terminals = non_terminals.iter().map(|nt| nt.0.to_token_stream());
 
-        let variants = special.chain(symbols).chain(keywords);
+        let variants = special.chain(symbols).chain(keywords).chain(non_terminals);
 
         quote! {
             /// The different types of terminals and non-terminals in the
             /// OpenSCAD language grammar.
             #[allow(bad_style)]
-            #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, num_derive::FromPrimitive, num_derive::ToPrimitive)]
+            #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, num_derive::FromPrimitive, num_derive::ToPrimitive)]
             #[repr(u16)]
             #[non_exhaustive]
             pub enum SyntaxKind {
@@ -334,3 +341,6 @@ fn symbol_name(symbol: &str) -> &'static str {
         .find_map(|(s, n)| if s == symbol { Some(n) } else { None })
         .unwrap_or_else(|| unreachable!("No symbol for \"{symbol}\""))
 }
+
+#[derive(Debug, Clone)]
+struct NonTerminal(Ident);

@@ -24,7 +24,7 @@ Expr =
 | variable:'ident'
 | RangeExpression
 | ListExpression
-| BinOp
+| BinExpr
 | UnaryExpr
 | TernaryExpr
 | IndexExpr
@@ -41,24 +41,12 @@ ParenExpr = '(' Expr ')'
 
 ListComprehensionExpr = '(' ListComprehensionElements ')'
 
-BinExpr = lhs:Expr '<=' rhs:Expr
-BinOp =
-  '+'
-| '-'
-| '*'
-| '/'
-| '%'
-| '>='
-| '>'
-| '='
-| '<='
-| '<'
-| '&&'
-| '||'
+BinExpr =
+  lhs:Expr
+  op:('+' | '-' | '*' | '/' | '%' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||')
+  rhs:Expr
 
-UnaryExpr = UnaryOp Expr
-
-UnaryOp = '!' | '+' | '-'
+UnaryExpr = op:('!' | '+' | '-') Expr
 
 RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep
 
