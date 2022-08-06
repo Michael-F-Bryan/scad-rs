@@ -8,15 +8,20 @@ pub fn add_preamble(generator: &'static str, mut text: String) -> String {
     text
 }
 
+fn normalize_line_endings(text: impl AsRef<str>) -> String {
+    text.as_ref().replace("\r\n", "\n")
+}
+
 /// Make sure a file contains the specified tokens. If it doesn't, the file will
 /// be updated and this function will trigger a panic.
 #[track_caller]
 pub fn ensure_file_contents(file: &Path, contents: impl ToTokens, generator: &'static str) {
     let contents = crate::pretty_print(contents).expect("Rustfmt failed");
     let contents = add_preamble(generator, contents);
+    let contents = normalize_line_endings(contents);
 
     if let Ok(original) = std::fs::read_to_string(file) {
-        if original == contents {
+        if normalize_line_endings(original) == contents {
             // Already up to date
             return;
         }

@@ -1,6 +1,9 @@
-pub mod ast;
 mod lexer;
 pub mod parser;
+
+// generated code
+#[allow(clippy::redundant_clone)]
+pub mod ast;
 mod syntax_kind;
 
 pub use crate::{lexer::tokenize, syntax_kind::SyntaxKind};

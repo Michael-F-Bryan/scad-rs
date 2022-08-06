@@ -6,13 +6,13 @@ pub struct Text(Arc<str>);
 
 impl Borrow<str> for Text {
     fn borrow(&self) -> &str {
-        &self
+        self
     }
 }
 
 impl Text {
     pub fn as_str(&self) -> &str {
-        &*self
+        self
     }
 }
 

@@ -153,10 +153,7 @@ impl SyntaxKind {
                 /// assert!(kind.is_punctuation())
                 /// ```
                 pub const fn is_punctuation(self) -> bool {
-                    match self {
-                        #(SyntaxKind::#punctuation)|* => true,
-                        _ => false,
-                    }
+                    matches!(self, #(SyntaxKind::#punctuation)|*)
                 }
 
                 /// Is this [`SyntaxKind`] a keyword?
@@ -167,10 +164,7 @@ impl SyntaxKind {
                 /// assert!(kind.is_keyword())
                 /// ```
                 pub const fn is_keyword(self) -> bool {
-                    match self {
-                        #(SyntaxKind::#keywords)|* => true,
-                        _ => false,
-                    }
+                    matches!(self, #(SyntaxKind::#keywords)|*)
                 }
 
                 /// Given a textual symbol try to get the associated

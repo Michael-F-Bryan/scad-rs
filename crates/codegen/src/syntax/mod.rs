@@ -24,7 +24,7 @@ impl Syntax {
                 all_tokens(&node.rule, grammar)
             })
             .collect();
-        let ast = Ast::from_grammar(&grammar)?;
+        let ast = Ast::from_grammar(grammar)?;
 
         let syntax_kind = SyntaxKind::from_tokens(tokens, ast.non_terminals());
 
@@ -34,9 +34,7 @@ impl Syntax {
 
 fn all_tokens(rule: &Rule, grammar: &Grammar) -> BTreeSet<String> {
     match rule {
-        Rule::Rep(rule) | Rule::Opt(rule) | Rule::Labeled { rule, .. } => {
-            all_tokens(&*rule, grammar)
-        }
+        Rule::Rep(rule) | Rule::Opt(rule) | Rule::Labeled { rule, .. } => all_tokens(rule, grammar),
         Rule::Node(_) => BTreeSet::new(),
         Rule::Token(t) => [grammar[*t].name.clone()].into_iter().collect(),
         Rule::Alt(items) | Rule::Seq(items) => items

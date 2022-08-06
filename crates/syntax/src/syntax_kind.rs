@@ -141,32 +141,32 @@ impl SyntaxKind {
     #[doc = r" assert!(kind.is_punctuation())"]
     #[doc = r" ```"]
     pub const fn is_punctuation(self) -> bool {
-        match self {
+        matches!(
+            self,
             SyntaxKind::BANG
-            | SyntaxKind::PERCENT
-            | SyntaxKind::AND
-            | SyntaxKind::L_PAREN
-            | SyntaxKind::R_PAREN
-            | SyntaxKind::STAR
-            | SyntaxKind::PLUS
-            | SyntaxKind::COMMA
-            | SyntaxKind::MINUS
-            | SyntaxKind::SLASH
-            | SyntaxKind::COLON
-            | SyntaxKind::SEMICOLON
-            | SyntaxKind::LESS_THAN
-            | SyntaxKind::LESS_THAN_EQUALS
-            | SyntaxKind::EQUALS
-            | SyntaxKind::GREATER_THAN
-            | SyntaxKind::GREATER_THAN_EQUALS
-            | SyntaxKind::QUESTION_MARK
-            | SyntaxKind::L_BRACKET
-            | SyntaxKind::R_BRACKET
-            | SyntaxKind::L_CURLY
-            | SyntaxKind::OR
-            | SyntaxKind::R_CURLY => true,
-            _ => false,
-        }
+                | SyntaxKind::PERCENT
+                | SyntaxKind::AND
+                | SyntaxKind::L_PAREN
+                | SyntaxKind::R_PAREN
+                | SyntaxKind::STAR
+                | SyntaxKind::PLUS
+                | SyntaxKind::COMMA
+                | SyntaxKind::MINUS
+                | SyntaxKind::SLASH
+                | SyntaxKind::COLON
+                | SyntaxKind::SEMICOLON
+                | SyntaxKind::LESS_THAN
+                | SyntaxKind::LESS_THAN_EQUALS
+                | SyntaxKind::EQUALS
+                | SyntaxKind::GREATER_THAN
+                | SyntaxKind::GREATER_THAN_EQUALS
+                | SyntaxKind::QUESTION_MARK
+                | SyntaxKind::L_BRACKET
+                | SyntaxKind::R_BRACKET
+                | SyntaxKind::L_CURLY
+                | SyntaxKind::OR
+                | SyntaxKind::R_CURLY
+        )
     }
     #[doc = r" Is this [`SyntaxKind`] a keyword?"]
     #[doc = r""]
@@ -176,22 +176,22 @@ impl SyntaxKind {
     #[doc = r" assert!(kind.is_keyword())"]
     #[doc = r" ```"]
     pub const fn is_keyword(self) -> bool {
-        match self {
+        matches!(
+            self,
             SyntaxKind::FALSE_KW
-            | SyntaxKind::FILE_KW
-            | SyntaxKind::FOR_KW
-            | SyntaxKind::FUNCTION_KW
-            | SyntaxKind::IF_KW
-            | SyntaxKind::INCLUDE_KW
-            | SyntaxKind::LET_KW
-            | SyntaxKind::MODULE_KW
-            | SyntaxKind::NUMBER_KW
-            | SyntaxKind::STRING_KW
-            | SyntaxKind::TRUE_KW
-            | SyntaxKind::UNDEF_KW
-            | SyntaxKind::USE_KW => true,
-            _ => false,
-        }
+                | SyntaxKind::FILE_KW
+                | SyntaxKind::FOR_KW
+                | SyntaxKind::FUNCTION_KW
+                | SyntaxKind::IF_KW
+                | SyntaxKind::INCLUDE_KW
+                | SyntaxKind::LET_KW
+                | SyntaxKind::MODULE_KW
+                | SyntaxKind::NUMBER_KW
+                | SyntaxKind::STRING_KW
+                | SyntaxKind::TRUE_KW
+                | SyntaxKind::UNDEF_KW
+                | SyntaxKind::USE_KW
+        )
     }
     #[doc = r" Given a textual symbol try to get the associated"]
     #[doc = r" [`SyntaxKind`]."]
