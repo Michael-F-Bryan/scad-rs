@@ -1,7 +1,8 @@
 macro_rules! parse_tests {
-    ( $( $name:ident : $func:ident ($src:expr) ),* $(,)?) => {
+    ( $( $(#[$meta:meta])* $name:ident : $func:ident ($src:expr) ),* $(,)?) => {
         $(
             #[test]
+            $(#[$meta])*
             fn $name() {
                 let mut parser = Parser::new(crate::tokenize($src));
                 let m = parser.start();

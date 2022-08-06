@@ -5,6 +5,7 @@ use std::{
 
 use crate::SyntaxKind;
 
+/// An efficient set of [`SyntaxKind`]s, backed by a bitset.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TokenSet(u128);
 
