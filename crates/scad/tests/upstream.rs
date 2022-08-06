@@ -1,6 +1,6 @@
 use std::{
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Output, Stdio},
 };
 
 use once_cell::sync::Lazy;
@@ -56,16 +56,30 @@ impl Repo {
         let checkout_dir = temp_dir.join("openscad");
 
         if !checkout_dir.exists() {
-            let status = Command::new("git")
+            let Output {
+                status,
+                stderr,
+                stdout,
+            } = Command::new("git")
                 .arg("clone")
                 .arg(OPENSCAD_REPO)
                 .arg(&checkout_dir)
                 .arg("--quiet")
                 .args(["--branch", OPENSCAD_TAG])
                 .args(["--depth", "1"])
-                .status()
+                .stderr(Stdio::piped())
+                .stdout(Stdio::piped())
+                .output()
                 .unwrap();
-            assert!(status.success(), "Checkout failed");
+
+            if !status.success() {
+                eprintln!("---- Stdout ----");
+                eprintln!("{}", String::from_utf8_lossy(&stdout));
+                eprintln!("---- Stder ----");
+                eprintln!("{}", String::from_utf8_lossy(&stderr));
+
+                panic!("Checkout failed");
+            }
         }
 
         Repo { checkout_dir }
