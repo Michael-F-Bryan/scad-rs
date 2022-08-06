@@ -4,9 +4,9 @@ pub mod ast;
 mod diagnostics;
 pub mod hir;
 pub mod lowering;
+pub mod runtime;
 pub mod syntax;
 mod text;
-pub mod runtime;
 
 pub use crate::{
     diagnostics::{Diagnostic, Diagnostics, Severity},

@@ -1,43 +1,16 @@
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
+mod syntax_kind;
+
+use self::syntax_kind::SyntaxKind;
+
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 use anyhow::{Context as _, Error};
-use heck::ToShoutySnekCase;
-use proc_macro2::TokenStream;
-use quote::{format_ident, quote, ToTokens};
 use ungrammar::{Grammar, Rule};
-
-const PUNCTUATION_NAMES: &[(&str, &str)] = &[
-    (";", "SEMICOLON"),
-    (":", "COLON"),
-    (",", "COMMA"),
-    (".", "DOT"),
-    ("?", "QUESTION_MARK"),
-    ("(", "L_PAREN"),
-    ("{", "L_CURLY"),
-    ("[", "L_BRACE"),
-    (")", "R_PAREN"),
-    ("}", "R_CURLY"),
-    ("]", "R_BRACE"),
-    ("!", "BANG"),
-    ("+", "PLUS"),
-    ("-", "MINUS"),
-    ("*", "STAR"),
-    ("/", "SLASH"),
-    ("^", "CARET"),
-    ("%", "PERCENT"),
-    ("&&", "AND"),
-    ("||", "OR"),
-    ("<", "LESS_THAN"),
-    ("<=", "LESS_THAN_EQUALS"),
-    (">", "GREATER_THAN"),
-    (">=", "GREATER_THAN_EQUALS"),
-    ("=", "EQUALS"),
-];
 
 #[derive(Debug)]
 pub struct Syntax {
     nodes: BTreeMap<String, AstNode>,
-    syntax_kind: SyntaxKind,
+    pub syntax_kind: SyntaxKind,
 }
 
 impl Syntax {
@@ -57,129 +30,11 @@ impl Syntax {
             nodes.insert(name.clone(), ast_node);
         }
 
-        let (keywords, symbols): (Vec<_>, Vec<_>) = tokens
-            .into_iter()
-            .partition(|name| name.chars().all(|c| c.is_alphabetic()));
-
-        let syntax_kind = SyntaxKind {
-            keywords: keywords.into_iter().map(Keyword).collect(),
-            symbols: symbols
-                .into_iter()
-                .map(|s| Punctuation {
-                    name: symbol_name(&s).to_string(),
-                    symbol: s,
-                })
-                .collect(),
-        };
-
-        Ok(Syntax { nodes, syntax_kind })
+        Ok(Syntax {
+            nodes,
+            syntax_kind: SyntaxKind::from_tokens(tokens),
+        })
     }
-
-    pub fn internal_rules(&self) -> impl Iterator<Item = &'_ str> + '_ {
-        self.nodes.keys().map(|s| s.as_str())
-    }
-
-    pub fn kind(&self) -> TokenStream {
-        let kind = syntax_kind_definition(self);
-        let methods = syntax_kind_methods(self);
-
-        quote! {
-            #kind
-            #methods
-        }
-    }
-
-    pub fn punctuation(&self) -> impl Iterator<Item = &'_ str> + '_ {
-        self.syntax_kind.symbols.iter().map(|s| s.symbol.as_str())
-    }
-
-    pub fn keywords(&self) -> impl Iterator<Item = &'_ str> + '_ {
-        self.syntax_kind.keywords.iter().map(|k| k.0.as_str())
-    }
-}
-
-fn syntax_kind_methods(syntax: &Syntax) -> TokenStream {
-    let punctuation: Vec<_> = syntax
-        .punctuation()
-        .map(symbol_name)
-        .map(|name| format_ident!("{name}"))
-        .collect();
-    let keywords: Vec<_> = syntax
-        .punctuation()
-        .map(symbol_name)
-        .map(|name| format_ident!("{name}"))
-        .collect();
-
-    let symbol_lookups = PUNCTUATION_NAMES.iter().map(|(symbol, name)| {
-        let name = format_ident!("{}", name.TO_SHOUTY_SNEK_CASE());
-        quote!(#symbol => Some(SyntaxKind::#name))
-    });
-
-    quote! {
-        impl SyntaxKind {
-            pub const fn is_punctuation(self) -> bool {
-                match self {
-                    #(SyntaxKind::#punctuation)|* => true,
-                    _ => false,
-                }
-            }
-
-            pub const fn is_keyword(self) -> bool {
-                match self {
-                    #(SyntaxKind::#keywords)|* => true,
-                    _ => false,
-                }
-            }
-
-            pub const fn from_symbol(symbol: &str) -> Option<SyntaxKind> {
-                match symbol {
-                    #(#symbol_lookups,)*
-                    _ => None,
-                }
-            }
-        }
-    }
-}
-
-fn syntax_kind_definition(syntax: &Syntax) -> TokenStream {
-    let special_variants = ["IDENT", "ERROR", "WHITESPACE", "COMMENT"]
-        .iter()
-        .map(|name| format_ident!("{name}").to_token_stream());
-    let literals = ["INTEGER_LIT", "FLOAT_LIT"]
-        .iter()
-        .map(|name| format_ident!("{name}").to_token_stream());
-
-    let punctuation = syntax.punctuation().map(|symbol| {
-        let name = symbol_name(symbol).TO_SHOUTY_SNEK_CASE();
-        let docs = format!("The `{symbol}` symbol.");
-        let ident = format_ident!("{name}");
-
-        quote! {
-            #[doc = #docs]
-            #ident
-        }
-    });
-
-    let variants = special_variants
-        .into_iter()
-        .chain(literals)
-        .chain(punctuation);
-
-    quote! {
-        pub enum SyntaxKind {
-            #(
-                #variants,
-            )*
-        }
-    }
-}
-
-fn symbol_name(symbol: &str) -> &'static str {
-    PUNCTUATION_NAMES
-        .iter()
-        .copied()
-        .find_map(|(s, n)| if s == symbol { Some(n) } else { None })
-        .unwrap_or_else(|| unreachable!("No symbol for \"{symbol}\""))
 }
 
 fn all_tokens(rule: &Rule, grammar: &Grammar) -> HashSet<String> {
@@ -378,17 +233,30 @@ enum Multiplicity {
     Multiple,
 }
 
-#[derive(Debug, Clone)]
-struct SyntaxKind {
-    keywords: Vec<Keyword>,
-    symbols: Vec<Punctuation>,
-}
+#[cfg(test)]
+mod tests {
+    use crate::add_preamble;
 
-#[derive(Debug, Clone)]
-struct Keyword(String);
+    use super::*;
 
-#[derive(Debug, Clone)]
-struct Punctuation {
-    symbol: String,
-    name: String,
+    #[test]
+    fn generated_syntax_code() {
+        let project_root = crate::project_root();
+        let generated_folder = project_root
+            .join("crates")
+            .join("syntax")
+            .join("src")
+            .join("generated");
+        let syntax_kind_rs = generated_folder.join("syntax_kind.rs");
+        let grammar = include_str!("./scad.ungrammar").parse().unwrap();
+
+        let Syntax { nodes, syntax_kind } = Syntax::from_grammar(&grammar).unwrap();
+
+        dbg!(&syntax_kind);
+
+        let syntax_kind = crate::pretty_print(&syntax_kind).unwrap();
+        let syntax_kind = add_preamble(env!("CARGO_PKG_NAME"), syntax_kind);
+
+        crate::ensure_file_contents(&syntax_kind_rs, &syntax_kind);
+    }
 }

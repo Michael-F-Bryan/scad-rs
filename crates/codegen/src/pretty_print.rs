@@ -1,13 +1,13 @@
 use anyhow::{Context, Error};
-use proc_macro2::TokenStream;
+use quote::ToTokens;
 use std::{
     io::Write,
     process::{Command, Output, Stdio},
 };
 
 /// Use `rustfmt` to pretty-print the tokens.
-pub fn pretty_print(tokens: TokenStream) -> Result<String, Error> {
-    let tokens = tokens.to_string();
+pub fn pretty_print(tokens: impl ToTokens) -> Result<String, Error> {
+    let tokens = tokens.into_token_stream().to_string();
 
     let mut child = Command::new("rustfmt")
         .stdin(Stdio::piped())

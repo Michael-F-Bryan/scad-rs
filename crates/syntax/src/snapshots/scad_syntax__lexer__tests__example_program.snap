@@ -8,11 +8,11 @@ expression: tokens
         "\n            ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "x",
     ),
     (
-        EQUAL,
+        EQUALS,
         "=",
     ),
     (
@@ -32,7 +32,7 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "y",
     ),
     (
@@ -40,7 +40,7 @@ expression: tokens
         " ",
     ),
     (
-        EQUAL,
+        EQUALS,
         "=",
     ),
     (
@@ -60,7 +60,7 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "z",
     ),
     (
@@ -68,7 +68,7 @@ expression: tokens
         " ",
     ),
     (
-        EQUAL,
+        EQUALS,
         "=",
     ),
     (
@@ -96,7 +96,7 @@ expression: tokens
         "\n\n            ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "length",
     ),
     (
@@ -104,7 +104,7 @@ expression: tokens
         " ",
     ),
     (
-        EQUAL,
+        EQUALS,
         "=",
     ),
     (
@@ -112,7 +112,7 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "norm",
     ),
     (
@@ -124,7 +124,7 @@ expression: tokens
         "[",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "x",
     ),
     (
@@ -132,7 +132,7 @@ expression: tokens
         ",",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "y",
     ),
     (
@@ -140,7 +140,7 @@ expression: tokens
         ",",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "z",
     ),
     (
@@ -168,7 +168,7 @@ expression: tokens
         "\n            ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "b",
     ),
     (
@@ -176,7 +176,7 @@ expression: tokens
         " ",
     ),
     (
-        EQUAL,
+        EQUALS,
         "=",
     ),
     (
@@ -184,7 +184,7 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "acos",
     ),
     (
@@ -192,7 +192,7 @@ expression: tokens
         "(",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "z",
     ),
     (
@@ -200,7 +200,7 @@ expression: tokens
         "/",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "length",
     ),
     (
@@ -224,7 +224,7 @@ expression: tokens
         "\n            ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "c",
     ),
     (
@@ -232,7 +232,7 @@ expression: tokens
         " ",
     ),
     (
-        EQUAL,
+        EQUALS,
         "=",
     ),
     (
@@ -240,7 +240,7 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "atan2",
     ),
     (
@@ -248,7 +248,7 @@ expression: tokens
         "(",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "y",
     ),
     (
@@ -256,7 +256,7 @@ expression: tokens
         ",",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "x",
     ),
     (
@@ -280,7 +280,7 @@ expression: tokens
         "\n\n            ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "rotate",
     ),
     (
@@ -304,7 +304,7 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "b",
     ),
     (
@@ -316,7 +316,7 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "c",
     ),
     (
@@ -332,7 +332,7 @@ expression: tokens
         "\n                ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "cylinder",
     ),
     (
@@ -340,15 +340,15 @@ expression: tokens
         "(",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "h",
     ),
     (
-        EQUAL,
+        EQUALS,
         "=",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "length",
     ),
     (
@@ -360,11 +360,11 @@ expression: tokens
         " ",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "r",
     ),
     (
-        EQUAL,
+        EQUALS,
         "=",
     ),
     (
@@ -388,7 +388,7 @@ expression: tokens
         "%",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "cube",
     ),
     (
@@ -400,7 +400,7 @@ expression: tokens
         "[",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "x",
     ),
     (
@@ -408,7 +408,7 @@ expression: tokens
         ",",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "y",
     ),
     (
@@ -416,7 +416,7 @@ expression: tokens
         ",",
     ),
     (
-        IDENTIFIER,
+        IDENT,
         "z",
     ),
     (

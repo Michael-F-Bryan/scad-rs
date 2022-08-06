@@ -1,4 +1,4 @@
-use crate::syntax_kind::*;
+use crate::{SyntaxKind, SyntaxKind::*};
 use m_lexer::{Lexer, LexerBuilder};
 use once_cell::sync::Lazy;
 
@@ -15,7 +15,7 @@ pub fn tokenize(input: &str) -> impl Iterator<Item = (SyntaxKind, &'_ str)> {
         let text = &input[start_index..end];
         start_index = end;
 
-        (SyntaxKind::from_u16(tok.kind.0).unwrap(), text)
+        (SyntaxKind::from_code(tok.kind.0).unwrap(), text)
     })
 }
 
@@ -32,19 +32,20 @@ fn lexer() -> Lexer {
         .token(COMMA.into(), ",")
         .token(COMMENT.into(), r"//[^\n]*")
         .external_token(COMMENT.into(), r"/\*", block_comment)
-        .token(DOT.into(), r"\.")
-        .token(EQUAL.into(), "=")
-        .token(EXPONENT.into(), r"\^")
+        .token(EQUALS.into(), "=")
+        // TODO: add these to the ungrammar
+        // .token(DOT.into(), r"\.")
+        // .token(EXPONENT.into(), r"\^")
+        // .token(HASH.into(), "#")
         .token(FALSE_KW.into(), "false")
         .token(FOR_KW.into(), "for")
         .token(FUNCTION_KW.into(), "function")
         .token(MODULE_KW.into(), "module")
-        .token(GREATER_THAN_EQ.into(), ">=")
+        .token(GREATER_THAN_EQUALS.into(), ">=")
         .token(GREATER_THAN.into(), ">")
-        .token(HASH.into(), "#")
         .token(IF_KW.into(), "if")
         .token(INCLUDE_KW.into(), "include")
-        .token(LESS_THAN_EQ.into(), "<=")
+        .token(LESS_THAN_EQUALS.into(), "<=")
         .token(LESS_THAN.into(), "<")
         .token(LET_KW.into(), "let")
         .token(MINUS.into(), "-")
@@ -71,7 +72,7 @@ fn lexer() -> Lexer {
         .token(UNDEF_KW.into(), "undef")
         .token(WHITESPACE.into(), r"\s+")
         // Note: push this to the bottom so it's the lowest precedence
-        .token(IDENTIFIER.into(), r"[\$\p{Alphabetic}][\w_]*")
+        .token(IDENT.into(), r"[\$\p{Alphabetic}][\w_]*")
         .build()
 }
 
