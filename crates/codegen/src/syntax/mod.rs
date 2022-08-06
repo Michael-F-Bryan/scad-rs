@@ -56,7 +56,10 @@ mod tests {
         let output_folder = project_root.join("crates").join("syntax").join("src");
         let syntax_kind_rs = output_folder.join("syntax_kind.rs");
         let ast_rs = output_folder.join("ast.rs");
-        let grammar = include_str!("./scad.ungram").parse().unwrap();
+        let grammar = include_str!("./scad.ungram")
+            .replace("\r\n", "\n")
+            .parse()
+            .unwrap();
 
         let Syntax { ast, syntax_kind } = Syntax::from_grammar(&grammar).unwrap();
 
