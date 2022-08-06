@@ -20,7 +20,7 @@ expression: tokens
         " ",
     ),
     (
-        INTEGER_LIT,
+        INTEGER,
         "10",
     ),
     (
@@ -48,7 +48,7 @@ expression: tokens
         " ",
     ),
     (
-        INTEGER_LIT,
+        INTEGER,
         "10",
     ),
     (
@@ -76,7 +76,7 @@ expression: tokens
         " ",
     ),
     (
-        INTEGER_LIT,
+        INTEGER,
         "10",
     ),
     (
@@ -292,7 +292,7 @@ expression: tokens
         "[",
     ),
     (
-        INTEGER_LIT,
+        INTEGER,
         "0",
     ),
     (
@@ -368,7 +368,7 @@ expression: tokens
         "=",
     ),
     (
-        FLOAT_LIT,
+        FLOAT,
         "0.5",
     ),
     (

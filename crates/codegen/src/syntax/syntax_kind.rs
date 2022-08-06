@@ -30,6 +30,43 @@ const PUNCTUATION_NAMES: &[(&str, &str)] = &[
     ("=", "EQUALS"),
 ];
 
+fn special_tokens() -> Vec<SpecialToken> {
+    vec![
+        SpecialToken {
+            docs: "End of input.",
+            ident: format_ident!("EOF"),
+        },
+        SpecialToken {
+            docs: "An identifier.",
+            ident: format_ident!("IDENT"),
+        },
+        SpecialToken {
+            docs: "A lexer error.",
+            ident: format_ident!("ERROR"),
+        },
+        SpecialToken {
+            docs: "One or more whitespace characters (spaces, tabs, newlines, etc.).",
+            ident: format_ident!("WHITESPACE"),
+        },
+        SpecialToken {
+            docs: "A comment.",
+            ident: format_ident!("COMMENT"),
+        },
+        SpecialToken {
+            docs: "An integer literal",
+            ident: format_ident!("INTEGER"),
+        },
+        SpecialToken {
+            docs: "A float literal",
+            ident: format_ident!("FLOAT"),
+        },
+        SpecialToken {
+            docs: "A string literal",
+            ident: format_ident!("STRING"),
+        },
+    ]
+}
+
 #[derive(Debug, Clone)]
 pub struct SyntaxKind {
     keywords: Vec<Keyword>,
@@ -47,36 +84,7 @@ impl SyntaxKind {
             .into_iter()
             .partition(|name| name.chars().all(|c| c.is_alphabetic()));
 
-        let special_tokens = vec![
-            SpecialToken {
-                docs: "An identifier.",
-                ident: format_ident!("IDENT"),
-            },
-            SpecialToken {
-                docs: "A lexer error.",
-                ident: format_ident!("ERROR"),
-            },
-            SpecialToken {
-                docs: "One or more whitespace characters (spaces, tabs, newlines, etc.).",
-                ident: format_ident!("WHITESPACE"),
-            },
-            SpecialToken {
-                docs: "A comment.",
-                ident: format_ident!("COMMENT"),
-            },
-            SpecialToken {
-                docs: "An integer literal",
-                ident: format_ident!("INTEGER_LIT"),
-            },
-            SpecialToken {
-                docs: "A float literal",
-                ident: format_ident!("FLOAT_LIT"),
-            },
-            SpecialToken {
-                docs: "A string literal",
-                ident: format_ident!("STRING_LIT"),
-            },
-        ];
+        let special_tokens = special_tokens();
 
         SyntaxKind {
             keywords: keywords
@@ -143,8 +151,23 @@ impl SyntaxKind {
             }
         });
 
+        let variants: Vec<_> = self
+            .special
+            .iter()
+            .map(|s| &s.ident)
+            .chain(self.symbols.iter().map(|p| &p.ident))
+            .chain(self.keywords.iter().map(|kw| &kw.ident))
+            .chain(self.non_terminals.iter().map(|nt| &nt.0))
+            .collect();
+        let num_variants = variants.len();
+
         quote! {
             impl SyntaxKind {
+                /// All the possible [`SyntaxKind`] variants.
+                pub const VARIANTS: [SyntaxKind; #num_variants] = [
+                    #(SyntaxKind::#variants),*
+                ];
+
                 /// Is this [`SyntaxKind`] a piece of punctuation?
                 ///
                 /// ```rust

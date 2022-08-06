@@ -49,13 +49,13 @@ fn lexer() -> Lexer {
         .token(LESS_THAN.into(), "<")
         .token(LET_KW.into(), "let")
         .token(MINUS.into(), "-")
-        .token(INTEGER_LIT.into(), r"\d+")
+        .token(INTEGER.into(), r"\d+")
         // https://stackoverflow.com/a/55592455
         .token(
-            FLOAT_LIT.into(),
+            FLOAT.into(),
             r"\d+([.]\d*)?([eE][+-]?\d+)?|[.]\d+([eE][+-]?\d+)?",
         )
-        .token(INTEGER_LIT.into(), r"\d+")
+        .token(INTEGER.into(), r"\d+")
         .token(L_CURLY.into(), r"\{")
         .token(L_PAREN.into(), r"\(")
         .token(L_BRACKET.into(), r"\[")
@@ -66,7 +66,7 @@ fn lexer() -> Lexer {
         .token(SEMICOLON.into(), ";")
         .token(SLASH.into(), "/")
         // https://wordaligned.org/articles/string-literals-and-regular-expressions
-        .token(STRING_LIT.into(), r#""([^"\\]|\\.)*""#)
+        .token(STRING.into(), r#""([^"\\]|\\.)*""#)
         .token(TRUE_KW.into(), "true")
         .token(USE_KW.into(), "use")
         .token(UNDEF_KW.into(), "undef")
@@ -160,14 +160,7 @@ mod tests {
     #[test]
     fn different_number_formats() {
         let inputs = ["4", "31", "3.1", "3.", ".3", "3.14e0"];
-        let expected = [
-            INTEGER_LIT,
-            INTEGER_LIT,
-            FLOAT_LIT,
-            FLOAT_LIT,
-            FLOAT_LIT,
-            FLOAT_LIT,
-        ];
+        let expected = [INTEGER, INTEGER, FLOAT, FLOAT, FLOAT, FLOAT];
 
         for (input, expected) in inputs.into_iter().zip(expected) {
             let tokens: Vec<_> = tokenize(input).collect();

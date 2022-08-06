@@ -18,6 +18,8 @@
 #[repr(u16)]
 #[non_exhaustive]
 pub enum SyntaxKind {
+    #[doc = "End of input."]
+    EOF,
     #[doc = "An identifier."]
     IDENT,
     #[doc = "A lexer error."]
@@ -27,11 +29,11 @@ pub enum SyntaxKind {
     #[doc = "A comment."]
     COMMENT,
     #[doc = "An integer literal"]
-    INTEGER_LIT,
+    INTEGER,
     #[doc = "A float literal"]
-    FLOAT_LIT,
+    FLOAT,
     #[doc = "A string literal"]
-    STRING_LIT,
+    STRING,
     #[doc = "The `!` symbol."]
     BANG,
     #[doc = "The `%` symbol."]
@@ -96,8 +98,6 @@ pub enum SyntaxKind {
     MODULE_KW,
     #[doc = "The `number` keyword."]
     NUMBER_KW,
-    #[doc = "The `string` keyword."]
-    STRING_KW,
     #[doc = "The `true` keyword."]
     TRUE_KW,
     #[doc = "The `undef` keyword."]
@@ -133,6 +133,79 @@ pub enum SyntaxKind {
     BRACED_CHILDREN,
 }
 impl SyntaxKind {
+    #[doc = r" All the possible [`SyntaxKind`] variants."]
+    pub const VARIANTS: [SyntaxKind; 70usize] = [
+        SyntaxKind::EOF,
+        SyntaxKind::IDENT,
+        SyntaxKind::ERROR,
+        SyntaxKind::WHITESPACE,
+        SyntaxKind::COMMENT,
+        SyntaxKind::INTEGER,
+        SyntaxKind::FLOAT,
+        SyntaxKind::STRING,
+        SyntaxKind::BANG,
+        SyntaxKind::PERCENT,
+        SyntaxKind::AND,
+        SyntaxKind::L_PAREN,
+        SyntaxKind::R_PAREN,
+        SyntaxKind::STAR,
+        SyntaxKind::PLUS,
+        SyntaxKind::COMMA,
+        SyntaxKind::MINUS,
+        SyntaxKind::SLASH,
+        SyntaxKind::COLON,
+        SyntaxKind::SEMICOLON,
+        SyntaxKind::LESS_THAN,
+        SyntaxKind::LESS_THAN_EQUALS,
+        SyntaxKind::EQUALS,
+        SyntaxKind::GREATER_THAN,
+        SyntaxKind::GREATER_THAN_EQUALS,
+        SyntaxKind::QUESTION_MARK,
+        SyntaxKind::L_BRACKET,
+        SyntaxKind::R_BRACKET,
+        SyntaxKind::L_CURLY,
+        SyntaxKind::OR,
+        SyntaxKind::R_CURLY,
+        SyntaxKind::FALSE_KW,
+        SyntaxKind::FILE_KW,
+        SyntaxKind::FOR_KW,
+        SyntaxKind::FUNCTION_KW,
+        SyntaxKind::IF_KW,
+        SyntaxKind::INCLUDE_KW,
+        SyntaxKind::LET_KW,
+        SyntaxKind::MODULE_KW,
+        SyntaxKind::NUMBER_KW,
+        SyntaxKind::TRUE_KW,
+        SyntaxKind::UNDEF_KW,
+        SyntaxKind::USE_KW,
+        SyntaxKind::PACKAGE,
+        SyntaxKind::INCLUDE,
+        SyntaxKind::USE,
+        SyntaxKind::ASSIGNMENT,
+        SyntaxKind::NAMED_FUNCTION_DEFINITION,
+        SyntaxKind::NAMED_MODULE_DEFINITION,
+        SyntaxKind::MODULE_INSTANTIATION,
+        SyntaxKind::EXPRESSIONS,
+        SyntaxKind::LIST_EXPRESSION,
+        SyntaxKind::BIN_EXPR,
+        SyntaxKind::UNARY_EXPR,
+        SyntaxKind::TERNARY_EXPR,
+        SyntaxKind::INDEX_EXPR,
+        SyntaxKind::PAREN_EXPR,
+        SyntaxKind::LIST_COMPREHENSION_EXPR,
+        SyntaxKind::LET_CLAUSE,
+        SyntaxKind::FUNCTION_CALL,
+        SyntaxKind::RANGE_EXPRESSION_FROM_TO,
+        SyntaxKind::RANGE_EXPRESSION_FROM_TO_STEP,
+        SyntaxKind::FOR_CLAUSE,
+        SyntaxKind::IF_CLAUSE,
+        SyntaxKind::ASSIGNMENTS_OPT,
+        SyntaxKind::ASSIGNMENTS,
+        SyntaxKind::PARAMETERS,
+        SyntaxKind::ARGUMENTS,
+        SyntaxKind::CHILDREN,
+        SyntaxKind::BRACED_CHILDREN,
+    ];
     #[doc = r" Is this [`SyntaxKind`] a piece of punctuation?"]
     #[doc = r""]
     #[doc = r" ```rust"]
@@ -187,7 +260,6 @@ impl SyntaxKind {
                 | SyntaxKind::LET_KW
                 | SyntaxKind::MODULE_KW
                 | SyntaxKind::NUMBER_KW
-                | SyntaxKind::STRING_KW
                 | SyntaxKind::TRUE_KW
                 | SyntaxKind::UNDEF_KW
                 | SyntaxKind::USE_KW
@@ -297,9 +369,6 @@ macro_rules! T {
     };
     (number) => {
         $crate::SyntaxKind::NUMBER_KW
-    };
-    (string) => {
-        $crate::SyntaxKind::STRING_KW
     };
     (true) => {
         $crate::SyntaxKind::TRUE_KW

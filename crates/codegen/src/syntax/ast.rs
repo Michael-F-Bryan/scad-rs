@@ -66,6 +66,7 @@ impl EnumNode {
         });
 
         quote! {
+            #[derive(Debug, Clone, PartialEq, Eq, Hash)]
             pub enum #ident {
                 #(#variants,)*
             }
@@ -73,11 +74,26 @@ impl EnumNode {
     }
 
     fn methods(&self) -> TokenStream {
-        let ident = &self.ident;
+        let EnumNode { ident, variants } = self;
+
+        let getter = variants.iter().map(|v| {
+            let type_name = v.type_name();
+            let name = v.name();
+            let method_name = format_ident!("as_{}", name.to_string().to_snek_case());
+
+            quote! {
+                pub fn #method_name(&self) -> Option<#type_name> {
+                    match self {
+                        #ident :: #name(node) => Some(node.clone()),
+                        _ => None,
+                    }
+                }
+            }
+        });
 
         quote! {
             impl #ident {
-
+                #( #getter )*
             }
         }
     }
@@ -173,6 +189,7 @@ impl StructNode {
     fn definition(&self) -> TokenStream {
         let name = &self.ident;
         quote! {
+            #[derive(Debug, Clone, PartialEq, Eq, Hash)]
             pub struct #name(rowan::api::SyntaxNode<crate::OpenSCAD>);
         }
     }

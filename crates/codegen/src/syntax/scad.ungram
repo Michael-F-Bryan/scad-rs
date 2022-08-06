@@ -9,7 +9,7 @@ Statement =
 | NamedModuleDefinition
 | ModuleInstantiation
 
-Include = 'include' 'file'
+Include = 'include' 'string'
 
 Use = 'use' 'file'
 
@@ -98,4 +98,4 @@ AssignmentsOpt = Assignments?
 
 Assignments = Assignment (',' Assignment)*
 
-Assignment = 'ident' '=' value:Expr
+Assignment = name:'ident' '=' value:Expr

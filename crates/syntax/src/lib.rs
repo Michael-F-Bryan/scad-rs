@@ -1,13 +1,16 @@
+// generated code
+#[allow(clippy::redundant_clone, unreachable_patterns)]
+pub mod ast;
+#[macro_use]
+mod syntax_kind;
+
+mod grammar;
 mod lexer;
 pub mod parser;
 
-// generated code
-#[allow(clippy::redundant_clone)]
-pub mod ast;
-mod syntax_kind;
+pub use crate::{grammar::parse, lexer::tokenize, syntax_kind::SyntaxKind};
 
-pub use crate::{lexer::tokenize, syntax_kind::SyntaxKind};
-
+/// A tag type used to represent the OpenSCAD language.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct OpenSCAD;
 
