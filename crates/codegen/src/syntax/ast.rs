@@ -179,6 +179,9 @@ impl StructNode {
 
     fn methods(&self) -> TokenStream {
         let ident = &self.ident;
+
+        // FIXME: This doesn't work for rules with multiple fields of the same
+        // type (e.g. `condition:Expr "?" truthy:Expr ":" falsy:Expr`)
         let getters = self.fields.iter().map(|f| {
             let Field {
                 rule_name,
@@ -207,11 +210,14 @@ impl StructNode {
                         self.0.children().find_map(<#type_name as rowan::ast::AstNode>::cast)
                     }
                 },
-                Multiplicity::Multiple => quote! {
-                    pub fn #method_name(&self) -> impl Iterator<Item = #type_name> {
-                        self.0.children().filter_map(<#type_name as rowan::ast::AstNode>::cast)
+                Multiplicity::Multiple => {
+                    let method_name = format_ident!("{method_name}s");
+                    quote! {
+                        pub fn #method_name(&self) -> impl Iterator<Item = #type_name> {
+                            self.0.children().filter_map(<#type_name as rowan::ast::AstNode>::cast)
+                        }
                     }
-                },
+                }
             }
         });
 
@@ -359,9 +365,8 @@ fn get_struct_fields(rules: &[Rule], grammar: &Grammar) -> Result<Vec<Field>, Er
     }
 
     fields.dedup_by(|a, b| {
-        if a.rule_name == b.rule_name {
+        if a.rule_name == b.rule_name && a.label == b.label {
             b.multiplicity = Multiplicity::Multiple;
-            b.label = a.label.take().or_else(|| b.label.take());
             true
         } else {
             false

@@ -62,7 +62,7 @@ impl From<Arc<str>> for Text {
 
 impl AsRef<str> for Text {
     fn as_ref(&self) -> &str {
-        &*self
+        self
     }
 }
 

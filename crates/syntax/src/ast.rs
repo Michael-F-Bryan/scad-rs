@@ -2,7 +2,7 @@
 
 pub struct Package(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl Package {
-    pub fn statement(&self) -> impl Iterator<Item = Statement> {
+    pub fn statements(&self) -> impl Iterator<Item = Statement> {
         self.0
             .children()
             .filter_map(<Statement as rowan::ast::AstNode>::cast)
@@ -168,7 +168,7 @@ impl rowan::ast::AstNode for ModuleInstantiation {
 }
 pub struct Expressions(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl Expressions {
-    pub fn expr(&self) -> impl Iterator<Item = Expr> {
+    pub fn exprs(&self) -> impl Iterator<Item = Expr> {
         self.0
             .children()
             .filter_map(<Expr as rowan::ast::AstNode>::cast)
@@ -216,10 +216,15 @@ impl rowan::ast::AstNode for ListExpression {
 }
 pub struct BinExpr(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl BinExpr {
-    pub fn rhs(&self) -> impl Iterator<Item = Expr> {
+    pub fn lhs(&self) -> Option<Expr> {
         self.0
             .children()
-            .filter_map(<Expr as rowan::ast::AstNode>::cast)
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
+    }
+    pub fn rhs(&self) -> Option<Expr> {
+        self.0
+            .children()
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
     }
 }
 impl rowan::ast::AstNode for BinExpr {
@@ -264,10 +269,20 @@ impl rowan::ast::AstNode for UnaryExpr {
 }
 pub struct TernaryExpr(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl TernaryExpr {
-    pub fn falsy(&self) -> impl Iterator<Item = Expr> {
+    pub fn condition(&self) -> Option<Expr> {
         self.0
             .children()
-            .filter_map(<Expr as rowan::ast::AstNode>::cast)
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
+    }
+    pub fn truthy(&self) -> Option<Expr> {
+        self.0
+            .children()
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
+    }
+    pub fn falsy(&self) -> Option<Expr> {
+        self.0
+            .children()
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
     }
 }
 impl rowan::ast::AstNode for TernaryExpr {
@@ -288,10 +303,15 @@ impl rowan::ast::AstNode for TernaryExpr {
 }
 pub struct IndexExpr(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl IndexExpr {
-    pub fn index(&self) -> impl Iterator<Item = Expr> {
+    pub fn array(&self) -> Option<Expr> {
         self.0
             .children()
-            .filter_map(<Expr as rowan::ast::AstNode>::cast)
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
+    }
+    pub fn index(&self) -> Option<Expr> {
+        self.0
+            .children()
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
     }
 }
 impl rowan::ast::AstNode for IndexExpr {
@@ -418,10 +438,15 @@ impl rowan::ast::AstNode for FunctionCall {
 }
 pub struct RangeExpressionFromTo(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl RangeExpressionFromTo {
-    pub fn to(&self) -> impl Iterator<Item = Expr> {
+    pub fn from(&self) -> Option<Expr> {
         self.0
             .children()
-            .filter_map(<Expr as rowan::ast::AstNode>::cast)
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
+    }
+    pub fn to(&self) -> Option<Expr> {
+        self.0
+            .children()
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
     }
 }
 impl rowan::ast::AstNode for RangeExpressionFromTo {
@@ -442,10 +467,20 @@ impl rowan::ast::AstNode for RangeExpressionFromTo {
 }
 pub struct RangeExpressionFromToStep(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl RangeExpressionFromToStep {
-    pub fn to(&self) -> impl Iterator<Item = Expr> {
+    pub fn from(&self) -> Option<Expr> {
         self.0
             .children()
-            .filter_map(<Expr as rowan::ast::AstNode>::cast)
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
+    }
+    pub fn step_by(&self) -> Option<Expr> {
+        self.0
+            .children()
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
+    }
+    pub fn to(&self) -> Option<Expr> {
+        self.0
+            .children()
+            .find_map(<Expr as rowan::ast::AstNode>::cast)
     }
 }
 impl rowan::ast::AstNode for RangeExpressionFromToStep {
@@ -548,7 +583,7 @@ impl rowan::ast::AstNode for AssignmentsOpt {
 }
 pub struct Assignments(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl Assignments {
-    pub fn assignment(&self) -> impl Iterator<Item = Assignment> {
+    pub fn assignments(&self) -> impl Iterator<Item = Assignment> {
         self.0
             .children()
             .filter_map(<Assignment as rowan::ast::AstNode>::cast)
@@ -572,7 +607,7 @@ impl rowan::ast::AstNode for Assignments {
 }
 pub struct Parameters(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl Parameters {
-    pub fn parameter(&self) -> impl Iterator<Item = Parameter> {
+    pub fn parameters(&self) -> impl Iterator<Item = Parameter> {
         self.0
             .children()
             .filter_map(<Parameter as rowan::ast::AstNode>::cast)
@@ -596,7 +631,7 @@ impl rowan::ast::AstNode for Parameters {
 }
 pub struct Arguments(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl Arguments {
-    pub fn argument(&self) -> impl Iterator<Item = Argument> {
+    pub fn arguments(&self) -> impl Iterator<Item = Argument> {
         self.0
             .children()
             .filter_map(<Argument as rowan::ast::AstNode>::cast)
@@ -620,7 +655,7 @@ impl rowan::ast::AstNode for Arguments {
 }
 pub struct Children(rowan::api::SyntaxNode<crate::OpenSCAD>);
 impl Children {
-    pub fn child(&self) -> impl Iterator<Item = Child> {
+    pub fn childs(&self) -> impl Iterator<Item = Child> {
         self.0
             .children()
             .filter_map(<Child as rowan::ast::AstNode>::cast)
