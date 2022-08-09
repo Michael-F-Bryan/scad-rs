@@ -1,71 +1,11 @@
+use std::collections::BTreeSet;
+
 use heck::ToShoutySnekCase;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
+use ungrammar::{Grammar, Rule};
 
-const PUNCTUATION_NAMES: &[(&str, &str)] = &[
-    (";", "SEMICOLON"),
-    (":", "COLON"),
-    (",", "COMMA"),
-    (".", "DOT"),
-    ("?", "QUESTION_MARK"),
-    ("(", "L_PAREN"),
-    ("{", "L_CURLY"),
-    ("[", "L_BRACKET"),
-    (")", "R_PAREN"),
-    ("}", "R_CURLY"),
-    ("]", "R_BRACKET"),
-    ("!", "BANG"),
-    ("+", "PLUS"),
-    ("-", "MINUS"),
-    ("*", "STAR"),
-    ("/", "SLASH"),
-    ("^", "CARET"),
-    ("%", "PERCENT"),
-    ("&&", "AND"),
-    ("||", "OR"),
-    ("<", "LESS_THAN"),
-    ("<=", "LESS_THAN_EQUALS"),
-    (">", "GREATER_THAN"),
-    (">=", "GREATER_THAN_EQUALS"),
-    ("=", "EQUALS"),
-];
-
-fn special_tokens() -> Vec<SpecialToken> {
-    vec![
-        SpecialToken {
-            docs: "End of input.",
-            ident: format_ident!("EOF"),
-        },
-        SpecialToken {
-            docs: "An identifier.",
-            ident: format_ident!("IDENT"),
-        },
-        SpecialToken {
-            docs: "A lexer error.",
-            ident: format_ident!("ERROR"),
-        },
-        SpecialToken {
-            docs: "One or more whitespace characters (spaces, tabs, newlines, etc.).",
-            ident: format_ident!("WHITESPACE"),
-        },
-        SpecialToken {
-            docs: "A comment.",
-            ident: format_ident!("COMMENT"),
-        },
-        SpecialToken {
-            docs: "An integer literal",
-            ident: format_ident!("INTEGER"),
-        },
-        SpecialToken {
-            docs: "A float literal",
-            ident: format_ident!("FLOAT"),
-        },
-        SpecialToken {
-            docs: "A string literal",
-            ident: format_ident!("STRING"),
-        },
-    ]
-}
+use crate::syntax::{Keyword, Punctuation, SpecialToken, SyntacticElements};
 
 #[derive(Debug, Clone)]
 pub struct SyntaxKind {
@@ -76,38 +16,22 @@ pub struct SyntaxKind {
 }
 
 impl SyntaxKind {
-    pub fn from_tokens(
-        tokens: impl IntoIterator<Item = String>,
-        non_terminals: impl IntoIterator<Item = Ident>,
-    ) -> Self {
-        let (keywords, symbols): (Vec<_>, Vec<_>) = tokens
-            .into_iter()
-            .partition(|name| name.chars().all(|c| c.is_alphabetic()));
-
-        let special_tokens = special_tokens();
-
+    pub(crate) fn new(elements: &SyntacticElements) -> Self {
+        let SyntacticElements {
+            keywords,
+            symbols,
+            special,
+            structs,
+            ..
+        } = elements;
         SyntaxKind {
-            keywords: keywords
-                .into_iter()
-                .filter(|kw| {
-                    special_tokens.iter().all(|s| {
-                        s.ident.to_string().TO_SHOUTY_SNEK_CASE() != kw.TO_SHOUTY_SNEK_CASE()
-                    })
-                })
-                .map(|word| Keyword {
-                    ident: format_ident!("{}_KW", word.TO_SHOUTY_SNEK_CASE()),
-                    word,
-                })
+            keywords: keywords.clone(),
+            symbols: symbols.clone(),
+            special: special.clone(),
+            non_terminals: structs
+                .iter()
+                .map(|s| NonTerminal(s.ident.clone()))
                 .collect(),
-            symbols: symbols
-                .into_iter()
-                .map(|s: String| Punctuation {
-                    ident: format_ident!("{}", symbol_name(&s)),
-                    symbol: s,
-                })
-                .collect(),
-            special: special_tokens,
-            non_terminals: non_terminals.into_iter().map(NonTerminal).collect(),
         }
     }
 
@@ -122,7 +46,9 @@ impl SyntaxKind {
         let symbols = symbols.iter().map(|p| p.variant());
         let special = special.iter().map(|s| s.variant());
         let keywords = keywords.iter().map(|kw| kw.variant());
-        let non_terminals = non_terminals.iter().map(|nt| nt.0.to_token_stream());
+        let non_terminals = non_terminals.iter().map(|nt| {
+            format_ident!("{}", nt.0.to_string().TO_SHOUTY_SNEK_CASE()).to_token_stream()
+        });
 
         let variants = special.chain(symbols).chain(keywords).chain(non_terminals);
 
@@ -300,10 +226,26 @@ impl ToTokens for SyntaxKind {
     }
 }
 
-#[derive(Debug, Clone)]
-struct Keyword {
-    word: String,
-    ident: Ident,
+fn all_tokens(rule: &Rule, grammar: &Grammar) -> BTreeSet<String> {
+    match rule {
+        Rule::Rep(rule) | Rule::Opt(rule) | Rule::Labeled { rule, .. } => all_tokens(rule, grammar),
+        Rule::Node(_) => BTreeSet::new(),
+        Rule::Token(t) => [grammar[*t].name.clone()].into_iter().collect(),
+        Rule::Alt(items) | Rule::Seq(items) => items
+            .iter()
+            .flat_map(|rule| all_tokens(rule, grammar))
+            .collect(),
+    }
+}
+
+impl SpecialToken {
+    fn variant(&self) -> TokenStream {
+        let SpecialToken { docs, ident, .. } = self;
+        quote! {
+            #[doc = #docs]
+            #ident
+        }
+    }
 }
 
 impl Keyword {
@@ -317,28 +259,6 @@ impl Keyword {
     }
 }
 
-#[derive(Debug, Clone)]
-struct SpecialToken {
-    docs: &'static str,
-    ident: Ident,
-}
-
-impl SpecialToken {
-    fn variant(&self) -> TokenStream {
-        let SpecialToken { docs, ident } = self;
-        quote! {
-            #[doc = #docs]
-            #ident
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-struct Punctuation {
-    symbol: String,
-    ident: Ident,
-}
-
 impl Punctuation {
     fn variant(&self) -> TokenStream {
         let Punctuation { symbol, ident } = self;
@@ -349,14 +269,6 @@ impl Punctuation {
             #ident
         }
     }
-}
-
-fn symbol_name(symbol: &str) -> &'static str {
-    PUNCTUATION_NAMES
-        .iter()
-        .copied()
-        .find_map(|(s, n)| if s == symbol { Some(n) } else { None })
-        .unwrap_or_else(|| unreachable!("No symbol for \"{symbol}\""))
 }
 
 #[derive(Debug, Clone)]

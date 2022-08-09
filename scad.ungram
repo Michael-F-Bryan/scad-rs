@@ -16,43 +16,46 @@ Use = 'use' 'file'
 Expressions = Expr (',' Expr)*
 
 Expr =
+  LiteralExpr
+| IndexExpr
+| ListExpression
+| RangeExpression
+| UnaryExpr
+| TernaryExpr
+| ParenExpr
+| ListComprehensionExpr
+| LetClause
+| FunctionCall
+| BinExpr
+
+LiteralExpr =
   'true'
 | 'false'
 | 'undef'
 | 'number'
 | 'string'
 | variable:'ident'
-| RangeExpression
-| ListExpression
-| BinExpr
-| UnaryExpr
-| TernaryExpr
-| IndexExpr
-| ParenExpr
-| ListComprehensionExpr
-| LetClause
-| FunctionCall
 
-TernaryExpr = condition:Expr '?' truthy:Expr ':' falsy:Expr
+TernaryExpr = Expr '?' Expr ':' Expr
 
-IndexExpr = array:Expr '[' index:Expr ']'
+IndexExpr = Expr '[' Expr ']'
 
 ParenExpr = '(' Expr ')'
 
 ListComprehensionExpr = '(' ListComprehensionElements ')'
 
 BinExpr =
-  lhs:Expr
+  Expr
   op:('+' | '-' | '*' | '/' | '%' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||')
-  rhs:Expr
+  Expr
 
 UnaryExpr = op:('!' | '+' | '-') Expr
 
 RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep
 
-RangeExpressionFromTo = '[' from:Expr ':' to:Expr ']'
+RangeExpressionFromTo = '[' Expr ':' Expr ']'
 
-RangeExpressionFromToStep = '[' from:Expr ':' step_by:Expr ':' to:Expr ']'
+RangeExpressionFromToStep = '[' Expr ':' Expr ':' Expr ']'
 
 ListExpression = '[' Expressions ']'
 

@@ -429,6 +429,7 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "heck 0.4.0",
+ "indexmap",
  "insta",
  "proc-macro2",
  "quote",
