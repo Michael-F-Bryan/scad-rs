@@ -1,7 +1,7 @@
 use heck::ToShoutySnekCase;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use ungrammar::Grammar;
+use ungrammar::{Grammar, Rule};
 
 use crate::syntax::tokens::{Token, TokenKind};
 
@@ -16,6 +16,12 @@ impl SyntaxKind {
         let tokens = super::tokens::all_tokens(grammar);
         let variants = syntax_kind_variants(grammar, &tokens);
         SyntaxKind { tokens, variants }
+    }
+
+    pub(crate) fn get_token(&self, symbol: &str) -> Option<&Token> {
+        self.tokens
+            .iter()
+            .find(|t| t.token.as_deref() == Some(symbol))
     }
 
     fn definition(&self) -> TokenStream {
@@ -168,6 +174,9 @@ impl SyntaxKind {
         );
 
         quote! {
+            /// A helper macro for getting the [`SyntaxKind`] that corresponds
+            /// to a particular token.
+            #[macro_export]
             macro_rules! T {
                 #( #arms; )*
             }
@@ -238,7 +247,13 @@ fn syntax_kind_variants(grammar: &Grammar, tokens: &[Token]) -> Vec<SyntaxKindVa
         .collect();
 
     for node in grammar.iter() {
-        let rule_name = &grammar[node].name;
+        let node = &grammar[node];
+
+        if matches!(node.rule, Rule::Alt(_)) {
+            continue;
+        }
+
+        let rule_name = &node.name;
         let ident = format_ident!("{}", rule_name.TO_SHOUTY_SNEK_CASE());
         variants.push(SyntaxKindVariant {
             docs: None,

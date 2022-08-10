@@ -1,0 +1,76 @@
+---
+source: crates/codegen/src/syntax/ast_nodes.rs
+expression: "&formatted"
+---
+Package = Statement*;
+
+Statement = Include | Use | (Assignment ';') | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation;
+
+Include = 'include' 'string';
+
+Use = 'use' 'file';
+
+Assignment = name:'ident' '=' value:Expr;
+
+NamedFunctionDefinition = 'function' 'ident' '(' params:Parameters? ')' '=' body:Expr ';';
+
+NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' body:Statement;
+
+ModuleInstantiation = 'ident' '(' args:Arguments? ')';
+
+Expressions = Expr (',' Expr)*;
+
+Expr = LiteralExpr | IndexExpr | ListExpression | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | FunctionCall | BinExpr;
+
+LiteralExpr = 'true' | 'false' | 'undef' | 'number' | 'string' | variable:'ident';
+
+IndexExpr = Expr '[' Expr ']';
+
+ListExpression = '[' Expressions ']';
+
+RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep;
+
+UnaryExpr = ('!' | '+' | '-') Expr;
+
+TernaryExpr = Expr '?' Expr ':' Expr;
+
+ParenExpr = '(' Expr ')';
+
+ListComprehensionExpr = '(' ListComprehensionElements ')';
+
+LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements Expr;
+
+FunctionCall = 'ident' '(' args:Arguments? ')';
+
+BinExpr = Expr ('+' | '-' | '*' | '/' | '%' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||') Expr;
+
+ListComprehensionElements = LetClause | ForClause | IfClause;
+
+RangeExpressionFromTo = '[' Expr ':' Expr ']';
+
+RangeExpressionFromToStep = '[' Expr ':' Expr ':' Expr ']';
+
+ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr;
+
+IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementsOrExpr;
+
+ListComprehensionElementsOrExpr = ListComprehensionElements | Expr;
+
+AssignmentsOpt = Assignments?;
+
+Assignments = Assignment (',' Assignment)*;
+
+Parameters = Parameter (',' Parameter)*;
+
+Arguments = Argument (',' Argument)*;
+
+Children = Child*;
+
+Child = ';' | BracedChildren | ModuleInstantiation;
+
+BracedChildren = '{' Children '}';
+
+Parameter = variable:'ident' | Assignment;
+
+Argument = Expr | Assignment;
+

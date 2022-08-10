@@ -46,10 +46,10 @@ ListComprehensionExpr = '(' ListComprehensionElements ')'
 
 BinExpr =
   Expr
-  op:('+' | '-' | '*' | '/' | '%' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||')
+  ('+' | '-' | '*' | '/' | '%' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||')
   Expr
 
-UnaryExpr = op:('!' | '+' | '-') Expr
+UnaryExpr = ('!' | '+' | '-') Expr
 
 RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep
 
