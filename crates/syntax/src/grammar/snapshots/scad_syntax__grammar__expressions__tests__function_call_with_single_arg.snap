@@ -1,0 +1,13 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: expr(foo(42))
+---
+Node(
+    FUNCTION_CALL@0..7
+      IDENT@0..3 "foo"
+      L_PAREN@3..4 "("
+      ARGUMENTS@4..6
+        INTEGER@4..6 "42"
+      R_PAREN@6..7 ")"
+    ,
+)

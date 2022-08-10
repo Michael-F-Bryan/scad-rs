@@ -30,7 +30,7 @@ pub(crate) fn statement(p: &mut Parser<'_>) {
     }
 }
 
-fn include(p: &mut Parser<'_>, m: Mark) {
+pub(crate) fn include(p: &mut Parser<'_>, m: Mark) {
     p.bump(T![include]);
 
     if p.at(STRING) {
@@ -41,7 +41,7 @@ fn include(p: &mut Parser<'_>, m: Mark) {
     }
 }
 
-fn use_(p: &mut Parser<'_>, m: Mark) {
+pub(crate) fn use_(p: &mut Parser<'_>, m: Mark) {
     p.bump(T![use]);
 
     if p.at(STRING) {
@@ -52,7 +52,7 @@ fn use_(p: &mut Parser<'_>, m: Mark) {
     }
 }
 
-fn assignment(p: &mut Parser<'_>, m: Mark) {
+pub(crate) fn assignment(p: &mut Parser<'_>, m: Mark) {
     p.bump(IDENT);
 
     p.eat(T![=]);

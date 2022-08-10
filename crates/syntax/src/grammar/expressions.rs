@@ -1,5 +1,5 @@
 use crate::{
-    grammar::TokenSet,
+    grammar::{top_level, TokenSet},
     parser::{Mark, Parser},
     SyntaxKind::*,
 };
@@ -20,9 +20,14 @@ const BINARY_OPERANDS: TokenSet = TokenSet::new([
 ]);
 
 pub(crate) fn expr(p: &mut Parser<'_>) {
+    let lookahead = p.nth(1);
+
     match p.current() {
+        IDENT if lookahead == T!["("] => {
+            let mark = p.start();
+            function_call(p, mark);
+        }
         T![true] | T![false] | T![undef] | STRING | INTEGER | FLOAT | IDENT => {
-            let lookahead = p.nth(1);
             if BINARY_OPERANDS.contains(lookahead) {
                 let m = p.start();
                 p.bump(p.current());
@@ -40,6 +45,37 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
             p.error(format!("Expected an expression but found {other:?}"));
             p.do_bump(1);
         }
+    }
+}
+
+pub(crate) fn function_call(p: &mut Parser<'_>, m: Mark) {
+    p.bump(IDENT);
+    p.bump(T!["("]);
+    arguments(p);
+    p.expect(T![")"]);
+    p.complete(m, FUNCTION_CALL);
+}
+
+pub(crate) fn arguments(p: &mut Parser<'_>) {
+    let m = p.start();
+
+    while !p.at(T![")"]) && !p.at(EOF) {
+        argument(p);
+
+        if !p.eat(T![,]) {
+            break;
+        }
+    }
+
+    p.complete(m, ARGUMENTS);
+}
+
+pub(crate) fn argument(p: &mut Parser<'_>) {
+    if p.at(IDENT) && p.nth_at(1, T![=]) {
+        let m = p.start();
+        top_level::assignment(p, m);
+    } else {
+        expr(p);
     }
 }
 
@@ -66,5 +102,9 @@ mod tests {
         string_expr: expr(r#""Hello, World!""#),
         #[ignore = "Negative numbers aren't implemented yet"]
         negative_number: expr("-42"),
+        function_call: expr("foo()"),
+        function_call_with_single_arg: expr("foo(42)"),
+        function_call_with_multiple_arguments: expr("foo(42, a)"),
+        function_call_with_named_arguments: expr("foo(42, a = 5)"),
     }
 }

@@ -1,3 +1,5 @@
+use std::panic::Location;
+
 use drop_bomb::DropBomb;
 use rowan::{Checkpoint, GreenNodeBuilder, SyntaxNode, TextRange, TextSize};
 
@@ -86,10 +88,13 @@ impl<'a> Parser<'a> {
         }
     }
 
+    #[track_caller]
     pub(crate) fn start(&mut self) -> Mark {
+        let caller = Location::caller().to_string();
+
         Mark {
             checkpoint: self.builder.checkpoint(),
-            bomb: DropBomb::new("node"),
+            bomb: DropBomb::new(format!("Incomplete node ({caller})")),
         }
     }
 
