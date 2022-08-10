@@ -2,109 +2,114 @@
 
 #[doc = r" The different types of terminals and non-terminals in the"]
 #[doc = r" OpenSCAD language grammar."]
-#[allow(bad_style)]
 #[derive(
     Debug,
     Copy,
     Clone,
     PartialEq,
     Eq,
-    Hash,
     PartialOrd,
     Ord,
+    Hash,
     num_derive :: FromPrimitive,
     num_derive :: ToPrimitive,
 )]
 #[repr(u16)]
+#[allow(nonstandard_style)]
 #[non_exhaustive]
 pub enum SyntaxKind {
-    #[doc = "End of input."]
-    EOF,
-    #[doc = "An identifier."]
-    IDENT,
-    #[doc = "A lexer error."]
-    ERROR,
-    #[doc = "One or more whitespace characters (spaces, tabs, newlines, etc.)."]
-    WHITESPACE,
-    #[doc = "A comment."]
-    COMMENT,
-    #[doc = "An integer literal"]
-    INTEGER,
-    #[doc = "A float literal"]
-    FLOAT,
-    #[doc = "A string literal"]
-    STRING,
-    #[doc = "The `!` symbol."]
-    BANG,
-    #[doc = "The `%` symbol."]
-    PERCENT,
     #[doc = "The `&&` symbol."]
     AND,
-    #[doc = "The `(` symbol."]
-    L_PAREN,
-    #[doc = "The `)` symbol."]
-    R_PAREN,
-    #[doc = "The `*` symbol."]
-    STAR,
-    #[doc = "The `+` symbol."]
-    PLUS,
-    #[doc = "The `,` symbol."]
-    COMMA,
-    #[doc = "The `-` symbol."]
-    MINUS,
-    #[doc = "The `/` symbol."]
-    SLASH,
+    #[doc = "The `!` symbol."]
+    BANG,
+    #[doc = "The `^` symbol."]
+    CARET,
     #[doc = "The `:` symbol."]
     COLON,
-    #[doc = "The `;` symbol."]
-    SEMICOLON,
-    #[doc = "The `<` symbol."]
-    LESS_THAN,
-    #[doc = "The `<=` symbol."]
-    LESS_THAN_EQUALS,
+    #[doc = "The `,` symbol."]
+    COMMA,
+    #[doc = "A comment."]
+    COMMENT,
+    #[doc = "The `.` symbol."]
+    DOT,
+    #[doc = "End of input."]
+    EOF,
     #[doc = "The `=` symbol."]
     EQUALS,
-    #[doc = "The `>` symbol."]
-    GREATER_THAN,
-    #[doc = "The `>=` symbol."]
-    GREATER_THAN_EQUALS,
-    #[doc = "The `?` symbol."]
-    QUESTION_MARK,
-    #[doc = "The `[` symbol."]
-    L_BRACKET,
-    #[doc = "The `]` symbol."]
-    R_BRACKET,
-    #[doc = "The `{` symbol."]
-    L_CURLY,
-    #[doc = "The `||` symbol."]
-    OR,
-    #[doc = "The `}` symbol."]
-    R_CURLY,
+    #[doc = "A lexer error."]
+    ERROR,
     #[doc = "The `false` keyword."]
     FALSE_KW,
     #[doc = "The `file` keyword."]
     FILE_KW,
+    #[doc = "A float literal"]
+    FLOAT,
     #[doc = "The `for` keyword."]
     FOR_KW,
     #[doc = "The `function` keyword."]
     FUNCTION_KW,
+    #[doc = "The `>` symbol."]
+    GREATER_THAN,
+    #[doc = "The `>=` symbol."]
+    GREATER_THAN_EQUALS,
+    #[doc = "An identifier."]
+    IDENT,
     #[doc = "The `if` keyword."]
     IF_KW,
     #[doc = "The `include` keyword."]
     INCLUDE_KW,
+    #[doc = "An integer literal"]
+    INTEGER,
+    #[doc = "The `<` symbol."]
+    LESS_THAN,
+    #[doc = "The `<=` symbol."]
+    LESS_THAN_EQUALS,
     #[doc = "The `let` keyword."]
     LET_KW,
+    #[doc = "The `[` symbol."]
+    L_BRACKET,
+    #[doc = "The `{` symbol."]
+    L_CURLY,
+    #[doc = "The `(` symbol."]
+    L_PAREN,
+    #[doc = "The `-` symbol."]
+    MINUS,
     #[doc = "The `module` keyword."]
     MODULE_KW,
     #[doc = "The `number` keyword."]
     NUMBER_KW,
+    #[doc = "The `||` symbol."]
+    OR,
+    #[doc = "The `%` symbol."]
+    PERCENT,
+    #[doc = "The `+` symbol."]
+    PLUS,
+    #[doc = "The `?` symbol."]
+    QUESTION_MARK,
+    #[doc = "The `]` symbol."]
+    R_BRACKET,
+    #[doc = "The `}` symbol."]
+    R_CURLY,
+    #[doc = "The `)` symbol."]
+    R_PAREN,
+    #[doc = "The `;` symbol."]
+    SEMICOLON,
+    #[doc = "The `/` symbol."]
+    SLASH,
+    #[doc = "The `*` symbol."]
+    STAR,
+    #[doc = "A string literal"]
+    STRING,
     #[doc = "The `true` keyword."]
     TRUE_KW,
     #[doc = "The `undef` keyword."]
     UNDEF_KW,
     #[doc = "The `use` keyword."]
     USE_KW,
+    #[doc = "One or more whitespace characters (spaces, tabs, newlines, etc.)."]
+    WHITESPACE,
     PACKAGE,
+    STATEMENT,
     INCLUDE,
     USE,
     ASSIGNMENT,
@@ -112,8 +117,11 @@ pub enum SyntaxKind {
     NAMED_MODULE_DEFINITION,
     MODULE_INSTANTIATION,
     EXPRESSIONS,
+    EXPR,
+    LITERAL_EXPR,
     INDEX_EXPR,
     LIST_EXPRESSION,
+    RANGE_EXPRESSION,
     UNARY_EXPR,
     TERNARY_EXPR,
     PAREN_EXPR,
@@ -121,90 +129,106 @@ pub enum SyntaxKind {
     LET_CLAUSE,
     FUNCTION_CALL,
     BIN_EXPR,
+    LIST_COMPREHENSION_ELEMENTS,
     RANGE_EXPRESSION_FROM_TO,
     RANGE_EXPRESSION_FROM_TO_STEP,
     FOR_CLAUSE,
     IF_CLAUSE,
+    LIST_COMPREHENSION_ELEMENTS_OR_EXPR,
     ASSIGNMENTS_OPT,
     ASSIGNMENTS,
     PARAMETERS,
     ARGUMENTS,
     CHILDREN,
+    CHILD,
     BRACED_CHILDREN,
+    PARAMETER,
+    ARGUMENT,
 }
 impl SyntaxKind {
     #[doc = r" All the possible [`SyntaxKind`] variants."]
-    pub const VARIANTS: [SyntaxKind; 70usize] = [
-        SyntaxKind::EOF,
-        SyntaxKind::IDENT,
-        SyntaxKind::ERROR,
-        SyntaxKind::WHITESPACE,
-        SyntaxKind::COMMENT,
-        SyntaxKind::INTEGER,
-        SyntaxKind::FLOAT,
-        SyntaxKind::STRING,
-        SyntaxKind::BANG,
-        SyntaxKind::PERCENT,
+    pub const VARIANTS: [SyntaxKind; 81usize] = [
         SyntaxKind::AND,
-        SyntaxKind::L_PAREN,
-        SyntaxKind::R_PAREN,
-        SyntaxKind::STAR,
-        SyntaxKind::PLUS,
-        SyntaxKind::COMMA,
-        SyntaxKind::MINUS,
-        SyntaxKind::SLASH,
+        SyntaxKind::BANG,
+        SyntaxKind::CARET,
         SyntaxKind::COLON,
-        SyntaxKind::SEMICOLON,
-        SyntaxKind::LESS_THAN,
-        SyntaxKind::LESS_THAN_EQUALS,
+        SyntaxKind::COMMA,
+        SyntaxKind::COMMENT,
+        SyntaxKind::DOT,
+        SyntaxKind::EOF,
         SyntaxKind::EQUALS,
-        SyntaxKind::GREATER_THAN,
-        SyntaxKind::GREATER_THAN_EQUALS,
-        SyntaxKind::QUESTION_MARK,
-        SyntaxKind::L_BRACKET,
-        SyntaxKind::R_BRACKET,
-        SyntaxKind::L_CURLY,
-        SyntaxKind::OR,
-        SyntaxKind::R_CURLY,
+        SyntaxKind::ERROR,
         SyntaxKind::FALSE_KW,
         SyntaxKind::FILE_KW,
+        SyntaxKind::FLOAT,
         SyntaxKind::FOR_KW,
         SyntaxKind::FUNCTION_KW,
+        SyntaxKind::GREATER_THAN,
+        SyntaxKind::GREATER_THAN_EQUALS,
+        SyntaxKind::IDENT,
         SyntaxKind::IF_KW,
         SyntaxKind::INCLUDE_KW,
+        SyntaxKind::INTEGER,
+        SyntaxKind::LESS_THAN,
+        SyntaxKind::LESS_THAN_EQUALS,
         SyntaxKind::LET_KW,
+        SyntaxKind::L_BRACKET,
+        SyntaxKind::L_CURLY,
+        SyntaxKind::L_PAREN,
+        SyntaxKind::MINUS,
         SyntaxKind::MODULE_KW,
         SyntaxKind::NUMBER_KW,
+        SyntaxKind::OR,
+        SyntaxKind::PERCENT,
+        SyntaxKind::PLUS,
+        SyntaxKind::QUESTION_MARK,
+        SyntaxKind::R_BRACKET,
+        SyntaxKind::R_CURLY,
+        SyntaxKind::R_PAREN,
+        SyntaxKind::SEMICOLON,
+        SyntaxKind::SLASH,
+        SyntaxKind::STAR,
+        SyntaxKind::STRING,
         SyntaxKind::TRUE_KW,
         SyntaxKind::UNDEF_KW,
         SyntaxKind::USE_KW,
-        SyntaxKind::Package,
-        SyntaxKind::Include,
-        SyntaxKind::Use,
-        SyntaxKind::Assignment,
-        SyntaxKind::NamedFunctionDefinition,
-        SyntaxKind::NamedModuleDefinition,
-        SyntaxKind::ModuleInstantiation,
-        SyntaxKind::Expressions,
-        SyntaxKind::IndexExpr,
-        SyntaxKind::ListExpression,
-        SyntaxKind::UnaryExpr,
-        SyntaxKind::TernaryExpr,
-        SyntaxKind::ParenExpr,
-        SyntaxKind::ListComprehensionExpr,
-        SyntaxKind::LetClause,
-        SyntaxKind::FunctionCall,
-        SyntaxKind::BinExpr,
-        SyntaxKind::RangeExpressionFromTo,
-        SyntaxKind::RangeExpressionFromToStep,
-        SyntaxKind::ForClause,
-        SyntaxKind::IfClause,
-        SyntaxKind::AssignmentsOpt,
-        SyntaxKind::Assignments,
-        SyntaxKind::Parameters,
-        SyntaxKind::Arguments,
-        SyntaxKind::Children,
-        SyntaxKind::BracedChildren,
+        SyntaxKind::WHITESPACE,
+        SyntaxKind::PACKAGE,
+        SyntaxKind::STATEMENT,
+        SyntaxKind::INCLUDE,
+        SyntaxKind::USE,
+        SyntaxKind::ASSIGNMENT,
+        SyntaxKind::NAMED_FUNCTION_DEFINITION,
+        SyntaxKind::NAMED_MODULE_DEFINITION,
+        SyntaxKind::MODULE_INSTANTIATION,
+        SyntaxKind::EXPRESSIONS,
+        SyntaxKind::EXPR,
+        SyntaxKind::LITERAL_EXPR,
+        SyntaxKind::INDEX_EXPR,
+        SyntaxKind::LIST_EXPRESSION,
+        SyntaxKind::RANGE_EXPRESSION,
+        SyntaxKind::UNARY_EXPR,
+        SyntaxKind::TERNARY_EXPR,
+        SyntaxKind::PAREN_EXPR,
+        SyntaxKind::LIST_COMPREHENSION_EXPR,
+        SyntaxKind::LET_CLAUSE,
+        SyntaxKind::FUNCTION_CALL,
+        SyntaxKind::BIN_EXPR,
+        SyntaxKind::LIST_COMPREHENSION_ELEMENTS,
+        SyntaxKind::RANGE_EXPRESSION_FROM_TO,
+        SyntaxKind::RANGE_EXPRESSION_FROM_TO_STEP,
+        SyntaxKind::FOR_CLAUSE,
+        SyntaxKind::IF_CLAUSE,
+        SyntaxKind::LIST_COMPREHENSION_ELEMENTS_OR_EXPR,
+        SyntaxKind::ASSIGNMENTS_OPT,
+        SyntaxKind::ASSIGNMENTS,
+        SyntaxKind::PARAMETERS,
+        SyntaxKind::ARGUMENTS,
+        SyntaxKind::CHILDREN,
+        SyntaxKind::CHILD,
+        SyntaxKind::BRACED_CHILDREN,
+        SyntaxKind::PARAMETER,
+        SyntaxKind::ARGUMENT,
     ];
     #[doc = r" Is this [`SyntaxKind`] a piece of punctuation?"]
     #[doc = r""]
@@ -216,29 +240,31 @@ impl SyntaxKind {
     pub const fn is_punctuation(self) -> bool {
         matches!(
             self,
-            SyntaxKind::BANG
-                | SyntaxKind::PERCENT
-                | SyntaxKind::AND
-                | SyntaxKind::L_PAREN
-                | SyntaxKind::R_PAREN
-                | SyntaxKind::STAR
-                | SyntaxKind::PLUS
-                | SyntaxKind::COMMA
-                | SyntaxKind::MINUS
-                | SyntaxKind::SLASH
+            SyntaxKind::AND
+                | SyntaxKind::BANG
+                | SyntaxKind::CARET
                 | SyntaxKind::COLON
-                | SyntaxKind::SEMICOLON
-                | SyntaxKind::LESS_THAN
-                | SyntaxKind::LESS_THAN_EQUALS
+                | SyntaxKind::COMMA
+                | SyntaxKind::DOT
                 | SyntaxKind::EQUALS
                 | SyntaxKind::GREATER_THAN
                 | SyntaxKind::GREATER_THAN_EQUALS
-                | SyntaxKind::QUESTION_MARK
+                | SyntaxKind::LESS_THAN
+                | SyntaxKind::LESS_THAN_EQUALS
                 | SyntaxKind::L_BRACKET
-                | SyntaxKind::R_BRACKET
                 | SyntaxKind::L_CURLY
+                | SyntaxKind::L_PAREN
+                | SyntaxKind::MINUS
                 | SyntaxKind::OR
+                | SyntaxKind::PERCENT
+                | SyntaxKind::PLUS
+                | SyntaxKind::QUESTION_MARK
+                | SyntaxKind::R_BRACKET
                 | SyntaxKind::R_CURLY
+                | SyntaxKind::R_PAREN
+                | SyntaxKind::SEMICOLON
+                | SyntaxKind::SLASH
+                | SyntaxKind::STAR
         )
     }
     #[doc = r" Is this [`SyntaxKind`] a keyword?"]
@@ -277,29 +303,31 @@ impl SyntaxKind {
     #[doc = r" ```"]
     pub fn from_symbol(symbol: &str) -> Option<Self> {
         match symbol {
-            "!" => Some(SyntaxKind::BANG),
-            "%" => Some(SyntaxKind::PERCENT),
             "&&" => Some(SyntaxKind::AND),
-            "(" => Some(SyntaxKind::L_PAREN),
-            ")" => Some(SyntaxKind::R_PAREN),
-            "*" => Some(SyntaxKind::STAR),
-            "+" => Some(SyntaxKind::PLUS),
-            "," => Some(SyntaxKind::COMMA),
-            "-" => Some(SyntaxKind::MINUS),
-            "/" => Some(SyntaxKind::SLASH),
+            "!" => Some(SyntaxKind::BANG),
+            "^" => Some(SyntaxKind::CARET),
             ":" => Some(SyntaxKind::COLON),
-            ";" => Some(SyntaxKind::SEMICOLON),
-            "<" => Some(SyntaxKind::LESS_THAN),
-            "<=" => Some(SyntaxKind::LESS_THAN_EQUALS),
+            "," => Some(SyntaxKind::COMMA),
+            "." => Some(SyntaxKind::DOT),
             "=" => Some(SyntaxKind::EQUALS),
             ">" => Some(SyntaxKind::GREATER_THAN),
             ">=" => Some(SyntaxKind::GREATER_THAN_EQUALS),
-            "?" => Some(SyntaxKind::QUESTION_MARK),
+            "<" => Some(SyntaxKind::LESS_THAN),
+            "<=" => Some(SyntaxKind::LESS_THAN_EQUALS),
             "[" => Some(SyntaxKind::L_BRACKET),
-            "]" => Some(SyntaxKind::R_BRACKET),
             "{" => Some(SyntaxKind::L_CURLY),
+            "(" => Some(SyntaxKind::L_PAREN),
+            "-" => Some(SyntaxKind::MINUS),
             "||" => Some(SyntaxKind::OR),
+            "%" => Some(SyntaxKind::PERCENT),
+            "+" => Some(SyntaxKind::PLUS),
+            "?" => Some(SyntaxKind::QUESTION_MARK),
+            "]" => Some(SyntaxKind::R_BRACKET),
             "}" => Some(SyntaxKind::R_CURLY),
+            ")" => Some(SyntaxKind::R_PAREN),
+            ";" => Some(SyntaxKind::SEMICOLON),
+            "/" => Some(SyntaxKind::SLASH),
+            "*" => Some(SyntaxKind::STAR),
             _ => None,
         }
     }
@@ -339,10 +367,28 @@ impl From<SyntaxKind> for m_lexer::TokenKind {
         m_lexer::TokenKind(k.into())
     }
 }
-#[doc = r" A helper macro for getting the [`SyntaxKind`] that corresponds"]
-#[doc = r" to a particular token."]
-#[macro_export]
 macro_rules! T {
+    (&&) => {
+        $crate::SyntaxKind::AND
+    };
+    (!) => {
+        $crate::SyntaxKind::BANG
+    };
+    (^) => {
+        $crate::SyntaxKind::CARET
+    };
+    (:) => {
+        $crate::SyntaxKind::COLON
+    };
+    (,) => {
+        $crate::SyntaxKind::COMMA
+    };
+    (.) => {
+        $crate::SyntaxKind::DOT
+    };
+    (=) => {
+        $crate::SyntaxKind::EQUALS
+    };
     (false) => {
         $crate::SyntaxKind::FALSE_KW
     };
@@ -355,20 +401,74 @@ macro_rules! T {
     (function) => {
         $crate::SyntaxKind::FUNCTION_KW
     };
+    (>) => {
+        $crate::SyntaxKind::GREATER_THAN
+    };
+    (>=) => {
+        $crate::SyntaxKind::GREATER_THAN_EQUALS
+    };
     (if) => {
         $crate::SyntaxKind::IF_KW
     };
     (include) => {
         $crate::SyntaxKind::INCLUDE_KW
     };
+    (<) => {
+        $crate::SyntaxKind::LESS_THAN
+    };
+    (<=) => {
+        $crate::SyntaxKind::LESS_THAN_EQUALS
+    };
     (let) => {
         $crate::SyntaxKind::LET_KW
+    };
+    ("[") => {
+        $crate::SyntaxKind::L_BRACKET
+    };
+    ("{") => {
+        $crate::SyntaxKind::L_CURLY
+    };
+    ("(") => {
+        $crate::SyntaxKind::L_PAREN
+    };
+    (-) => {
+        $crate::SyntaxKind::MINUS
     };
     (module) => {
         $crate::SyntaxKind::MODULE_KW
     };
     (number) => {
         $crate::SyntaxKind::NUMBER_KW
+    };
+    (||) => {
+        $crate::SyntaxKind::OR
+    };
+    (%) => {
+        $crate::SyntaxKind::PERCENT
+    };
+    (+) => {
+        $crate::SyntaxKind::PLUS
+    };
+    (?) => {
+        $crate::SyntaxKind::QUESTION_MARK
+    };
+    ("]") => {
+        $crate::SyntaxKind::R_BRACKET
+    };
+    ("}") => {
+        $crate::SyntaxKind::R_CURLY
+    };
+    (")") => {
+        $crate::SyntaxKind::R_PAREN
+    };
+    (;) => {
+        $crate::SyntaxKind::SEMICOLON
+    };
+    (/) => {
+        $crate::SyntaxKind::SLASH
+    };
+    (*) => {
+        $crate::SyntaxKind::STAR
     };
     (true) => {
         $crate::SyntaxKind::TRUE_KW
@@ -378,74 +478,5 @@ macro_rules! T {
     };
     (use) => {
         $crate::SyntaxKind::USE_KW
-    };
-    (!) => {
-        $crate::SyntaxKind::BANG
-    };
-    (%) => {
-        $crate::SyntaxKind::PERCENT
-    };
-    (&&) => {
-        $crate::SyntaxKind::AND
-    };
-    ("(") => {
-        $crate::SyntaxKind::L_PAREN
-    };
-    (")") => {
-        $crate::SyntaxKind::R_PAREN
-    };
-    (*) => {
-        $crate::SyntaxKind::STAR
-    };
-    (+) => {
-        $crate::SyntaxKind::PLUS
-    };
-    (,) => {
-        $crate::SyntaxKind::COMMA
-    };
-    (-) => {
-        $crate::SyntaxKind::MINUS
-    };
-    (/) => {
-        $crate::SyntaxKind::SLASH
-    };
-    (:) => {
-        $crate::SyntaxKind::COLON
-    };
-    (;) => {
-        $crate::SyntaxKind::SEMICOLON
-    };
-    (<) => {
-        $crate::SyntaxKind::LESS_THAN
-    };
-    (<=) => {
-        $crate::SyntaxKind::LESS_THAN_EQUALS
-    };
-    (=) => {
-        $crate::SyntaxKind::EQUALS
-    };
-    (>) => {
-        $crate::SyntaxKind::GREATER_THAN
-    };
-    (>=) => {
-        $crate::SyntaxKind::GREATER_THAN_EQUALS
-    };
-    (?) => {
-        $crate::SyntaxKind::QUESTION_MARK
-    };
-    ("[") => {
-        $crate::SyntaxKind::L_BRACKET
-    };
-    ("]") => {
-        $crate::SyntaxKind::R_BRACKET
-    };
-    ("{") => {
-        $crate::SyntaxKind::L_CURLY
-    };
-    (||) => {
-        $crate::SyntaxKind::OR
-    };
-    ("}") => {
-        $crate::SyntaxKind::R_CURLY
     };
 }

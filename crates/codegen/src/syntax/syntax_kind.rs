@@ -1,91 +1,81 @@
-use std::collections::BTreeSet;
-
 use heck::ToShoutySnekCase;
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-use ungrammar::{Grammar, Rule};
+use ungrammar::Grammar;
 
-use crate::syntax::{Keyword, Punctuation, SpecialToken, SyntacticElements};
+use crate::syntax::tokens::{Token, TokenKind};
 
 #[derive(Debug, Clone)]
 pub struct SyntaxKind {
-    keywords: Vec<Keyword>,
-    symbols: Vec<Punctuation>,
-    special: Vec<SpecialToken>,
-    non_terminals: Vec<NonTerminal>,
+    pub tokens: Vec<Token>,
+    pub variants: Vec<SyntaxKindVariant>,
 }
 
 impl SyntaxKind {
-    pub(crate) fn new(elements: &SyntacticElements) -> Self {
-        let SyntacticElements {
-            keywords,
-            symbols,
-            special,
-            structs,
-            ..
-        } = elements;
-        SyntaxKind {
-            keywords: keywords.clone(),
-            symbols: symbols.clone(),
-            special: special.clone(),
-            non_terminals: structs
-                .iter()
-                .map(|s| NonTerminal(s.ident.clone()))
-                .collect(),
-        }
+    pub fn new(grammar: &Grammar) -> Self {
+        let tokens = super::tokens::all_tokens(grammar);
+        let variants = syntax_kind_variants(grammar, &tokens);
+        SyntaxKind { tokens, variants }
     }
 
     fn definition(&self) -> TokenStream {
-        let SyntaxKind {
-            keywords,
-            symbols,
-            special,
-            non_terminals,
-        } = self;
-
-        let symbols = symbols.iter().map(|p| p.variant());
-        let special = special.iter().map(|s| s.variant());
-        let keywords = keywords.iter().map(|kw| kw.variant());
-        let non_terminals = non_terminals.iter().map(|nt| {
-            format_ident!("{}", nt.0.to_string().TO_SHOUTY_SNEK_CASE()).to_token_stream()
-        });
-
-        let variants = special.chain(symbols).chain(keywords).chain(non_terminals);
+        let variants =
+            self.variants
+                .iter()
+                .map(|SyntaxKindVariant { docs, ident, .. }| match docs {
+                    Some(docs) => quote!(#[doc = #docs] #ident),
+                    None => quote!(#ident),
+                });
 
         quote! {
             /// The different types of terminals and non-terminals in the
             /// OpenSCAD language grammar.
-            #[allow(bad_style)]
-            #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord, num_derive::FromPrimitive, num_derive::ToPrimitive)]
+            #[derive(
+                Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
+                num_derive::FromPrimitive, num_derive::ToPrimitive,
+            )]
             #[repr(u16)]
+            #[allow(nonstandard_style)]
             #[non_exhaustive]
             pub enum SyntaxKind {
-                #(
-                    #variants,
-                )*
+                #( #variants, )*
             }
         }
     }
 
     fn methods(&self) -> TokenStream {
-        let punctuation: Vec<_> = self.symbols.iter().map(|s| &s.ident).collect();
-        let keywords: Vec<_> = self.keywords.iter().map(|kw| &kw.ident).collect();
+        let SyntaxKind { tokens, variants } = self;
 
-        let symbol_lookups = self.symbols.iter().map(|Punctuation { symbol, ident }| {
-            quote! {
-                #symbol => Some(SyntaxKind::#ident)
-            }
-        });
-
-        let variants: Vec<_> = self
-            .special
-            .iter()
-            .map(|s| &s.ident)
-            .chain(self.symbols.iter().map(|p| &p.ident))
-            .chain(self.keywords.iter().map(|kw| &kw.ident))
-            .chain(self.non_terminals.iter().map(|nt| &nt.0))
-            .collect();
+        let variants: Vec<_> = variants.iter().map(|v| &v.ident).collect();
         let num_variants = variants.len();
+
+        let punctuation: Vec<_> = tokens
+            .iter()
+            .filter(|t| match t.kind {
+                TokenKind::Symbol => true,
+                _ => false,
+            })
+            .map(|t| &t.syntax_kind)
+            .collect();
+
+        let keywords: Vec<_> = tokens
+            .iter()
+            .filter(|t| match t.kind {
+                TokenKind::Keyword => true,
+                _ => false,
+            })
+            .map(|t| &t.syntax_kind)
+            .collect();
+
+        let symbol_lookups = tokens
+            .iter()
+            .filter_map(|t| match (t.kind, t.token.as_ref()) {
+                (TokenKind::Symbol, Some(symbol)) => {
+                    let ident = &t.syntax_kind;
+                    Some(quote!(#symbol => Some(SyntaxKind::#ident)))
+                }
+                _ => None,
+            });
 
         quote! {
             impl SyntaxKind {
@@ -152,7 +142,39 @@ impl SyntaxKind {
         }
     }
 
-    fn impls(&self) -> TokenStream {
+    fn t_macro(&self) -> TokenStream {
+        let arms = self.tokens.iter().filter_map(
+            |Token {
+                 token,
+                 syntax_kind,
+                 kind,
+                 ..
+             }| {
+                let token = token.clone()?;
+                if matches!(kind, TokenKind::Special) {
+                    return None;
+                }
+
+                let token = if "()[]{}".contains(&token) {
+                    token.to_token_stream()
+                } else {
+                    token.parse().unwrap()
+                };
+
+                Some(quote! {
+                    (#token) => { $crate::SyntaxKind::#syntax_kind }
+                })
+            },
+        );
+
+        quote! {
+            macro_rules! T {
+                #( #arms; )*
+            }
+        }
+    }
+
+    fn conversions(&self) -> TokenStream {
         quote! {
             impl From<rowan::SyntaxKind> for SyntaxKind {
                 fn from(k: rowan::SyntaxKind) -> Self {
@@ -179,97 +201,51 @@ impl SyntaxKind {
             }
         }
     }
-
-    fn t_macro(&self) -> TokenStream {
-        let SyntaxKind {
-            keywords, symbols, ..
-        } = self;
-
-        let keywords = keywords.iter().map(|Keyword { word, ident }| {
-            let token: TokenStream = word.parse().unwrap();
-            (token, ident)
-        });
-        let symbols = symbols.iter().map(|Punctuation { symbol, ident }| {
-            let symbols_needing_quotes = "()[]{}";
-
-            let token = if symbols_needing_quotes.contains(symbol) {
-                proc_macro2::Literal::string(symbol).into_token_stream()
-            } else {
-                symbol.parse().unwrap()
-            };
-            (token, ident)
-        });
-
-        let macro_arms = keywords.chain(symbols).map(|(pattern, ident)| {
-            quote! {
-                (#pattern) => { $crate::SyntaxKind::#ident };
-            }
-        });
-
-        quote! {
-            /// A helper macro for getting the [`SyntaxKind`] that corresponds
-            /// to a particular token.
-            #[macro_export]
-            macro_rules! T {
-                #( #macro_arms )*
-            }
-        }
-    }
 }
 
 impl ToTokens for SyntaxKind {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         tokens.extend(self.definition());
         tokens.extend(self.methods());
-        tokens.extend(self.impls());
+        tokens.extend(self.conversions());
         tokens.extend(self.t_macro());
     }
 }
 
-fn all_tokens(rule: &Rule, grammar: &Grammar) -> BTreeSet<String> {
-    match rule {
-        Rule::Rep(rule) | Rule::Opt(rule) | Rule::Labeled { rule, .. } => all_tokens(rule, grammar),
-        Rule::Node(_) => BTreeSet::new(),
-        Rule::Token(t) => [grammar[*t].name.clone()].into_iter().collect(),
-        Rule::Alt(items) | Rule::Seq(items) => items
-            .iter()
-            .flat_map(|rule| all_tokens(rule, grammar))
-            .collect(),
-    }
-}
-
-impl SpecialToken {
-    fn variant(&self) -> TokenStream {
-        let SpecialToken { docs, ident, .. } = self;
-        quote! {
-            #[doc = #docs]
-            #ident
-        }
-    }
-}
-
-impl Keyword {
-    fn variant(&self) -> TokenStream {
-        let Keyword { word, ident } = self;
-        let docs = format!("The `{word}` keyword.");
-        quote! {
-            #[doc = #docs]
-            #ident
-        }
-    }
-}
-
-impl Punctuation {
-    fn variant(&self) -> TokenStream {
-        let Punctuation { symbol, ident } = self;
-
-        let docs = format!("The `{symbol}` symbol.");
-        quote! {
-            #[doc = #docs]
-            #ident
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
-struct NonTerminal(Ident);
+pub struct SyntaxKindVariant {
+    pub docs: Option<String>,
+    pub rule_name: Option<String>,
+    pub ident: Ident,
+}
+
+fn syntax_kind_variants(grammar: &Grammar, tokens: &[Token]) -> Vec<SyntaxKindVariant> {
+    let mut variants: Vec<_> = tokens
+        .iter()
+        .cloned()
+        .map(
+            |Token {
+                 docs,
+                 syntax_kind,
+                 token,
+                 ..
+             }| SyntaxKindVariant {
+                docs: Some(docs),
+                rule_name: token,
+                ident: syntax_kind,
+            },
+        )
+        .collect();
+
+    for node in grammar.iter() {
+        let rule_name = &grammar[node].name;
+        let ident = format_ident!("{}", rule_name.TO_SHOUTY_SNEK_CASE());
+        variants.push(SyntaxKindVariant {
+            docs: None,
+            rule_name: Some(rule_name.clone()),
+            ident,
+        });
+    }
+
+    variants
+}
