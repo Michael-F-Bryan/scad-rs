@@ -3,16 +3,16 @@ use std::{
     process::{Command, Output, Stdio},
 };
 
-use once_cell::sync::Lazy;
 use scad_syntax::SyntaxKind::ERROR;
 use walkdir::WalkDir;
 
-const OPENSCAD_REPO: &str = "https://github.com/openscad/openscad";
-const OPENSCAD_TAG: &str = "openscad-2021.01";
-static OPENSCAD: Lazy<Repo> = Lazy::new(Repo::checkout);
+fn main() {
+    let repo = Repo::checkout();
 
-#[test]
-fn tokenize_known_files() {
+    tokenize_known_files(&repo);
+}
+
+fn tokenize_known_files(repo: &Repo) {
     let ignored = [
         "2D/issues/polyset-reduce-crash.scad",
         // unterminated tokens
@@ -23,12 +23,9 @@ fn tokenize_known_files() {
         // Not utf8
         "misc/nbsp-latin1-test.scad",
         "misc/ord-tests.scad",
-        // Uses cmake
-        // "templates/include-tests-template.scad",
-        // "templates/use-tests-template.scad",
     ];
 
-    for filename in OPENSCAD.all_tests() {
+    for filename in repo.all_tests() {
         if ignored.iter().any(|suffix| filename.ends_with(suffix)) {
             continue;
         }
@@ -52,26 +49,24 @@ fn tokenize_known_files() {
 
 #[derive(Debug)]
 struct Repo {
-    checkout_dir: PathBuf,
+    openscad_dir: PathBuf,
 }
 
 impl Repo {
     fn checkout() -> Self {
-        let temp_dir = Path::new(env!("CARGO_TARGET_TMPDIR"));
-        let checkout_dir = temp_dir.join("openscad");
+        let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let openscad_dir = crate_dir.join("openscad");
 
-        if !checkout_dir.exists() {
+        if !openscad_dir.join("README.md").exists() {
             let Output {
                 status,
                 stderr,
                 stdout,
             } = Command::new("git")
-                .arg("clone")
-                .arg(OPENSCAD_REPO)
-                .arg(&checkout_dir)
-                .arg("--quiet")
-                .args(["--branch", OPENSCAD_TAG])
-                .args(["--depth", "1"])
+                .arg("submodule")
+                .arg("update")
+                .arg("--init")
+                .arg("--recursive")
                 .stderr(Stdio::piped())
                 .stdout(Stdio::piped())
                 .output()
@@ -83,15 +78,15 @@ impl Repo {
                 eprintln!("---- Stder ----");
                 eprintln!("{}", String::from_utf8_lossy(&stderr));
 
-                panic!("Checkout failed");
+                panic!("Submodule update failed");
             }
         }
 
-        Repo { checkout_dir }
+        Repo { openscad_dir }
     }
 
     fn test_dir(&self) -> PathBuf {
-        self.checkout_dir.join("testdata").join("scad")
+        self.openscad_dir.join("testdata").join("scad")
     }
 
     fn all_tests(&self) -> impl Iterator<Item = PathBuf> {

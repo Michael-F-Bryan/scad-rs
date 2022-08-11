@@ -1,0 +1,3 @@
+[submodule "integration-tests/vendor/openscad"]
+	path = integration-tests/vendor/openscad
+	url = https://github.com/openscad/openscad

@@ -22,6 +22,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: Rust Cache
         uses: actions/cache@v3
         with:
@@ -55,12 +57,19 @@ jobs:
         with:
           command: test
           args: --workspace --verbose --locked
+      - name: Integration Tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+          args: --verbose --locked --package=integration-tests
 
   lints:
     name: Linting and Formatting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: Rust Cache
         uses: actions/cache@v3
         with:
@@ -94,6 +103,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: Rust Cache
         uses: actions/cache@v3
         with:

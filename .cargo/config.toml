@@ -1,0 +1,3 @@
+[alias]
+integration-tests = "run --quiet --package=integration-tests --"
+it = "integration-tests"

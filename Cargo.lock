@@ -178,6 +178,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "integration-tests"
+version = "0.0.0"
+dependencies = [
+ "scad-syntax",
+ "walkdir",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -443,12 +451,9 @@ name = "scad-compiler"
 version = "0.1.0"
 dependencies = [
  "im",
- "insta",
- "once_cell",
  "rowan",
  "salsa",
  "scad-syntax",
- "walkdir",
 ]
 
 [[package]]
