@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 drop_bomb = "0.1.5"
 m_lexer = "0.0.4"
+once_cell = "1.13.0"
 rowan = "0.15.8"
 
 [dev-dependencies]

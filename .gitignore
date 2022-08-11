@@ -1,1 +1,5 @@
 target/
+
+# Profiling stuff
+flamegraph.svg
+perf.data*

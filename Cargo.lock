@@ -488,6 +488,7 @@ dependencies = [
  "drop_bomb",
  "insta",
  "m_lexer",
+ "once_cell",
  "pretty_assertions",
  "rowan",
 ]
