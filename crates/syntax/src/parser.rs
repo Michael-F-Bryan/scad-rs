@@ -26,6 +26,8 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Finish parsing, yielding the final [`SyntaxNode`] and any errors that
+    /// were found.
     pub(crate) fn finish(self) -> (SyntaxNode<OpenSCAD>, Vec<ParseError>) {
         let Parser {
             builder, errors, ..
@@ -44,7 +46,10 @@ impl<'a> Parser<'a> {
     /// Lookahead operation: returns the kind of the next nth
     /// token.
     pub(crate) fn nth(&self, n: usize) -> SyntaxKind {
-        assert!(n <= 3);
+        assert!(
+            n <= 1,
+            "You can't look ahead more than 1 token in a LL(1) grammar"
+        );
         self.input.kind(self.position + n)
     }
 
@@ -53,10 +58,12 @@ impl<'a> Parser<'a> {
         self.nth_at(0, kind)
     }
 
+    /// Look ahead and see if a future token is what we expect.
     pub(crate) fn nth_at(&self, lookahead: usize, kind: SyntaxKind) -> bool {
         self.nth(lookahead) == kind
     }
 
+    /// Try to consume a particular type of token.
     pub(crate) fn eat(&mut self, kind: SyntaxKind) -> bool {
         if !self.at(kind) {
             return false;
@@ -66,6 +73,8 @@ impl<'a> Parser<'a> {
         true
     }
 
+    /// Assert that we are at a particular token and consume it, panicking if
+    /// it wasn't found.
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
         assert!(
             self.eat(kind),
@@ -74,12 +83,15 @@ impl<'a> Parser<'a> {
         );
     }
 
+    /// [Eat][Parser::eat] a particular token, emitting an
+    /// [`error`][Parser::error] if it wasn't found.
     pub(crate) fn expect(&mut self, kind: SyntaxKind) {
         if !self.eat(kind) {
             self.error(format!("Expected {kind:?}"));
         }
     }
 
+    /// Unconditionally consume a specified number of tokens.
     pub(crate) fn do_bump(&mut self, tokens: usize) {
         for _ in 0..tokens {
             let (kind, text) = self.input.at(self.position);
@@ -88,6 +100,7 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Create a [`Mark`] that can be used to record a node.
     #[track_caller]
     pub(crate) fn start(&mut self) -> Mark {
         let caller = Location::caller().to_string();
@@ -98,6 +111,7 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// Wrap all tokens consumed since the [`Mark`] was created in a node.
     pub(crate) fn complete(&mut self, mark: Mark, kind: SyntaxKind) {
         let Mark {
             checkpoint,
@@ -108,6 +122,7 @@ impl<'a> Parser<'a> {
         self.builder.finish_node();
     }
 
+    /// Record a [`ParseError`] that points at the current token.
     pub(crate) fn error(&mut self, msg: impl Into<String>) {
         let location = self.input.span(self.position).unwrap();
         self.errors.push(ParseError {
@@ -171,6 +186,10 @@ impl<'a> Input<'a> {
     }
 }
 
+/// An opaque indicator for a particular place in the token stream.
+///
+/// A [`Mark`] **must** be consumed by the parser, either using
+/// [`Parser::error_recover()`] or [`Parser::complete()`].
 #[derive(Debug)]
 pub(crate) struct Mark {
     checkpoint: Checkpoint,

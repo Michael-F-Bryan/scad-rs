@@ -31,11 +31,11 @@ fn top_level(grammar: &Grammar, rule: &Rule, name: &str, syntax_kind: &SyntaxKin
         },
         Rule::Node(n) => AstNodeKind::StructNode {
             syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-            fields: vec![node_field(grammar, *n)],
+            _fields: vec![node_field(grammar, *n)],
         },
         Rule::Token(t) => AstNodeKind::StructNode {
             syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-            fields: vec![token_field(syntax_kind, grammar, *t)],
+            _fields: vec![token_field(syntax_kind, grammar, *t)],
         },
         Rule::Rep(rule) => {
             let mut fields = top_level_fields(grammar, rule, syntax_kind);
@@ -44,7 +44,7 @@ fn top_level(grammar: &Grammar, rule: &Rule, name: &str, syntax_kind: &SyntaxKin
             }
             AstNodeKind::StructNode {
                 syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-                fields,
+                _fields: fields,
             }
         }
         Rule::Opt(rule) => {
@@ -54,12 +54,12 @@ fn top_level(grammar: &Grammar, rule: &Rule, name: &str, syntax_kind: &SyntaxKin
             }
             AstNodeKind::StructNode {
                 syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-                fields,
+                _fields: fields,
             }
         }
         Rule::Seq(rules) => AstNodeKind::StructNode {
             syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-            fields: rules
+            _fields: rules
                 .iter()
                 .flat_map(|r| top_level_fields(grammar, r, syntax_kind))
                 .collect(),
@@ -71,7 +71,7 @@ fn top_level(grammar: &Grammar, rule: &Rule, name: &str, syntax_kind: &SyntaxKin
             }
             AstNodeKind::StructNode {
                 syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-                fields,
+                _fields: fields,
             }
         }
     }
@@ -280,7 +280,7 @@ impl ToTokens for AstNode {
 enum AstNodeKind {
     StructNode {
         syntax_kind: Ident,
-        fields: Vec<Field>,
+        _fields: Vec<Field>,
     },
     EnumNode {
         variants: Vec<Field>,

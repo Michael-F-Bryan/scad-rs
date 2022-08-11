@@ -1,3 +1,4 @@
+#[cfg(test)]
 macro_rules! parse_tests {
     ( $( $(#[$meta:meta])* $name:ident : $func:ident ($src:expr) ),* $(,)?) => {
         $(
@@ -14,9 +15,10 @@ macro_rules! parse_tests {
                 parser.complete(m, $crate::SyntaxKind::EOF);
                 let (node, errors) = parser.finish();
 
-                eprintln!("NODE: {node:#?}");
-                eprintln!();
-                eprintln!("ERRORS: {errors:#?}");
+                eprintln!("---- NODE ----");
+                eprintln!("{node:#?}");
+                eprintln!("---- ERRORS ----");
+                eprintln!("{errors:#?}");
                 assert!(errors.is_empty());
 
                 let children: Vec<_> = node.children_with_tokens().collect();

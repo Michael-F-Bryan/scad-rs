@@ -19,13 +19,22 @@ const BINARY_OPERANDS: TokenSet = TokenSet::new([
     T![||],
 ]);
 
+fn _precedence(p: &Parser<'_>) -> usize {
+    match p.current() {
+        T![=] => 1,
+        T![<] | T![<=] | T![>] | T![>=] => 2,
+        T![+] | T![-] => 3,
+        T![*] | T![/] | T![^] => 4,
+        _ => unreachable!(),
+    }
+}
+
 pub(crate) fn expr(p: &mut Parser<'_>) {
     let lookahead = p.nth(1);
 
     match p.current() {
         IDENT if lookahead == T!["("] => {
-            let mark = p.start();
-            function_call(p, mark);
+            function_call(p);
         }
         T![true] | T![false] | T![undef] | STRING | INTEGER | FLOAT | IDENT => {
             if BINARY_OPERANDS.contains(lookahead) {
@@ -36,7 +45,7 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
                 p.bump(p.current());
             }
         }
-        L_PAREN => {
+        T!["("] => {
             p.bump(T!["("]);
             expr(p);
             p.expect(T![")"]);
@@ -48,7 +57,8 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
     }
 }
 
-pub(crate) fn function_call(p: &mut Parser<'_>, m: Mark) {
+pub(crate) fn function_call(p: &mut Parser<'_>) {
+    let m = p.start();
     p.bump(IDENT);
     p.bump(T!["("]);
     arguments(p);
