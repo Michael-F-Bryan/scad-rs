@@ -69,7 +69,7 @@ impl AstNode for Statement {
 }
 #[doc = "A strongly typed wrapper around a [`SyntaxKind::INCLUDE`]."]
 #[doc = "```text"]
-#[doc = "Include = 'include' 'string';\n"]
+#[doc = "Include = 'include' 'file';\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Include(SyntaxNode<OpenSCAD>);
@@ -595,7 +595,7 @@ impl AstNode for FunctionCall {
 }
 #[doc = "A strongly typed wrapper around a [`SyntaxKind::BIN_EXPR`]."]
 #[doc = "```text"]
-#[doc = "BinExpr = Expr ('+' | '-' | '*' | '/' | '%' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||') Expr;\n"]
+#[doc = "BinExpr = Expr ('+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||') Expr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct BinExpr(SyntaxNode<OpenSCAD>);

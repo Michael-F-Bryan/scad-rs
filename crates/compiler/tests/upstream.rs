@@ -4,7 +4,7 @@ use std::{
 };
 
 use once_cell::sync::Lazy;
-use scad::syntax::SyntaxKind::ERROR;
+use scad_syntax::SyntaxKind::ERROR;
 use walkdir::WalkDir;
 
 const OPENSCAD_REPO: &str = "https://github.com/openscad/openscad";
@@ -15,12 +15,17 @@ static OPENSCAD: Lazy<Repo> = Lazy::new(Repo::checkout);
 fn tokenize_known_files() {
     let ignored = [
         "2D/issues/polyset-reduce-crash.scad",
+        // unterminated tokens
         "issues/issue1890-comment.scad",
         "issues/issue1890-string.scad",
+        "issues/issue1890-include.scad",
+        "issues/issue1890-use.scad",
+        // Not utf8
         "misc/nbsp-latin1-test.scad",
         "misc/ord-tests.scad",
-        "templates/include-tests-template.scad",
-        "templates/use-tests-template.scad",
+        // Uses cmake
+        // "templates/include-tests-template.scad",
+        // "templates/use-tests-template.scad",
     ];
 
     for filename in OPENSCAD.all_tests() {
@@ -31,7 +36,7 @@ fn tokenize_known_files() {
         println!("Reading \"{}\"", filename.display());
 
         let text = std::fs::read_to_string(&filename).unwrap();
-        let tokens = scad::syntax::tokenize(&text);
+        let tokens = scad_syntax::tokenize(&text);
 
         let mut line_number = 1;
 

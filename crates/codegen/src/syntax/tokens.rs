@@ -68,6 +68,7 @@ const PUNCTUATION_NAMES: &[(&str, &str)] = &[
     (">", "GREATER_THAN"),
     (">=", "GREATER_THAN_EQUALS"),
     ("=", "EQUALS"),
+    ("#", "HASH"),
 ];
 
 #[derive(Debug, Clone)]
@@ -113,21 +114,27 @@ fn special_tokens() -> Vec<Token> {
             kind: TokenKind::Special,
         },
         Token {
-            docs: "An integer literal".to_string(),
+            docs: "An integer literal.".to_string(),
             syntax_kind: format_ident!("INTEGER"),
             token: Some("integer".to_string()),
             kind: TokenKind::Special,
         },
         Token {
-            docs: "A float literal".to_string(),
+            docs: "A float literal.".to_string(),
             syntax_kind: format_ident!("FLOAT"),
             token: Some("float".to_string()),
             kind: TokenKind::Special,
         },
         Token {
-            docs: "A string literal".to_string(),
+            docs: "A string literal.".to_string(),
             syntax_kind: format_ident!("STRING"),
             token: Some("string".to_string()),
+            kind: TokenKind::Special,
+        },
+        Token {
+            docs: "The path to a file.".to_string(),
+            syntax_kind: format_ident!("FILE"),
+            token: Some("file".to_string()),
             kind: TokenKind::Special,
         },
     ]

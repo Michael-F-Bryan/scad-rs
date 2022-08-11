@@ -29,9 +29,9 @@ pub enum SyntaxKind {
     ERROR = 9u16,
     #[doc = "The `false` keyword."]
     FALSE_KW = 10u16,
-    #[doc = "The `file` keyword."]
-    FILE_KW = 11u16,
-    #[doc = "A float literal"]
+    #[doc = "The path to a file."]
+    FILE = 11u16,
+    #[doc = "A float literal."]
     FLOAT = 12u16,
     #[doc = "The `for` keyword."]
     FOR_KW = 13u16,
@@ -41,93 +41,95 @@ pub enum SyntaxKind {
     GREATER_THAN = 15u16,
     #[doc = "The `>=` symbol."]
     GREATER_THAN_EQUALS = 16u16,
+    #[doc = "The `#` symbol."]
+    HASH = 17u16,
     #[doc = "An identifier."]
-    IDENT = 17u16,
+    IDENT = 18u16,
     #[doc = "The `if` keyword."]
-    IF_KW = 18u16,
+    IF_KW = 19u16,
     #[doc = "The `include` keyword."]
-    INCLUDE_KW = 19u16,
-    #[doc = "An integer literal"]
-    INTEGER = 20u16,
+    INCLUDE_KW = 20u16,
+    #[doc = "An integer literal."]
+    INTEGER = 21u16,
     #[doc = "The `<` symbol."]
-    LESS_THAN = 21u16,
+    LESS_THAN = 22u16,
     #[doc = "The `<=` symbol."]
-    LESS_THAN_EQUALS = 22u16,
+    LESS_THAN_EQUALS = 23u16,
     #[doc = "The `let` keyword."]
-    LET_KW = 23u16,
+    LET_KW = 24u16,
     #[doc = "The `[` symbol."]
-    L_BRACKET = 24u16,
+    L_BRACKET = 25u16,
     #[doc = "The `{` symbol."]
-    L_CURLY = 25u16,
+    L_CURLY = 26u16,
     #[doc = "The `(` symbol."]
-    L_PAREN = 26u16,
+    L_PAREN = 27u16,
     #[doc = "The `-` symbol."]
-    MINUS = 27u16,
+    MINUS = 28u16,
     #[doc = "The `module` keyword."]
-    MODULE_KW = 28u16,
+    MODULE_KW = 29u16,
     #[doc = "The `number` keyword."]
-    NUMBER_KW = 29u16,
+    NUMBER_KW = 30u16,
     #[doc = "The `||` symbol."]
-    OR = 30u16,
+    OR = 31u16,
     #[doc = "The `%` symbol."]
-    PERCENT = 31u16,
+    PERCENT = 32u16,
     #[doc = "The `+` symbol."]
-    PLUS = 32u16,
+    PLUS = 33u16,
     #[doc = "The `?` symbol."]
-    QUESTION_MARK = 33u16,
+    QUESTION_MARK = 34u16,
     #[doc = "The `]` symbol."]
-    R_BRACKET = 34u16,
+    R_BRACKET = 35u16,
     #[doc = "The `}` symbol."]
-    R_CURLY = 35u16,
+    R_CURLY = 36u16,
     #[doc = "The `)` symbol."]
-    R_PAREN = 36u16,
+    R_PAREN = 37u16,
     #[doc = "The `;` symbol."]
-    SEMICOLON = 37u16,
+    SEMICOLON = 38u16,
     #[doc = "The `/` symbol."]
-    SLASH = 38u16,
+    SLASH = 39u16,
     #[doc = "The `*` symbol."]
-    STAR = 39u16,
-    #[doc = "A string literal"]
-    STRING = 40u16,
+    STAR = 40u16,
+    #[doc = "A string literal."]
+    STRING = 41u16,
     #[doc = "The `true` keyword."]
-    TRUE_KW = 41u16,
+    TRUE_KW = 42u16,
     #[doc = "The `undef` keyword."]
-    UNDEF_KW = 42u16,
+    UNDEF_KW = 43u16,
     #[doc = "The `use` keyword."]
-    USE_KW = 43u16,
+    USE_KW = 44u16,
     #[doc = "One or more whitespace characters (spaces, tabs, newlines, etc.)."]
-    WHITESPACE = 44u16,
-    PACKAGE = 45u16,
-    INCLUDE = 46u16,
-    USE = 47u16,
-    ASSIGNMENT = 48u16,
-    NAMED_FUNCTION_DEFINITION = 49u16,
-    NAMED_MODULE_DEFINITION = 50u16,
-    MODULE_INSTANTIATION = 51u16,
-    EXPRESSIONS = 52u16,
-    INDEX_EXPR = 53u16,
-    LIST_EXPRESSION = 54u16,
-    UNARY_EXPR = 55u16,
-    TERNARY_EXPR = 56u16,
-    PAREN_EXPR = 57u16,
-    LIST_COMPREHENSION_EXPR = 58u16,
-    LET_CLAUSE = 59u16,
-    FUNCTION_CALL = 60u16,
-    BIN_EXPR = 61u16,
-    RANGE_EXPRESSION_FROM_TO = 62u16,
-    RANGE_EXPRESSION_FROM_TO_STEP = 63u16,
-    FOR_CLAUSE = 64u16,
-    IF_CLAUSE = 65u16,
-    ASSIGNMENTS_OPT = 66u16,
-    ASSIGNMENTS = 67u16,
-    PARAMETERS = 68u16,
-    ARGUMENTS = 69u16,
-    CHILDREN = 70u16,
-    BRACED_CHILDREN = 71u16,
+    WHITESPACE = 45u16,
+    PACKAGE = 46u16,
+    INCLUDE = 47u16,
+    USE = 48u16,
+    ASSIGNMENT = 49u16,
+    NAMED_FUNCTION_DEFINITION = 50u16,
+    NAMED_MODULE_DEFINITION = 51u16,
+    MODULE_INSTANTIATION = 52u16,
+    EXPRESSIONS = 53u16,
+    INDEX_EXPR = 54u16,
+    LIST_EXPRESSION = 55u16,
+    UNARY_EXPR = 56u16,
+    TERNARY_EXPR = 57u16,
+    PAREN_EXPR = 58u16,
+    LIST_COMPREHENSION_EXPR = 59u16,
+    LET_CLAUSE = 60u16,
+    FUNCTION_CALL = 61u16,
+    BIN_EXPR = 62u16,
+    RANGE_EXPRESSION_FROM_TO = 63u16,
+    RANGE_EXPRESSION_FROM_TO_STEP = 64u16,
+    FOR_CLAUSE = 65u16,
+    IF_CLAUSE = 66u16,
+    ASSIGNMENTS_OPT = 67u16,
+    ASSIGNMENTS = 68u16,
+    PARAMETERS = 69u16,
+    ARGUMENTS = 70u16,
+    CHILDREN = 71u16,
+    BRACED_CHILDREN = 72u16,
 }
 impl SyntaxKind {
     #[doc = r" All the possible [`SyntaxKind`] variants."]
-    pub const VARIANTS: [SyntaxKind; 72usize] = [
+    pub const VARIANTS: [SyntaxKind; 73usize] = [
         SyntaxKind::AND,
         SyntaxKind::BANG,
         SyntaxKind::CARET,
@@ -139,12 +141,13 @@ impl SyntaxKind {
         SyntaxKind::EQUALS,
         SyntaxKind::ERROR,
         SyntaxKind::FALSE_KW,
-        SyntaxKind::FILE_KW,
+        SyntaxKind::FILE,
         SyntaxKind::FLOAT,
         SyntaxKind::FOR_KW,
         SyntaxKind::FUNCTION_KW,
         SyntaxKind::GREATER_THAN,
         SyntaxKind::GREATER_THAN_EQUALS,
+        SyntaxKind::HASH,
         SyntaxKind::IDENT,
         SyntaxKind::IF_KW,
         SyntaxKind::INCLUDE_KW,
@@ -220,6 +223,7 @@ impl SyntaxKind {
                 | SyntaxKind::EQUALS
                 | SyntaxKind::GREATER_THAN
                 | SyntaxKind::GREATER_THAN_EQUALS
+                | SyntaxKind::HASH
                 | SyntaxKind::LESS_THAN
                 | SyntaxKind::LESS_THAN_EQUALS
                 | SyntaxKind::L_BRACKET
@@ -249,7 +253,6 @@ impl SyntaxKind {
         matches!(
             self,
             SyntaxKind::FALSE_KW
-                | SyntaxKind::FILE_KW
                 | SyntaxKind::FOR_KW
                 | SyntaxKind::FUNCTION_KW
                 | SyntaxKind::IF_KW
@@ -283,6 +286,7 @@ impl SyntaxKind {
             "=" => Some(SyntaxKind::EQUALS),
             ">" => Some(SyntaxKind::GREATER_THAN),
             ">=" => Some(SyntaxKind::GREATER_THAN_EQUALS),
+            "#" => Some(SyntaxKind::HASH),
             "<" => Some(SyntaxKind::LESS_THAN),
             "<=" => Some(SyntaxKind::LESS_THAN_EQUALS),
             "[" => Some(SyntaxKind::L_BRACKET),
@@ -327,67 +331,68 @@ impl SyntaxKind {
             8u16 => Some(SyntaxKind::EQUALS),
             9u16 => Some(SyntaxKind::ERROR),
             10u16 => Some(SyntaxKind::FALSE_KW),
-            11u16 => Some(SyntaxKind::FILE_KW),
+            11u16 => Some(SyntaxKind::FILE),
             12u16 => Some(SyntaxKind::FLOAT),
             13u16 => Some(SyntaxKind::FOR_KW),
             14u16 => Some(SyntaxKind::FUNCTION_KW),
             15u16 => Some(SyntaxKind::GREATER_THAN),
             16u16 => Some(SyntaxKind::GREATER_THAN_EQUALS),
-            17u16 => Some(SyntaxKind::IDENT),
-            18u16 => Some(SyntaxKind::IF_KW),
-            19u16 => Some(SyntaxKind::INCLUDE_KW),
-            20u16 => Some(SyntaxKind::INTEGER),
-            21u16 => Some(SyntaxKind::LESS_THAN),
-            22u16 => Some(SyntaxKind::LESS_THAN_EQUALS),
-            23u16 => Some(SyntaxKind::LET_KW),
-            24u16 => Some(SyntaxKind::L_BRACKET),
-            25u16 => Some(SyntaxKind::L_CURLY),
-            26u16 => Some(SyntaxKind::L_PAREN),
-            27u16 => Some(SyntaxKind::MINUS),
-            28u16 => Some(SyntaxKind::MODULE_KW),
-            29u16 => Some(SyntaxKind::NUMBER_KW),
-            30u16 => Some(SyntaxKind::OR),
-            31u16 => Some(SyntaxKind::PERCENT),
-            32u16 => Some(SyntaxKind::PLUS),
-            33u16 => Some(SyntaxKind::QUESTION_MARK),
-            34u16 => Some(SyntaxKind::R_BRACKET),
-            35u16 => Some(SyntaxKind::R_CURLY),
-            36u16 => Some(SyntaxKind::R_PAREN),
-            37u16 => Some(SyntaxKind::SEMICOLON),
-            38u16 => Some(SyntaxKind::SLASH),
-            39u16 => Some(SyntaxKind::STAR),
-            40u16 => Some(SyntaxKind::STRING),
-            41u16 => Some(SyntaxKind::TRUE_KW),
-            42u16 => Some(SyntaxKind::UNDEF_KW),
-            43u16 => Some(SyntaxKind::USE_KW),
-            44u16 => Some(SyntaxKind::WHITESPACE),
-            45u16 => Some(SyntaxKind::PACKAGE),
-            46u16 => Some(SyntaxKind::INCLUDE),
-            47u16 => Some(SyntaxKind::USE),
-            48u16 => Some(SyntaxKind::ASSIGNMENT),
-            49u16 => Some(SyntaxKind::NAMED_FUNCTION_DEFINITION),
-            50u16 => Some(SyntaxKind::NAMED_MODULE_DEFINITION),
-            51u16 => Some(SyntaxKind::MODULE_INSTANTIATION),
-            52u16 => Some(SyntaxKind::EXPRESSIONS),
-            53u16 => Some(SyntaxKind::INDEX_EXPR),
-            54u16 => Some(SyntaxKind::LIST_EXPRESSION),
-            55u16 => Some(SyntaxKind::UNARY_EXPR),
-            56u16 => Some(SyntaxKind::TERNARY_EXPR),
-            57u16 => Some(SyntaxKind::PAREN_EXPR),
-            58u16 => Some(SyntaxKind::LIST_COMPREHENSION_EXPR),
-            59u16 => Some(SyntaxKind::LET_CLAUSE),
-            60u16 => Some(SyntaxKind::FUNCTION_CALL),
-            61u16 => Some(SyntaxKind::BIN_EXPR),
-            62u16 => Some(SyntaxKind::RANGE_EXPRESSION_FROM_TO),
-            63u16 => Some(SyntaxKind::RANGE_EXPRESSION_FROM_TO_STEP),
-            64u16 => Some(SyntaxKind::FOR_CLAUSE),
-            65u16 => Some(SyntaxKind::IF_CLAUSE),
-            66u16 => Some(SyntaxKind::ASSIGNMENTS_OPT),
-            67u16 => Some(SyntaxKind::ASSIGNMENTS),
-            68u16 => Some(SyntaxKind::PARAMETERS),
-            69u16 => Some(SyntaxKind::ARGUMENTS),
-            70u16 => Some(SyntaxKind::CHILDREN),
-            71u16 => Some(SyntaxKind::BRACED_CHILDREN),
+            17u16 => Some(SyntaxKind::HASH),
+            18u16 => Some(SyntaxKind::IDENT),
+            19u16 => Some(SyntaxKind::IF_KW),
+            20u16 => Some(SyntaxKind::INCLUDE_KW),
+            21u16 => Some(SyntaxKind::INTEGER),
+            22u16 => Some(SyntaxKind::LESS_THAN),
+            23u16 => Some(SyntaxKind::LESS_THAN_EQUALS),
+            24u16 => Some(SyntaxKind::LET_KW),
+            25u16 => Some(SyntaxKind::L_BRACKET),
+            26u16 => Some(SyntaxKind::L_CURLY),
+            27u16 => Some(SyntaxKind::L_PAREN),
+            28u16 => Some(SyntaxKind::MINUS),
+            29u16 => Some(SyntaxKind::MODULE_KW),
+            30u16 => Some(SyntaxKind::NUMBER_KW),
+            31u16 => Some(SyntaxKind::OR),
+            32u16 => Some(SyntaxKind::PERCENT),
+            33u16 => Some(SyntaxKind::PLUS),
+            34u16 => Some(SyntaxKind::QUESTION_MARK),
+            35u16 => Some(SyntaxKind::R_BRACKET),
+            36u16 => Some(SyntaxKind::R_CURLY),
+            37u16 => Some(SyntaxKind::R_PAREN),
+            38u16 => Some(SyntaxKind::SEMICOLON),
+            39u16 => Some(SyntaxKind::SLASH),
+            40u16 => Some(SyntaxKind::STAR),
+            41u16 => Some(SyntaxKind::STRING),
+            42u16 => Some(SyntaxKind::TRUE_KW),
+            43u16 => Some(SyntaxKind::UNDEF_KW),
+            44u16 => Some(SyntaxKind::USE_KW),
+            45u16 => Some(SyntaxKind::WHITESPACE),
+            46u16 => Some(SyntaxKind::PACKAGE),
+            47u16 => Some(SyntaxKind::INCLUDE),
+            48u16 => Some(SyntaxKind::USE),
+            49u16 => Some(SyntaxKind::ASSIGNMENT),
+            50u16 => Some(SyntaxKind::NAMED_FUNCTION_DEFINITION),
+            51u16 => Some(SyntaxKind::NAMED_MODULE_DEFINITION),
+            52u16 => Some(SyntaxKind::MODULE_INSTANTIATION),
+            53u16 => Some(SyntaxKind::EXPRESSIONS),
+            54u16 => Some(SyntaxKind::INDEX_EXPR),
+            55u16 => Some(SyntaxKind::LIST_EXPRESSION),
+            56u16 => Some(SyntaxKind::UNARY_EXPR),
+            57u16 => Some(SyntaxKind::TERNARY_EXPR),
+            58u16 => Some(SyntaxKind::PAREN_EXPR),
+            59u16 => Some(SyntaxKind::LIST_COMPREHENSION_EXPR),
+            60u16 => Some(SyntaxKind::LET_CLAUSE),
+            61u16 => Some(SyntaxKind::FUNCTION_CALL),
+            62u16 => Some(SyntaxKind::BIN_EXPR),
+            63u16 => Some(SyntaxKind::RANGE_EXPRESSION_FROM_TO),
+            64u16 => Some(SyntaxKind::RANGE_EXPRESSION_FROM_TO_STEP),
+            65u16 => Some(SyntaxKind::FOR_CLAUSE),
+            66u16 => Some(SyntaxKind::IF_CLAUSE),
+            67u16 => Some(SyntaxKind::ASSIGNMENTS_OPT),
+            68u16 => Some(SyntaxKind::ASSIGNMENTS),
+            69u16 => Some(SyntaxKind::PARAMETERS),
+            70u16 => Some(SyntaxKind::ARGUMENTS),
+            71u16 => Some(SyntaxKind::CHILDREN),
+            72u16 => Some(SyntaxKind::BRACED_CHILDREN),
             _ => None,
         }
     }
@@ -440,9 +445,6 @@ macro_rules! T {
     (false) => {
         $crate::SyntaxKind::FALSE_KW
     };
-    (file) => {
-        $crate::SyntaxKind::FILE_KW
-    };
     (for) => {
         $crate::SyntaxKind::FOR_KW
     };
@@ -454,6 +456,9 @@ macro_rules! T {
     };
     (>=) => {
         $crate::SyntaxKind::GREATER_THAN_EQUALS
+    };
+    (#) => {
+        $crate::SyntaxKind::HASH
     };
     (if) => {
         $crate::SyntaxKind::IF_KW

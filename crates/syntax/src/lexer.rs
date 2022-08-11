@@ -7,7 +7,9 @@ use m_lexer::{Lexer, LexerBuilder};
 pub fn tokenize(input: &str) -> impl Iterator<Item = (SyntaxKind, &'_ str)> {
     let mut start_index = 0;
 
-    lexer().tokenize(input).into_iter().map(move |tok| {
+    let tokens = lexer().tokenize(input);
+
+    tokens.into_iter().map(move |tok| {
         let end = start_index + tok.len;
         let text = &input[start_index..end];
         start_index = end;
@@ -17,57 +19,67 @@ pub fn tokenize(input: &str) -> impl Iterator<Item = (SyntaxKind, &'_ str)> {
 }
 
 fn lexer() -> Lexer {
-    LexerBuilder::new()
-        .error_token(ERROR.into())
-        .token(AND.into(), "&&")
-        .token(STAR.into(), r"\*")
-        .token(BANG.into(), "!")
-        .token(R_CURLY.into(), r"\}")
-        .token(R_PAREN.into(), r"\)")
-        .token(R_BRACKET.into(), r"\]")
-        .token(COLON.into(), ":")
-        .token(COMMA.into(), ",")
-        .token(COMMENT.into(), r"//[^\n]*")
+    let builder = LexerBuilder::new().error_token(ERROR.into());
+
+    // basic tokens
+    builder
+        // These tokens require some custom logic
         .external_token(COMMENT.into(), r"/\*", block_comment)
-        .token(EQUALS.into(), "=")
-        // TODO: add these to the ungrammar
-        // .token(DOT.into(), r"\.")
-        // .token(EXPONENT.into(), r"\^")
-        // .token(HASH.into(), "#")
-        .token(FALSE_KW.into(), "false")
-        .token(FOR_KW.into(), "for")
-        .token(FUNCTION_KW.into(), "function")
-        .token(MODULE_KW.into(), "module")
-        .token(GREATER_THAN_EQUALS.into(), ">=")
-        .token(GREATER_THAN.into(), ">")
-        .token(IF_KW.into(), "if")
-        .token(INCLUDE_KW.into(), "include")
-        .token(LESS_THAN_EQUALS.into(), "<=")
-        .token(LESS_THAN.into(), "<")
-        .token(LET_KW.into(), "let")
-        .token(MINUS.into(), "-")
-        .token(INTEGER.into(), r"\d+")
-        // https://stackoverflow.com/a/55592455
-        .token(
-            FLOAT.into(),
-            r"\d+([.]\d*)?([eE][+-]?\d+)?|[.]\d+([eE][+-]?\d+)?",
-        )
-        .token(INTEGER.into(), r"\d+")
-        .token(L_CURLY.into(), r"\{")
-        .token(L_PAREN.into(), r"\(")
-        .token(L_BRACKET.into(), r"\[")
-        .token(OR.into(), r"\|\|")
-        .token(PERCENT.into(), "%")
-        .token(PLUS.into(), r"\+")
-        .token(QUESTION_MARK.into(), r"\?")
-        .token(SEMICOLON.into(), ";")
-        .token(SLASH.into(), "/")
-        // https://wordaligned.org/articles/string-literals-and-regular-expressions
-        .token(STRING.into(), r#""([^"\\]|\\.)*""#)
-        .token(TRUE_KW.into(), "true")
-        .token(USE_KW.into(), "use")
-        .token(UNDEF_KW.into(), "undef")
-        .token(WHITESPACE.into(), r"\s+")
+        .tokens(&[
+            (AND.into(), "&&"),
+            (STAR.into(), r"\*"),
+            (BANG.into(), "!"),
+            (R_CURLY.into(), r"\}"),
+            (R_PAREN.into(), r"\)"),
+            (R_BRACKET.into(), r"\]"),
+            (COLON.into(), ":"),
+            (COMMA.into(), ","),
+            (COMMENT.into(), r"//[^\n]*"),
+            (EQUALS.into(), "="),
+            (DOT.into(), r"\."),
+            (CARET.into(), r"\^"),
+            (HASH.into(), "#"),
+            (FALSE_KW.into(), "false"),
+            (FOR_KW.into(), "for"),
+            (FUNCTION_KW.into(), "function"),
+            (MODULE_KW.into(), "module"),
+            (GREATER_THAN_EQUALS.into(), ">="),
+            (GREATER_THAN.into(), ">"),
+            (IF_KW.into(), "if"),
+            (INCLUDE_KW.into(), "include"),
+            (LESS_THAN_EQUALS.into(), "<="),
+            (LESS_THAN.into(), "<"),
+            // HACK: To avoid accidentally matching "a < b && b > c", we assume
+            // file paths don't contain whitespace. Ideally, we would write our
+            // own lexer which has smarts like expecting a file path to contain
+            // "/" or "\", but that's more effort than I'd like to invest right
+            // now.
+            (FILE.into(), r"<\S+>"),
+            (LET_KW.into(), "let"),
+            (MINUS.into(), "-"),
+            (INTEGER.into(), r"\d+"),
+            // https://stackoverflow.com/a/55592455
+            (
+                FLOAT.into(),
+                r"\d+([.]\d*)?([eE][+-]?\d+)?|[.]\d+([eE][+-]?\d+)?",
+            ),
+            (INTEGER.into(), r"\d+"),
+            (L_CURLY.into(), r"\{"),
+            (L_PAREN.into(), r"\("),
+            (L_BRACKET.into(), r"\["),
+            (OR.into(), r"\|\|"),
+            (PERCENT.into(), "%"),
+            (PLUS.into(), r"\+"),
+            (QUESTION_MARK.into(), r"\?"),
+            (SEMICOLON.into(), ";"),
+            (SLASH.into(), "/"),
+            // https://wordaligned.org/articles/string-literals-and-regular-expressions
+            (STRING.into(), r#""([^"\\]|\\.)*""#),
+            (TRUE_KW.into(), "true"),
+            (USE_KW.into(), "use"),
+            (UNDEF_KW.into(), "undef"),
+            (WHITESPACE.into(), r"\s+"),
+        ])
         // Note: push this to the bottom so it's the lowest precedence
         .token(IDENT.into(), r"[\$\p{Alphabetic}][\w_]*")
         .build()
@@ -79,6 +91,7 @@ fn block_comment(text: &str) -> Option<usize> {
     let mut nesting = 0;
     let mut state = State::Scanning;
 
+    #[derive(Debug, Copy, Clone)]
     enum State {
         Scanning,
         ReadingStart,
@@ -86,6 +99,7 @@ fn block_comment(text: &str) -> Option<usize> {
     }
 
     for (offset, c) in text.char_indices() {
+        dbg!(state, offset, c);
         match state {
             State::Scanning if c == '/' => {
                 state = State::ReadingStart;
@@ -102,6 +116,11 @@ fn block_comment(text: &str) -> Option<usize> {
             }
             State::ReadingStart if c == '*' => {
                 nesting += 1;
+                state = State::Scanning;
+            }
+            State::ReadingStart => {
+                // We previously saw a "/", but the current token isn't a "*"
+                // so we should go back to scanning.
                 state = State::Scanning;
             }
             _ => {}
@@ -151,6 +170,74 @@ mod tests {
 
         let tokens: Vec<_> = tokenize(src).collect();
 
+        assert_eq!(tokens, expected);
+    }
+
+    #[test]
+    fn handle_block_comment_with_internal_slashes() {
+        let src = "/* / */";
+
+        let length = block_comment(src).unwrap();
+
+        assert_eq!(length, src.len());
+    }
+
+    #[test]
+    fn string_literals() {
+        let examples = [
+            r#""""#,
+            r#"" ""#,
+            r#""escaped \" quote""#,
+            r#""escaped \n newline""#,
+            r#""<code>&</code>""#,
+        ];
+
+        for example in examples {
+            let tokens: Vec<_> = tokenize(example).collect();
+
+            let expected = vec![(SyntaxKind::STRING, example)];
+            assert_eq!(tokens, expected)
+        }
+    }
+
+    #[test]
+    fn file_containing_at_cmake() {
+        let src = "use <@CMAKE_CURRENT_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>";
+
+        let tokens: Vec<_> = tokenize(src).collect();
+
+        let expected = vec![
+            (USE_KW, "use"),
+            (WHITESPACE, " "),
+            (
+                FILE,
+                "<@CMAKE_CURRENT_SOURCE_DIR@/../testdata/scad/misc/sub2/test7.scad>",
+            ),
+        ];
+        assert_eq!(tokens, expected);
+    }
+
+    #[test]
+    fn conditionals_arent_recognised_as_a_file() {
+        let src = "a < b && c > d";
+
+        let tokens: Vec<_> = tokenize(src).collect();
+
+        let expected = vec![
+            (IDENT, "a"),
+            (WHITESPACE, " "),
+            (LESS_THAN, "<"),
+            (WHITESPACE, " "),
+            (IDENT, "b"),
+            (WHITESPACE, " "),
+            (AND, "&&"),
+            (WHITESPACE, " "),
+            (IDENT, "c"),
+            (WHITESPACE, " "),
+            (GREATER_THAN, ">"),
+            (WHITESPACE, " "),
+            (IDENT, "d"),
+        ];
         assert_eq!(tokens, expected);
     }
 

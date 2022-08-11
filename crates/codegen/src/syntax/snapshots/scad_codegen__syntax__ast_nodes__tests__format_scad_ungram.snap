@@ -6,7 +6,7 @@ Package = Statement*;
 
 Statement = Include | Use | (Assignment ';') | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation;
 
-Include = 'include' 'string';
+Include = 'include' 'file';
 
 Use = 'use' 'file';
 
@@ -42,7 +42,7 @@ LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements E
 
 FunctionCall = 'ident' '(' args:Arguments? ')';
 
-BinExpr = Expr ('+' | '-' | '*' | '/' | '%' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||') Expr;
+BinExpr = Expr ('+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||') Expr;
 
 ListComprehensionElements = LetClause | ForClause | IfClause;
 

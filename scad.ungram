@@ -9,7 +9,7 @@ Statement =
 | NamedModuleDefinition
 | ModuleInstantiation
 
-Include = 'include' 'string'
+Include = 'include' 'file'
 
 Use = 'use' 'file'
 
@@ -46,7 +46,7 @@ ListComprehensionExpr = '(' ListComprehensionElements ')'
 
 BinExpr =
   Expr
-  ('+' | '-' | '*' | '/' | '%' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||')
+  ('+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||')
   Expr
 
 UnaryExpr = ('!' | '+' | '-') Expr

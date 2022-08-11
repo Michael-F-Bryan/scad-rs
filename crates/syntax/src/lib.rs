@@ -1,3 +1,7 @@
+#[cfg(test)]
+#[macro_use]
+extern crate pretty_assertions;
+
 // generated code
 #[allow(clippy::redundant_clone, unreachable_patterns)]
 pub mod ast;
