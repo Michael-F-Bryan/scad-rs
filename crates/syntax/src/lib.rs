@@ -51,6 +51,8 @@
 //!
 //! [arch]: https://github.com/rust-lang/rust-analyzer
 
+#![warn(elided_lifetimes_in_paths)]
+
 #[cfg(test)]
 #[macro_use]
 extern crate pretty_assertions;

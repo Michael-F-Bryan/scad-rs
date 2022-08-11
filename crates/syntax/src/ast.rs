@@ -514,7 +514,7 @@ impl Expressions {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "Expr = Atom | ListExpression | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr;\n"]
+#[doc = "Expr = Atom | ListExpression | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr | VectorExpr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Expr {
@@ -527,6 +527,7 @@ pub enum Expr {
     ListComprehensionExpr(ListComprehensionExpr),
     LetClause(LetClause),
     BinExpr(BinExpr),
+    VectorExpr(VectorExpr),
 }
 impl AstNode for Expr {
     type Language = OpenSCAD;
@@ -543,6 +544,7 @@ impl AstNode for Expr {
             || ListComprehensionExpr::can_cast(kind)
             || LetClause::can_cast(kind)
             || BinExpr::can_cast(kind)
+            || VectorExpr::can_cast(kind)
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
     where
@@ -575,6 +577,9 @@ impl AstNode for Expr {
         if let Some(variant) = BinExpr::cast(node.clone()) {
             return Some(Expr::BinExpr(variant));
         }
+        if let Some(variant) = VectorExpr::cast(node.clone()) {
+            return Some(Expr::VectorExpr(variant));
+        }
         None
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
@@ -588,6 +593,7 @@ impl AstNode for Expr {
             Expr::ListComprehensionExpr(node) => node.syntax(),
             Expr::LetClause(node) => node.syntax(),
             Expr::BinExpr(node) => node.syntax(),
+            Expr::VectorExpr(node) => node.syntax(),
         }
     }
 }
@@ -1016,6 +1022,53 @@ impl BinExpr {
     }
     pub fn bin_op(&self) -> Option<BinOp> {
         self.0.children().find_map(BinOp::cast)
+    }
+}
+#[doc = "A strongly typed wrapper around a [`VECTOR_EXPR`][SyntaxKind::VECTOR_EXPR] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
+#[doc = "```text"]
+#[doc = "VectorExpr = '[' Expressions ']';\n"]
+#[doc = "```"]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct VectorExpr(SyntaxNode<OpenSCAD>);
+impl AstNode for VectorExpr {
+    type Language = OpenSCAD;
+    fn can_cast(kind: SyntaxKind) -> bool
+    where
+        Self: Sized,
+    {
+        kind == SyntaxKind::VECTOR_EXPR
+    }
+    fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        if VectorExpr::can_cast(node.kind()) {
+            Some(VectorExpr(node))
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
+        &self.0
+    }
+}
+impl VectorExpr {
+    pub fn l_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_BRACKET)
+    }
+    pub fn expressions(&self) -> Option<Expressions> {
+        self.0.children().find_map(Expressions::cast)
+    }
+    pub fn r_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
     }
 }
 #[doc = "A strongly typed `LiteralExpr` node."]

@@ -22,7 +22,7 @@ Assignment = name:'ident' '=' value:Expr;
 
 Expressions = Expr (',' Expr)*;
 
-Expr = Atom | ListExpression | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr;
+Expr = Atom | ListExpression | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr | VectorExpr;
 
 Atom = LiteralExpr | LookupExpr | IndexExpr | FunctionCall;
 
@@ -41,6 +41,8 @@ ListComprehensionExpr = '(' ListComprehensionElements ')';
 LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements Expr;
 
 BinExpr = Expr BinOp Expr;
+
+VectorExpr = '[' Expressions ']';
 
 LiteralExpr = 'true' | 'false' | 'undef' | 'integer' | 'float' | 'string';
 

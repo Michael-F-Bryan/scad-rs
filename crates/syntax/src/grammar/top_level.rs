@@ -1,5 +1,8 @@
 use crate::{
-    grammar::{expressions, TokenSet},
+    grammar::{
+        expressions::{self},
+        TokenSet,
+    },
     parser::{Mark, Parser},
     SyntaxKind::*,
 };
@@ -25,11 +28,23 @@ pub(crate) fn statement(p: &mut Parser<'_>) {
         IDENT if p.nth_at(1, T![=]) => {
             assignment_statement(p, m);
         }
+        IDENT if p.nth_at(1, T!["("]) => {
+            module_instantiation(p, m);
+        }
         _ => p.error_recover("Expected a statement", m, CONTINUE),
     }
 }
 
-fn assignment_statement(p: &mut Parser, m: Mark) {
+fn module_instantiation(p: &mut Parser<'_>, m: Mark) {
+    p.bump(IDENT);
+    p.bump(T!["("]);
+    expressions::arguments(p);
+    p.expect(T![")"]);
+    p.expect(T![;]);
+    p.complete(m, MODULE_INSTANTIATION);
+}
+
+fn assignment_statement(p: &mut Parser<'_>, m: Mark) {
     assignment(p);
     p.expect(T![;]);
     p.complete(m, ASSIGNMENT_STATEMENT);
@@ -82,5 +97,6 @@ mod tests {
             c = 1 + 1;
             d = "Hello, World!";
         "#),
+        cube: statement("cube([2,3,4]);"),
     }
 }

@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use rowan::ast::AstNode;
 use scad_syntax::ast::{
-    Assignment, Atom, BinOp, Expr, LiteralExpr, LookupExpr, Package, Statement,
+    Argument, Assignment, Atom, BinOp, Expr, LiteralExpr, LookupExpr, ModuleInstantiation, Package,
+    Statement, VectorExpr,
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -19,22 +20,32 @@ impl Interpreter {
         }
     }
 
-    pub fn evaluate(&mut self) -> Result<(), Exception> {
+    pub fn evaluate(&mut self) -> Result<Vec<Geometry>, Exception> {
+        let mut geometry = Vec::new();
+
         for stmt in self.pkg.statements() {
-            self.evaluate_stmt(stmt)?;
+            if let Some(geom) = self.evaluate_stmt(stmt)? {
+                geometry.push(geom);
+            }
         }
 
-        Ok(())
+        Ok(geometry)
     }
 
-    fn evaluate_stmt(&mut self, stmt: Statement) -> Result<(), Exception> {
+    fn evaluate_stmt(&mut self, stmt: Statement) -> Result<Option<Geometry>, Exception> {
         match stmt {
             Statement::Include(_) => todo!(),
             Statement::Use(_) => todo!(),
-            Statement::AssignmentStatement(a) => self.evaluate_assignment(a.assignment().unwrap()),
+            Statement::AssignmentStatement(a) => {
+                self.evaluate_assignment(a.assignment().unwrap())?;
+                Ok(None)
+            }
             Statement::NamedFunctionDefinition(_) => todo!(),
             Statement::NamedModuleDefinition(_) => todo!(),
-            Statement::ModuleInstantiation(_) => todo!(),
+            Statement::ModuleInstantiation(m) => {
+                let geom = self.evaluate_module_instantiation(m)?;
+                Ok(Some(geom))
+            }
         }
     }
 
@@ -52,6 +63,7 @@ impl Interpreter {
     fn evaluate_expr(&mut self, expr: Expr) -> Result<Value, Exception> {
         match expr {
             Expr::Atom(atom) => self.evaluate_atom(atom),
+            Expr::VectorExpr(vector) => self.evaluate_vector(vector),
             Expr::ListExpression(_) => todo!(),
             Expr::RangeExpression(_) => todo!(),
             Expr::UnaryExpr(_) => todo!(),
@@ -120,6 +132,58 @@ impl Interpreter {
             _ => todo!(),
         }
     }
+
+    fn evaluate_vector(&mut self, vector: VectorExpr) -> Result<Value, Exception> {
+        let mut values = Vec::new();
+
+        for expr in vector.expressions().unwrap().exprs() {
+            values.push(self.evaluate_expr(expr)?);
+        }
+
+        Ok(Value::Vector(values))
+    }
+
+    fn evaluate_module_instantiation(
+        &mut self,
+        m: ModuleInstantiation,
+    ) -> Result<Geometry, Exception> {
+        let arguments = m
+            .arguments_opt()
+            .map(|args| args.arguments().collect::<Vec<_>>())
+            .unwrap_or_default();
+
+        let mut args = Vec::new();
+        for arg in arguments {
+            let expr = match arg {
+                Argument::Expr(expr) => self.evaluate_expr(expr)?,
+                Argument::Assignment(_) => todo!(),
+            };
+            args.push(expr);
+        }
+
+        match m.ident_token().unwrap().text() {
+            "cube" => self.evaluate_cube(args),
+            _ => todo!(),
+        }
+    }
+
+    fn evaluate_cube(&self, args: Vec<Value>) -> Result<Geometry, Exception> {
+        assert_eq!(args.len(), 1);
+        let vector = match &args[0] {
+            Value::Vector(v) => v,
+            _ => todo!(),
+        };
+        let args: Vec<f64> = vector.iter().map(|v| v.as_float().unwrap()).collect();
+
+        match *args.as_slice() {
+            [height, width, depth] => Ok(Geometry::Cube {
+                width,
+                height,
+                depth,
+            }),
+            _ => todo!(),
+        }
+    }
 }
 
 fn add(lhs: Value, rhs: Value) -> Result<Value, Exception> {
@@ -138,6 +202,22 @@ enum Value {
     Integer(i64),
     Float(f64),
     String(String),
+    Vector(Vec<Value>),
+}
+
+impl Value {
+    fn as_float(&self) -> Option<f64> {
+        match *self {
+            Value::Integer(i) => Some(i as f64),
+            Value::Float(f) => Some(f),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Geometry {
+    Cube { width: f64, height: f64, depth: f64 },
 }
 
 #[derive(Debug, Clone)]
@@ -155,6 +235,7 @@ mod tests {
             a = 1;
             b = 2;
             c = a + b;
+            cube([a, b, c]);
         ";
         let tokens = scad_syntax::tokenize(src);
         let (pkg, errors) = scad_syntax::parse(tokens);

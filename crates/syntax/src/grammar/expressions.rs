@@ -38,11 +38,35 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
         T![-] | T![!] | T![+] => {
             unary_expr(p);
         }
+        T!["["] => {
+            vector(p);
+        }
         other => {
             p.error(format!("Expected an expression but found {other:?}"));
             p.do_bump(1);
         }
     }
+}
+
+fn vector(p: &mut Parser<'_>) {
+    let m = p.start();
+    p.bump(T!["["]);
+
+    expressions(p);
+
+    p.expect(T!["]"]);
+    p.complete(m, VECTOR_EXPR);
+}
+
+fn expressions(p: &mut Parser<'_>) {
+    let m = p.start();
+
+    expr(p);
+
+    while p.eat(T![,]) {
+        expr(p);
+    }
+    p.complete(m, EXPRESSIONS);
 }
 
 fn atom(p: &mut Parser<'_>) {
@@ -76,7 +100,7 @@ fn paren_expr(p: &mut Parser<'_>) {
     p.complete(m, PAREN_EXPR);
 }
 
-fn lookup_expr(p: &mut Parser) {
+fn lookup_expr(p: &mut Parser<'_>) {
     let m = p.start();
     p.bump(IDENT);
 
