@@ -1,0 +1,20 @@
+---
+source: crates/syntax/src/grammar/top_level.rs
+description: statement(if (test) cube();)
+---
+Node(
+    IF_STATEMENT@0..15
+      IF_KW@0..2 "if"
+      L_PAREN@2..3 "("
+      LOOKUP_EXPR@3..7
+        IDENT@3..7 "test"
+      R_PAREN@7..8 ")"
+      MODULE_INSTANTIATION@8..15
+        IDENT@8..12 "cube"
+        L_PAREN@12..13 "("
+        ARGUMENTS@13..13
+        R_PAREN@13..14 ")"
+        SEMICOLON@14..15
+          SEMICOLON@14..15 ";"
+    ,
+)

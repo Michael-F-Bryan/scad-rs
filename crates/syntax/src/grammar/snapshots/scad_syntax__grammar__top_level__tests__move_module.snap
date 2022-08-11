@@ -1,6 +1,6 @@
 ---
 source: crates/syntax/src/grammar/top_level.rs
-description: "statement(module move(x=0,y) {\n            translate() rotate(5) children();\n            cube();\n        })"
+description: "statement(\n            module move(x=0,y) {\n                translate() rotate(5) children();\n                cube();\n            })"
 ---
 Node(
     NAMED_MODULE_DEFINITION@0..57

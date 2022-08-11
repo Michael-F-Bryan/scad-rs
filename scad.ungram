@@ -14,10 +14,24 @@ Statement =
 | NamedFunctionDefinition
 | NamedModuleDefinition
 | ModuleInstantiation
+| IfStatement
 
 Include = 'include' 'file'
 
 Use = 'use' 'file'
+
+IfStatement = 'if' '(' Expr ')' Actions ( 'else' Actions )?
+
+Actions =
+  Action
+| BracedActions
+
+BracedActions = '{' Action* '}'
+
+Action =
+  AssignmentStatement
+| ModuleInstantiation
+| IfStatement
 
 AssignmentStatement = Assignment ';'
 

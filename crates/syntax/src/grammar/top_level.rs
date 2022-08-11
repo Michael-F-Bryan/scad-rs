@@ -37,7 +37,61 @@ pub(crate) fn statement(p: &mut Parser<'_>) {
         T![module] => {
             named_module_definition(p, m);
         }
+        T![if] => {
+            if_statement(p, m);
+        }
         _ => p.error_recover("Expected a statement", m, CONTINUE),
+    }
+}
+
+fn if_statement(p: &mut Parser<'_>, m: Mark) {
+    p.bump(T![if]);
+    p.expect(T!["("]);
+    expressions::expr(p);
+    p.expect(T![")"]);
+    actions(p);
+
+    dbg!(p.current());
+    if p.eat(T![else]) {
+        actions(p);
+    }
+
+    p.complete(m, IF_STATEMENT);
+}
+
+fn actions(p: &mut Parser<'_>) {
+    if p.at(T!["{"]) {
+        braced_actions(p);
+    } else {
+        action(p);
+    }
+}
+
+fn braced_actions(p: &mut Parser<'_>) {
+    let m = p.start();
+    p.bump(T!["{"]);
+
+    while !p.eat(T!["}"]) && !p.at(EOF) {
+        dbg!(p.current());
+        action(p);
+    }
+    dbg!(p.current());
+
+    p.complete(m, BRACED_ACTIONS);
+}
+
+fn action(p: &mut Parser<'_>) {
+    let m = p.start();
+
+    match p.current() {
+        T![if] => if_statement(p, m),
+        IDENT if p.nth_at(1, T![=]) => {
+            assignment_statement(p, m);
+        }
+        IDENT if p.nth_at(1, T!["("]) => {
+            module_instantiation(p, m);
+        }
+        _ => p.error_recover("Expected an action", m, CONTINUE),
     }
 }
 
@@ -187,17 +241,40 @@ mod tests {
         "#),
         cube: statement("cube([2,3,4]);"),
         multiple_module_instantiations: statement("translate([a, b, c]) cube([2, 3, 4]);"),
-        module_with_children: statement("translate([a, b, c]) {
-            cube(10);
-            cube(20);
-        }"),
+        module_with_children: statement("
+            translate([a, b, c]) {
+                cube(10);
+                cube(20);
+            }"
+        ),
         function_definition_no_params: statement("function x() = 5;"),
         function_definition_single_unnamed_param: statement("function x(y) = y + 2;"),
         function_definition_single_param_with_default: statement("function x(y=2) = y + 2;"),
         function_definition_multiple_params: statement("function x(a, b=2, c) = a+b+c;"),
-        move_module: statement("module move(x=0,y) {
-            translate() rotate(5) children();
-            cube();
-        }")
+        move_module: statement("
+            module move(x=0,y) {
+                translate() rotate(5) children();
+                cube();
+            }"
+        ),
+        if_statement: statement("if (test) cube();"),
+        if_else_statement: statement("if (test) truthy(); else falsy();"),
+        #[ignore]
+        if_else_statement_with_braces: statement("
+            if (test) {
+                truthy_1();
+                truthy_2();
+            } else {
+                falsy();
+            }"
+        ),
+         if_else_if_nested: statement("
+            if (test1)
+                if (test2) {scope2_1();}
+                else {scope2_2();}
+            else
+                if (test3) {scope3_1();}
+                else {scope3_2();}"
+        )
     }
 }

@@ -75,6 +75,7 @@ impl<'a> Parser<'a> {
 
     /// Assert that we are at a particular token and consume it, panicking if
     /// it wasn't found.
+    #[track_caller]
     pub(crate) fn bump(&mut self, kind: SyntaxKind) {
         assert!(
             self.eat(kind),

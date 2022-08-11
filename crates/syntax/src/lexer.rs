@@ -65,6 +65,7 @@ fn lexer() -> Lexer {
             (FUNCTION_KW.into(), "function"),
             (MODULE_KW.into(), "module"),
             (IF_KW.into(), "if"),
+            (ELSE_KW.into(), "else"),
             (INCLUDE_KW.into(), "include"),
             (LET_KW.into(), "let"),
             (TRUE_KW.into(), "true"),

@@ -4,7 +4,7 @@ expression: "&formatted"
 ---
 Package = Statement*;
 
-Statement = Include | Use | AssignmentStatement | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation;
+Statement = Include | Use | AssignmentStatement | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation | IfStatement;
 
 Include = 'include' 'file';
 
@@ -18,11 +18,19 @@ NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' '{' body:Sta
 
 ModuleInstantiation = 'ident' '(' args:Arguments? ')' Child;
 
+IfStatement = 'if' '(' Expr ')' Actions ('else' Actions)?;
+
+Expr = Atom | ListExpr | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr;
+
+Actions = Action | BracedActions;
+
+Action = AssignmentStatement | ModuleInstantiation | IfStatement;
+
+BracedActions = '{' Action* '}';
+
 Assignment = name:'ident' '=' value:Expr;
 
 Expressions = Expr (',' Expr)*;
-
-Expr = Atom | ListExpr | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr;
 
 Atom = LiteralExpr | LookupExpr | IndexExpr | FunctionCall;
 

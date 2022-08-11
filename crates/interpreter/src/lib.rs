@@ -43,6 +43,7 @@ impl Interpreter {
             }
             Statement::NamedFunctionDefinition(_) => todo!(),
             Statement::NamedModuleDefinition(_) => todo!(),
+            Statement::IfStatement(_) => todo!(),
             Statement::ModuleInstantiation(m) => {
                 let geom = self.evaluate_module_instantiation(m)?;
                 Ok(Some(geom))

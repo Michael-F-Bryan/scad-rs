@@ -1,6 +1,6 @@
 ---
 source: crates/syntax/src/grammar/top_level.rs
-description: "statement(translate([a, b, c]) {\n            cube(10);\n            cube(20);\n        })"
+description: "statement(\n            translate([a, b, c]) {\n                cube(10);\n                cube(20);\n            })"
 ---
 Node(
     MODULE_INSTANTIATION@0..38
