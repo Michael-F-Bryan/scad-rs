@@ -6,6 +6,27 @@
 
 A Rust implementation of the [OpenSCAD][scad-website] virtual machine.
 
+## For Developers
+
+When you initially check out the repository, make sure to also fetch the
+`openscad` submodule we use for integration/compatibility testing.
+
+```console
+$ git clone --recursive https://github.com/Michael-F-Bryan/scad-rs.git
+```
+
+I'll typically use [`cargo watch`][cargo-watch] to automatically recompile the
+project and run the test suite.
+
+```console
+$ cargo watch --clear --ignore "snapshots/*.snap*" \
+    -x "check --workspace" \
+    -x "test --workspace" \
+    -x "doc --workspace --document-private-items" \
+    -x "build --workspace --release" \
+    -x "integration-tests"
+```
+
 ## License
 
 This project is licensed under either of
@@ -31,5 +52,6 @@ The intent of this crate is to be free of soundness bugs. The developers will
 do their best to avoid them, and welcome help in analysing and fixing them.
 
 [api-docs]: https://michael-f-bryan.github.io/scad-rs
+[cargo-watch]: https://crates.io/crates/cargo-watch
 [crev]: https://github.com/crev-dev/cargo-crev
 [scad-website]: https://openscad.org/
