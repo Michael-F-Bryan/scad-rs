@@ -28,9 +28,13 @@ impl SyntaxKind {
         let variants =
             self.variants
                 .iter()
-                .map(|SyntaxKindVariant { docs, ident, .. }| match docs {
-                    Some(docs) => quote!(#[doc = #docs] #ident),
-                    None => quote!(#ident),
+                .enumerate()
+                .map(|(i, SyntaxKindVariant { docs, ident, .. })| {
+                    let i = u16::try_from(i).unwrap();
+                    match docs {
+                        Some(docs) => quote!(#[doc = #docs] #ident = #i),
+                        None => quote!(#ident = #i),
+                    }
                 });
 
         quote! {
@@ -38,7 +42,6 @@ impl SyntaxKind {
             /// OpenSCAD language grammar.
             #[derive(
                 Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash,
-                num_derive::FromPrimitive, num_derive::ToPrimitive,
             )]
             #[repr(u16)]
             #[allow(nonstandard_style)]
@@ -54,6 +57,11 @@ impl SyntaxKind {
 
         let variants: Vec<_> = variants.iter().map(|v| &v.ident).collect();
         let num_variants = variants.len();
+
+        let codes = variants.iter().enumerate().map(|(i, v)| {
+            let i = u16::try_from(i).unwrap();
+            quote!(#i => Some(SyntaxKind::#v))
+        });
 
         let punctuation: Vec<_> = tokens
             .iter()
@@ -142,7 +150,10 @@ impl SyntaxKind {
                 /// assert_eq!(round_tripped, kind);
                 /// ```
                 pub fn from_code(n: u16) -> Option<Self> {
-                    <SyntaxKind as num_traits::FromPrimitive>::from_u16(n)
+                    match n {
+                        #( #codes, )*
+                        _ => None,
+                    }
                 }
             }
         }

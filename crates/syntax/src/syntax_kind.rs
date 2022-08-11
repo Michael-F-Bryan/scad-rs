@@ -2,139 +2,128 @@
 
 #[doc = r" The different types of terminals and non-terminals in the"]
 #[doc = r" OpenSCAD language grammar."]
-#[derive(
-    Debug,
-    Copy,
-    Clone,
-    PartialEq,
-    Eq,
-    PartialOrd,
-    Ord,
-    Hash,
-    num_derive :: FromPrimitive,
-    num_derive :: ToPrimitive,
-)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u16)]
 #[allow(nonstandard_style)]
 #[non_exhaustive]
 pub enum SyntaxKind {
     #[doc = "The `&&` symbol."]
-    AND,
+    AND = 0u16,
     #[doc = "The `!` symbol."]
-    BANG,
+    BANG = 1u16,
     #[doc = "The `^` symbol."]
-    CARET,
+    CARET = 2u16,
     #[doc = "The `:` symbol."]
-    COLON,
+    COLON = 3u16,
     #[doc = "The `,` symbol."]
-    COMMA,
+    COMMA = 4u16,
     #[doc = "A comment."]
-    COMMENT,
+    COMMENT = 5u16,
     #[doc = "The `.` symbol."]
-    DOT,
+    DOT = 6u16,
     #[doc = "End of input."]
-    EOF,
+    EOF = 7u16,
     #[doc = "The `=` symbol."]
-    EQUALS,
+    EQUALS = 8u16,
     #[doc = "A lexer error."]
-    ERROR,
+    ERROR = 9u16,
     #[doc = "The `false` keyword."]
-    FALSE_KW,
+    FALSE_KW = 10u16,
     #[doc = "The `file` keyword."]
-    FILE_KW,
+    FILE_KW = 11u16,
     #[doc = "A float literal"]
-    FLOAT,
+    FLOAT = 12u16,
     #[doc = "The `for` keyword."]
-    FOR_KW,
+    FOR_KW = 13u16,
     #[doc = "The `function` keyword."]
-    FUNCTION_KW,
+    FUNCTION_KW = 14u16,
     #[doc = "The `>` symbol."]
-    GREATER_THAN,
+    GREATER_THAN = 15u16,
     #[doc = "The `>=` symbol."]
-    GREATER_THAN_EQUALS,
+    GREATER_THAN_EQUALS = 16u16,
     #[doc = "An identifier."]
-    IDENT,
+    IDENT = 17u16,
     #[doc = "The `if` keyword."]
-    IF_KW,
+    IF_KW = 18u16,
     #[doc = "The `include` keyword."]
-    INCLUDE_KW,
+    INCLUDE_KW = 19u16,
     #[doc = "An integer literal"]
-    INTEGER,
+    INTEGER = 20u16,
     #[doc = "The `<` symbol."]
-    LESS_THAN,
+    LESS_THAN = 21u16,
     #[doc = "The `<=` symbol."]
-    LESS_THAN_EQUALS,
+    LESS_THAN_EQUALS = 22u16,
     #[doc = "The `let` keyword."]
-    LET_KW,
+    LET_KW = 23u16,
     #[doc = "The `[` symbol."]
-    L_BRACKET,
+    L_BRACKET = 24u16,
     #[doc = "The `{` symbol."]
-    L_CURLY,
+    L_CURLY = 25u16,
     #[doc = "The `(` symbol."]
-    L_PAREN,
+    L_PAREN = 26u16,
     #[doc = "The `-` symbol."]
-    MINUS,
+    MINUS = 27u16,
     #[doc = "The `module` keyword."]
-    MODULE_KW,
+    MODULE_KW = 28u16,
     #[doc = "The `number` keyword."]
-    NUMBER_KW,
+    NUMBER_KW = 29u16,
     #[doc = "The `||` symbol."]
-    OR,
+    OR = 30u16,
     #[doc = "The `%` symbol."]
-    PERCENT,
+    PERCENT = 31u16,
     #[doc = "The `+` symbol."]
-    PLUS,
+    PLUS = 32u16,
     #[doc = "The `?` symbol."]
-    QUESTION_MARK,
+    QUESTION_MARK = 33u16,
     #[doc = "The `]` symbol."]
-    R_BRACKET,
+    R_BRACKET = 34u16,
     #[doc = "The `}` symbol."]
-    R_CURLY,
+    R_CURLY = 35u16,
     #[doc = "The `)` symbol."]
-    R_PAREN,
+    R_PAREN = 36u16,
     #[doc = "The `;` symbol."]
-    SEMICOLON,
+    SEMICOLON = 37u16,
     #[doc = "The `/` symbol."]
-    SLASH,
+    SLASH = 38u16,
     #[doc = "The `*` symbol."]
-    STAR,
+    STAR = 39u16,
     #[doc = "A string literal"]
-    STRING,
+    STRING = 40u16,
     #[doc = "The `true` keyword."]
-    TRUE_KW,
+    TRUE_KW = 41u16,
     #[doc = "The `undef` keyword."]
-    UNDEF_KW,
+    UNDEF_KW = 42u16,
     #[doc = "The `use` keyword."]
-    USE_KW,
+    USE_KW = 43u16,
     #[doc = "One or more whitespace characters (spaces, tabs, newlines, etc.)."]
-    WHITESPACE,
-    PACKAGE,
-    INCLUDE,
-    USE,
-    ASSIGNMENT,
-    NAMED_FUNCTION_DEFINITION,
-    NAMED_MODULE_DEFINITION,
-    MODULE_INSTANTIATION,
-    EXPRESSIONS,
-    INDEX_EXPR,
-    LIST_EXPRESSION,
-    UNARY_EXPR,
-    TERNARY_EXPR,
-    PAREN_EXPR,
-    LIST_COMPREHENSION_EXPR,
-    LET_CLAUSE,
-    FUNCTION_CALL,
-    BIN_EXPR,
-    RANGE_EXPRESSION_FROM_TO,
-    RANGE_EXPRESSION_FROM_TO_STEP,
-    FOR_CLAUSE,
-    IF_CLAUSE,
-    ASSIGNMENTS_OPT,
-    ASSIGNMENTS,
-    PARAMETERS,
-    ARGUMENTS,
-    CHILDREN,
-    BRACED_CHILDREN,
+    WHITESPACE = 44u16,
+    PACKAGE = 45u16,
+    INCLUDE = 46u16,
+    USE = 47u16,
+    ASSIGNMENT = 48u16,
+    NAMED_FUNCTION_DEFINITION = 49u16,
+    NAMED_MODULE_DEFINITION = 50u16,
+    MODULE_INSTANTIATION = 51u16,
+    EXPRESSIONS = 52u16,
+    INDEX_EXPR = 53u16,
+    LIST_EXPRESSION = 54u16,
+    UNARY_EXPR = 55u16,
+    TERNARY_EXPR = 56u16,
+    PAREN_EXPR = 57u16,
+    LIST_COMPREHENSION_EXPR = 58u16,
+    LET_CLAUSE = 59u16,
+    FUNCTION_CALL = 60u16,
+    BIN_EXPR = 61u16,
+    RANGE_EXPRESSION_FROM_TO = 62u16,
+    RANGE_EXPRESSION_FROM_TO_STEP = 63u16,
+    FOR_CLAUSE = 64u16,
+    IF_CLAUSE = 65u16,
+    ASSIGNMENTS_OPT = 66u16,
+    ASSIGNMENTS = 67u16,
+    PARAMETERS = 68u16,
+    ARGUMENTS = 69u16,
+    CHILDREN = 70u16,
+    BRACED_CHILDREN = 71u16,
 }
 impl SyntaxKind {
     #[doc = r" All the possible [`SyntaxKind`] variants."]
@@ -326,7 +315,81 @@ impl SyntaxKind {
     #[doc = r" assert_eq!(round_tripped, kind);"]
     #[doc = r" ```"]
     pub fn from_code(n: u16) -> Option<Self> {
-        <SyntaxKind as num_traits::FromPrimitive>::from_u16(n)
+        match n {
+            0u16 => Some(SyntaxKind::AND),
+            1u16 => Some(SyntaxKind::BANG),
+            2u16 => Some(SyntaxKind::CARET),
+            3u16 => Some(SyntaxKind::COLON),
+            4u16 => Some(SyntaxKind::COMMA),
+            5u16 => Some(SyntaxKind::COMMENT),
+            6u16 => Some(SyntaxKind::DOT),
+            7u16 => Some(SyntaxKind::EOF),
+            8u16 => Some(SyntaxKind::EQUALS),
+            9u16 => Some(SyntaxKind::ERROR),
+            10u16 => Some(SyntaxKind::FALSE_KW),
+            11u16 => Some(SyntaxKind::FILE_KW),
+            12u16 => Some(SyntaxKind::FLOAT),
+            13u16 => Some(SyntaxKind::FOR_KW),
+            14u16 => Some(SyntaxKind::FUNCTION_KW),
+            15u16 => Some(SyntaxKind::GREATER_THAN),
+            16u16 => Some(SyntaxKind::GREATER_THAN_EQUALS),
+            17u16 => Some(SyntaxKind::IDENT),
+            18u16 => Some(SyntaxKind::IF_KW),
+            19u16 => Some(SyntaxKind::INCLUDE_KW),
+            20u16 => Some(SyntaxKind::INTEGER),
+            21u16 => Some(SyntaxKind::LESS_THAN),
+            22u16 => Some(SyntaxKind::LESS_THAN_EQUALS),
+            23u16 => Some(SyntaxKind::LET_KW),
+            24u16 => Some(SyntaxKind::L_BRACKET),
+            25u16 => Some(SyntaxKind::L_CURLY),
+            26u16 => Some(SyntaxKind::L_PAREN),
+            27u16 => Some(SyntaxKind::MINUS),
+            28u16 => Some(SyntaxKind::MODULE_KW),
+            29u16 => Some(SyntaxKind::NUMBER_KW),
+            30u16 => Some(SyntaxKind::OR),
+            31u16 => Some(SyntaxKind::PERCENT),
+            32u16 => Some(SyntaxKind::PLUS),
+            33u16 => Some(SyntaxKind::QUESTION_MARK),
+            34u16 => Some(SyntaxKind::R_BRACKET),
+            35u16 => Some(SyntaxKind::R_CURLY),
+            36u16 => Some(SyntaxKind::R_PAREN),
+            37u16 => Some(SyntaxKind::SEMICOLON),
+            38u16 => Some(SyntaxKind::SLASH),
+            39u16 => Some(SyntaxKind::STAR),
+            40u16 => Some(SyntaxKind::STRING),
+            41u16 => Some(SyntaxKind::TRUE_KW),
+            42u16 => Some(SyntaxKind::UNDEF_KW),
+            43u16 => Some(SyntaxKind::USE_KW),
+            44u16 => Some(SyntaxKind::WHITESPACE),
+            45u16 => Some(SyntaxKind::PACKAGE),
+            46u16 => Some(SyntaxKind::INCLUDE),
+            47u16 => Some(SyntaxKind::USE),
+            48u16 => Some(SyntaxKind::ASSIGNMENT),
+            49u16 => Some(SyntaxKind::NAMED_FUNCTION_DEFINITION),
+            50u16 => Some(SyntaxKind::NAMED_MODULE_DEFINITION),
+            51u16 => Some(SyntaxKind::MODULE_INSTANTIATION),
+            52u16 => Some(SyntaxKind::EXPRESSIONS),
+            53u16 => Some(SyntaxKind::INDEX_EXPR),
+            54u16 => Some(SyntaxKind::LIST_EXPRESSION),
+            55u16 => Some(SyntaxKind::UNARY_EXPR),
+            56u16 => Some(SyntaxKind::TERNARY_EXPR),
+            57u16 => Some(SyntaxKind::PAREN_EXPR),
+            58u16 => Some(SyntaxKind::LIST_COMPREHENSION_EXPR),
+            59u16 => Some(SyntaxKind::LET_CLAUSE),
+            60u16 => Some(SyntaxKind::FUNCTION_CALL),
+            61u16 => Some(SyntaxKind::BIN_EXPR),
+            62u16 => Some(SyntaxKind::RANGE_EXPRESSION_FROM_TO),
+            63u16 => Some(SyntaxKind::RANGE_EXPRESSION_FROM_TO_STEP),
+            64u16 => Some(SyntaxKind::FOR_CLAUSE),
+            65u16 => Some(SyntaxKind::IF_CLAUSE),
+            66u16 => Some(SyntaxKind::ASSIGNMENTS_OPT),
+            67u16 => Some(SyntaxKind::ASSIGNMENTS),
+            68u16 => Some(SyntaxKind::PARAMETERS),
+            69u16 => Some(SyntaxKind::ARGUMENTS),
+            70u16 => Some(SyntaxKind::CHILDREN),
+            71u16 => Some(SyntaxKind::BRACED_CHILDREN),
+            _ => None,
+        }
     }
 }
 impl From<rowan::SyntaxKind> for SyntaxKind {

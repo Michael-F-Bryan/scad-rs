@@ -1,16 +1,13 @@
 use crate::{SyntaxKind, SyntaxKind::*};
 use m_lexer::{Lexer, LexerBuilder};
-use once_cell::sync::Lazy;
 
 /// Split the input text into its tokens.
 ///
 /// Unknown input will be preserved as an [`ERROR`] token.
 pub fn tokenize(input: &str) -> impl Iterator<Item = (SyntaxKind, &'_ str)> {
-    static LEXER: Lazy<Lexer> = Lazy::new(lexer);
-
     let mut start_index = 0;
 
-    LEXER.tokenize(input).into_iter().map(move |tok| {
+    lexer().tokenize(input).into_iter().map(move |tok| {
         let end = start_index + tok.len;
         let text = &input[start_index..end];
         start_index = end;

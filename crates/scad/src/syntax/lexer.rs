@@ -112,7 +112,6 @@ pub enum SyntaxKind {
     ASSIGNMENT,
 }
 
-use once_cell::sync::Lazy;
 pub use SyntaxKind::*;
 
 impl From<SyntaxKind> for rowan::SyntaxKind {
@@ -149,11 +148,9 @@ impl PartialEq<SyntaxKind> for rowan::SyntaxKind {
 ///
 /// Unknown input will be preserved as an [`INVALID_TOKEN`] token.
 pub fn tokenize(input: &str) -> impl Iterator<Item = (SyntaxKind, &'_ str)> {
-    static LEXER: Lazy<Lexer> = Lazy::new(lexer);
-
     let mut start_index = 0;
 
-    LEXER.tokenize(input).into_iter().map(move |tok| {
+    lexer().tokenize(input).into_iter().map(move |tok| {
         let end = start_index + tok.len;
         let text = &input[start_index..end];
         start_index = end;

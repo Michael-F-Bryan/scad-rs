@@ -444,11 +444,7 @@ dependencies = [
  "drop_bomb",
  "insta",
  "m_lexer",
- "num-derive",
- "num-traits",
- "once_cell",
  "rowan",
- "tracing",
 ]
 
 [[package]]
