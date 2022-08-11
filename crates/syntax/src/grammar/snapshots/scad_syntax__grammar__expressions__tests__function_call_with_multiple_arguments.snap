@@ -7,9 +7,11 @@ Node(
       IDENT@0..3 "foo"
       L_PAREN@3..4 "("
       ARGUMENTS@4..8
-        INTEGER@4..6 "42"
+        INTEGER@4..6
+          INTEGER@4..6 "42"
         COMMA@6..7 ","
-        IDENT@7..8 "a"
+        LOOKUP_EXPR@7..8
+          IDENT@7..8 "a"
       R_PAREN@8..9 ")"
     ,
 )

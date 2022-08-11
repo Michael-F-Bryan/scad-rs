@@ -2,6 +2,8 @@
 source: crates/syntax/src/grammar/expressions.rs
 description: expr(true)
 ---
-Token(
-    TRUE_KW@0..4 "true",
+Node(
+    TRUE_KW@0..4
+      TRUE_KW@0..4 "true"
+    ,
 )

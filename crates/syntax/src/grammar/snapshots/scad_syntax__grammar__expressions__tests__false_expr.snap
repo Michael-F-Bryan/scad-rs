@@ -2,6 +2,8 @@
 source: crates/syntax/src/grammar/expressions.rs
 description: expr(false)
 ---
-Token(
-    FALSE_KW@0..5 "false",
+Node(
+    FALSE_KW@0..5
+      FALSE_KW@0..5 "false"
+    ,
 )

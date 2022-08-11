@@ -1,0 +1,13 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: expr(foo.bar.baz)
+---
+Node(
+    LOOKUP_EXPR@0..11
+      IDENT@0..3 "foo"
+      DOT@3..4 "."
+      IDENT@4..7 "bar"
+      DOT@7..8 "."
+      IDENT@8..11 "baz"
+    ,
+)

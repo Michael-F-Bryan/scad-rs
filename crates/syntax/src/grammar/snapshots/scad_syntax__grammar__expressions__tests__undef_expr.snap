@@ -2,6 +2,8 @@
 source: crates/syntax/src/grammar/expressions.rs
 description: expr(undef)
 ---
-Token(
-    UNDEF_KW@0..5 "undef",
+Node(
+    UNDEF_KW@0..5
+      UNDEF_KW@0..5 "undef"
+    ,
 )

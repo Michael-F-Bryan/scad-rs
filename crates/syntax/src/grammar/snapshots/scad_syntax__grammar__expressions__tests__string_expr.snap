@@ -2,6 +2,8 @@
 source: crates/syntax/src/grammar/expressions.rs
 description: "expr(\"Hello, World!\")"
 ---
-Token(
-    STRING@0..15 "\"Hello, World!\"",
+Node(
+    STRING@0..15
+      STRING@0..15 "\"Hello, World!\""
+    ,
 )

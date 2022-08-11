@@ -5,6 +5,7 @@ description: expr(-42)
 Node(
     UNARY_EXPR@0..3
       MINUS@0..1 "-"
-      INTEGER@1..3 "42"
+      INTEGER@1..3
+        INTEGER@1..3 "42"
     ,
 )

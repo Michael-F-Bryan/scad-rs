@@ -2,6 +2,8 @@
 source: crates/syntax/src/grammar/expressions.rs
 description: expr(x)
 ---
-Token(
-    IDENT@0..1 "x",
+Node(
+    LOOKUP_EXPR@0..1
+      IDENT@0..1 "x"
+    ,
 )

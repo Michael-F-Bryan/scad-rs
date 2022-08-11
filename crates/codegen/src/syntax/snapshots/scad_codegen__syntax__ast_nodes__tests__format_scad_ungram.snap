@@ -16,17 +16,15 @@ NamedFunctionDefinition = 'function' 'ident' '(' params:Parameters? ')' '=' body
 
 NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' body:Statement;
 
-ModuleInstantiation = 'ident' '(' args:Arguments? ')';
+ModuleInstantiation = 'ident' '(' args:Arguments? ')' Child;
 
 Assignment = name:'ident' '=' value:Expr;
 
 Expressions = Expr (',' Expr)*;
 
-Expr = LiteralExpr | IndexExpr | ListExpression | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | FunctionCall | BinExpr;
+Expr = Atom | ListExpression | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr;
 
-LiteralExpr = 'true' | 'false' | 'undef' | 'number' | 'string' | variable:'ident';
-
-IndexExpr = Expr '[' Expr ']';
+Atom = LiteralExpr | LookupExpr | IndexExpr | FunctionCall;
 
 ListExpression = '[' Expressions ']';
 
@@ -42,11 +40,19 @@ ListComprehensionExpr = '(' ListComprehensionElements ')';
 
 LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements Expr;
 
+BinExpr = Expr BinOp Expr;
+
+LiteralExpr = 'true' | 'false' | 'undef' | 'integer' | 'float' | 'string';
+
+LookupExpr = 'ident' ('.' 'ident')*;
+
+IndexExpr = Expr '[' Expr ']';
+
 FunctionCall = 'ident' '(' args:Arguments? ')';
 
-BinExpr = Expr ('+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||') Expr;
-
 ListComprehensionElements = LetClause | ForClause | IfClause;
+
+BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||';
 
 RangeExpressionFromTo = '[' Expr ':' Expr ']';
 
@@ -66,9 +72,9 @@ Parameters = Parameter (',' Parameter)*;
 
 Arguments = Argument (',' Argument)*;
 
-Children = Child*;
-
 Child = ';' | BracedChildren | ModuleInstantiation;
+
+Children = Child*;
 
 BracedChildren = '{' Children '}';
 

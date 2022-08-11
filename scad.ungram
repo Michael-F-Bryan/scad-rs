@@ -18,8 +18,7 @@ AssignmentStatement = Assignment ';'
 Expressions = Expr (',' Expr)*
 
 Expr =
-  LiteralExpr
-| IndexExpr
+  Atom
 | ListExpression
 | RangeExpression
 | UnaryExpr
@@ -27,16 +26,17 @@ Expr =
 | ParenExpr
 | ListComprehensionExpr
 | LetClause
-| FunctionCall
 | BinExpr
 
-LiteralExpr =
-  'true'
-| 'false'
-| 'undef'
-| 'number'
-| 'string'
-| variable:'ident'
+Atom =
+  LiteralExpr
+| LookupExpr
+| IndexExpr
+| FunctionCall
+
+LiteralExpr = 'true' | 'false' | 'undef' | 'integer' | 'float' | 'string'
+
+LookupExpr = 'ident' ('.' 'ident')*
 
 TernaryExpr = Expr '?' Expr ':' Expr
 
@@ -46,10 +46,9 @@ ParenExpr = '(' Expr ')'
 
 ListComprehensionExpr = '(' ListComprehensionElements ')'
 
-BinExpr =
-  Expr
-  ('+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||')
-  Expr
+BinExpr = Expr BinOp Expr
+
+BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||'
 
 UnaryExpr = ('!' | '+' | '-') Expr
 
@@ -80,7 +79,7 @@ NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' body:Stateme
 
 FunctionCall = 'ident' '(' args:Arguments? ')'
 
-ModuleInstantiation = 'ident' '(' args:Arguments? ')'
+ModuleInstantiation = 'ident' '(' args:Arguments? ')' Child
 
 Children = Child*
 

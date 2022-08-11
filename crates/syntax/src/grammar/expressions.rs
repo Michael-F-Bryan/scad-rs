@@ -19,36 +19,21 @@ const BINARY_OPERANDS: TokenSet = TokenSet::new([
     T![||],
 ]);
 
-fn _precedence(p: &Parser<'_>) -> usize {
-    match p.current() {
-        T![=] => 1,
-        T![<] | T![<=] | T![>] | T![>=] => 2,
-        T![+] | T![-] => 3,
-        T![*] | T![/] | T![^] => 4,
-        _ => unreachable!(),
-    }
-}
-
 pub(crate) fn expr(p: &mut Parser<'_>) {
-    let lookahead = p.nth(1);
-
     match p.current() {
-        IDENT if lookahead == T!["("] => {
-            function_call(p);
-        }
         T![true] | T![false] | T![undef] | STRING | INTEGER | FLOAT | IDENT => {
-            if BINARY_OPERANDS.contains(lookahead) {
-                let m = p.start();
-                p.bump(p.current());
-                binary_op(p, m);
+            // TODO: Introduce a Pratt parser here
+            let m = p.start();
+            atom(p);
+
+            if BINARY_OPERANDS.contains(p.current()) {
+                binary_expr(p, m);
             } else {
-                p.bump(p.current());
+                p.cancel(m);
             }
         }
         T!["("] => {
-            p.bump(T!["("]);
-            expr(p);
-            p.expect(T![")"]);
+            paren_expr(p);
         }
         T![-] | T![!] | T![+] => {
             unary_expr(p);
@@ -58,6 +43,48 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
             p.do_bump(1);
         }
     }
+}
+
+fn atom(p: &mut Parser<'_>) {
+    match p.current() {
+        IDENT => {
+            if p.nth_at(1, T!["("]) {
+                function_call(p);
+            } else {
+                lookup_expr(p);
+            }
+        }
+        _ => {
+            literal(p);
+        }
+    }
+}
+
+/// Wrap the next token in a node with the same kind.
+fn literal(p: &mut Parser<'_>) {
+    let m = p.start();
+    let kind = p.current();
+    p.bump(kind);
+    p.complete(m, kind);
+}
+
+fn paren_expr(p: &mut Parser<'_>) {
+    let m = p.start();
+    p.bump(T!["("]);
+    expr(p);
+    p.expect(T![")"]);
+    p.complete(m, PAREN_EXPR);
+}
+
+fn lookup_expr(p: &mut Parser) {
+    let m = p.start();
+    p.bump(IDENT);
+
+    while p.eat(T![.]) {
+        p.expect(IDENT);
+    }
+
+    p.complete(m, LOOKUP_EXPR);
 }
 
 pub(crate) fn unary_expr(p: &mut Parser<'_>) {
@@ -101,12 +128,19 @@ pub(crate) fn argument(p: &mut Parser<'_>) {
     }
 }
 
-fn binary_op(p: &mut Parser<'_>, m: Mark) {
-    assert!(BINARY_OPERANDS.contains(p.current()));
-    p.bump(p.current());
+fn binary_expr(p: &mut Parser<'_>, m: Mark) {
+    bin_op(p);
 
     expr(p);
     p.complete(m, BIN_EXPR);
+}
+
+fn bin_op(p: &mut Parser<'_>) {
+    assert!(BINARY_OPERANDS.contains(p.current()));
+    let m = p.start();
+    let kind = p.current();
+    p.bump(kind);
+    p.complete(m, kind);
 }
 
 #[cfg(test)]
@@ -118,6 +152,7 @@ mod tests {
         one_plus_one: expr("1+ 1"),
         parens: expr("(42)"),
         variable_lookup: expr("x"),
+        dotted_variable_lookup: expr("foo.bar.baz"),
         true_expr: expr("true"),
         false_expr: expr("false"),
         undef_expr: expr("undef"),

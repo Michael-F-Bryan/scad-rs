@@ -457,6 +457,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "scad-interpreter"
+version = "0.1.0"
+dependencies = [
+ "rowan",
+ "scad-syntax",
+]
+
+[[package]]
 name = "scad-syntax"
 version = "0.1.0"
 dependencies = [

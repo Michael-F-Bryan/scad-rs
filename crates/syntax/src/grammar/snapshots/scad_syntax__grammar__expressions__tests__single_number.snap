@@ -2,6 +2,8 @@
 source: crates/syntax/src/grammar/expressions.rs
 description: expr(42)
 ---
-Token(
-    INTEGER@0..2 "42",
+Node(
+    INTEGER@0..2
+      INTEGER@0..2 "42"
+    ,
 )

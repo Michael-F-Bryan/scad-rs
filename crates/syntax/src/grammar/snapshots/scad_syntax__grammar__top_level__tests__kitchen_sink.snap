@@ -14,30 +14,37 @@ Node(
         ASSIGNMENT@34..38
           IDENT@34..35 "a"
           EQUALS@35..36 "="
-          INTEGER@36..38 "42"
+          INTEGER@36..38
+            INTEGER@36..38 "42"
         SEMICOLON@38..39 ";"
       ASSIGNMENT_STATEMENT@39..46
         ASSIGNMENT@39..45
           IDENT@39..40 "b"
           EQUALS@40..41 "="
-          L_PAREN@41..42 "("
-          INTEGER@42..44 "42"
-          R_PAREN@44..45 ")"
+          PAREN_EXPR@41..45
+            L_PAREN@41..42 "("
+            INTEGER@42..44
+              INTEGER@42..44 "42"
+            R_PAREN@44..45 ")"
         SEMICOLON@45..46 ";"
       ASSIGNMENT_STATEMENT@46..52
         ASSIGNMENT@46..51
           IDENT@46..47 "c"
           EQUALS@47..48 "="
           BIN_EXPR@48..51
-            INTEGER@48..49 "1"
-            PLUS@49..50 "+"
-            INTEGER@50..51 "1"
+            INTEGER@48..49
+              INTEGER@48..49 "1"
+            PLUS@49..50
+              PLUS@49..50 "+"
+            INTEGER@50..51
+              INTEGER@50..51 "1"
         SEMICOLON@51..52 ";"
       ASSIGNMENT_STATEMENT@52..70
         ASSIGNMENT@52..69
           IDENT@52..53 "d"
           EQUALS@53..54 "="
-          STRING@54..69 "\"Hello, World!\""
+          STRING@54..69
+            STRING@54..69 "\"Hello, World!\""
         SEMICOLON@69..70 ";"
     ,
 )

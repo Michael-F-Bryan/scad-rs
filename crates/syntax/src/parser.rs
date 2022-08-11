@@ -146,6 +146,10 @@ impl<'a> Parser<'a> {
         self.do_bump(1);
         self.complete(mark, SyntaxKind::ERROR);
     }
+
+    pub(crate) fn cancel(&self, mut mark: Mark) {
+        mark.bomb.defuse();
+    }
 }
 
 /// A wrapper around a list of `(`[`SyntaxKind`]`, &str)` pairs which gives
@@ -189,7 +193,8 @@ impl<'a> Input<'a> {
 /// An opaque indicator for a particular place in the token stream.
 ///
 /// A [`Mark`] **must** be consumed by the parser, either using
-/// [`Parser::error_recover()`] or [`Parser::complete()`].
+/// [`Parser::error_recover()`], [`Parser::complete()`], or
+/// [`Parser::cancel()`].
 #[derive(Debug)]
 pub(crate) struct Mark {
     checkpoint: Checkpoint,

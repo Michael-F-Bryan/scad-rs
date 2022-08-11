@@ -266,11 +266,35 @@ impl AstNode {
                 }
             },
             AstNodeKind::EnumNode { variants } => {
-                let checks = variants.iter().map(|v| match &v.kind {
-                    VariantKind::AstNode(name) => quote!(#name::can_cast(kind)),
-                    VariantKind::Token => {
-                        let syntax_kind = &v.syntax_kind;
-                        quote!(kind == SyntaxKind::#syntax_kind)
+                let checks: Vec<_> = variants
+                    .iter()
+                    .map(|v| match &v.kind {
+                        VariantKind::AstNode(name) => quote!(#name::can_cast(kind)),
+                        VariantKind::Token => {
+                            let syntax_kind = &v.syntax_kind;
+                            quote!(kind == SyntaxKind::#syntax_kind)
+                        }
+                    })
+                    .collect();
+                let casts = variants.iter().map(|v| {
+                    let name = &v.name;
+
+                    match &v.kind {
+                        VariantKind::AstNode(ty) => {
+                            quote! {
+                                if let Some(variant) = #ty::cast(node.clone()) {
+                                    return Some(#type_name::#name(variant));
+                                }
+                            }
+                        }
+                        VariantKind::Token => {
+                            let syntax_kind = &v.syntax_kind;
+                            quote! {
+                                if node.kind() == SyntaxKind::#syntax_kind {
+                                    return Some(#type_name::#name(node));
+                                }
+                            }
+                        }
                     }
                 });
                 let syntax = variants.iter().map(|Field { name, kind, .. }| match kind {
@@ -289,11 +313,12 @@ impl AstNode {
                             #(#checks)||*
                         }
 
-                        fn cast(_node: SyntaxNode<OpenSCAD>) -> Option<Self>
+                        fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
                         where
                             Self: Sized
                         {
-                            todo!();
+                            #( #casts )*
+                            None
                         }
 
                         fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
