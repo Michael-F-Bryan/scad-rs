@@ -42,14 +42,13 @@ impl Package {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "Statement = Include | Use | (Assignment ';') | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation;\n"]
+#[doc = "Statement = Include | Use | AssignmentStatement | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Statement {
     Include(Include),
     Use(Use),
-    Assignment(Assignment),
-    Semicolon(SyntaxNode<OpenSCAD>),
+    AssignmentStatement(AssignmentStatement),
     NamedFunctionDefinition(NamedFunctionDefinition),
     NamedModuleDefinition(NamedModuleDefinition),
     ModuleInstantiation(ModuleInstantiation),
@@ -62,8 +61,7 @@ impl AstNode for Statement {
     {
         Include::can_cast(kind)
             || Use::can_cast(kind)
-            || Assignment::can_cast(kind)
-            || kind == SyntaxKind::SEMICOLON
+            || AssignmentStatement::can_cast(kind)
             || NamedFunctionDefinition::can_cast(kind)
             || NamedModuleDefinition::can_cast(kind)
             || ModuleInstantiation::can_cast(kind)
@@ -78,8 +76,7 @@ impl AstNode for Statement {
         match self {
             Statement::Include(node) => node.syntax(),
             Statement::Use(node) => node.syntax(),
-            Statement::Assignment(node) => node.syntax(),
-            Statement::Semicolon(node) => node,
+            Statement::AssignmentStatement(node) => node.syntax(),
             Statement::NamedFunctionDefinition(node) => node.syntax(),
             Statement::NamedModuleDefinition(node) => node.syntax(),
             Statement::ModuleInstantiation(node) => node.syntax(),
@@ -174,28 +171,28 @@ impl Use {
             .find(|tok| tok.kind() == SyntaxKind::FILE)
     }
 }
-#[doc = "A strongly typed wrapper around a [`ASSIGNMENT`][SyntaxKind::ASSIGNMENT] node."]
+#[doc = "A strongly typed wrapper around a [`ASSIGNMENT_STATEMENT`][SyntaxKind::ASSIGNMENT_STATEMENT] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "Assignment = name:'ident' '=' value:Expr;\n"]
+#[doc = "AssignmentStatement = Assignment ';';\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Assignment(SyntaxNode<OpenSCAD>);
-impl AstNode for Assignment {
+pub struct AssignmentStatement(SyntaxNode<OpenSCAD>);
+impl AstNode for AssignmentStatement {
     type Language = OpenSCAD;
     fn can_cast(kind: SyntaxKind) -> bool
     where
         Self: Sized,
     {
-        kind == SyntaxKind::ASSIGNMENT
+        kind == SyntaxKind::ASSIGNMENT_STATEMENT
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
     where
         Self: Sized,
     {
-        if Assignment::can_cast(node.kind()) {
-            Some(Assignment(node))
+        if AssignmentStatement::can_cast(node.kind()) {
+            Some(AssignmentStatement(node))
         } else {
             None
         }
@@ -204,21 +201,15 @@ impl AstNode for Assignment {
         &self.0
     }
 }
-impl Assignment {
-    pub fn ident_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+impl AssignmentStatement {
+    pub fn assignment(&self) -> Option<Assignment> {
+        self.0.children().find_map(Assignment::cast)
+    }
+    pub fn semicolon_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
         self.0
             .children_with_tokens()
             .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::IDENT)
-    }
-    pub fn equals_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::EQUALS)
-    }
-    pub fn expr(&self) -> Option<Expr> {
-        self.0.children().find_map(Expr::cast)
+            .find(|tok| tok.kind() == SyntaxKind::SEMICOLON)
     }
 }
 #[doc = "A strongly typed wrapper around a [`NAMED_FUNCTION_DEFINITION`][SyntaxKind::NAMED_FUNCTION_DEFINITION] node."]
@@ -408,6 +399,53 @@ impl ModuleInstantiation {
             .children_with_tokens()
             .filter_map(|t| t.into_token())
             .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
+    }
+}
+#[doc = "A strongly typed wrapper around a [`ASSIGNMENT`][SyntaxKind::ASSIGNMENT] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
+#[doc = "```text"]
+#[doc = "Assignment = name:'ident' '=' value:Expr;\n"]
+#[doc = "```"]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Assignment(SyntaxNode<OpenSCAD>);
+impl AstNode for Assignment {
+    type Language = OpenSCAD;
+    fn can_cast(kind: SyntaxKind) -> bool
+    where
+        Self: Sized,
+    {
+        kind == SyntaxKind::ASSIGNMENT
+    }
+    fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        if Assignment::can_cast(node.kind()) {
+            Some(Assignment(node))
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
+        &self.0
+    }
+}
+impl Assignment {
+    pub fn ident_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::IDENT)
+    }
+    pub fn equals_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::EQUALS)
+    }
+    pub fn expr(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
     }
 }
 #[doc = "A strongly typed wrapper around a [`EXPRESSIONS`][SyntaxKind::EXPRESSIONS] node."]

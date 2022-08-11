@@ -95,8 +95,7 @@ pub(crate) fn arguments(p: &mut Parser<'_>) {
 
 pub(crate) fn argument(p: &mut Parser<'_>) {
     if p.at(IDENT) && p.nth_at(1, T![=]) {
-        let m = p.start();
-        top_level::assignment(p, m);
+        top_level::assignment(p);
     } else {
         expr(p);
     }

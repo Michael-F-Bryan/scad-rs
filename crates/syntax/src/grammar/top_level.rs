@@ -23,11 +23,16 @@ pub(crate) fn statement(p: &mut Parser<'_>) {
         T![include] => include(p, m),
         T![use] => use_(p, m),
         IDENT if p.nth_at(1, T![=]) => {
-            assignment(p, m);
-            p.expect(T![;]);
+            assignment_statement(p, m);
         }
         _ => p.error_recover("Expected a statement", m, CONTINUE),
     }
+}
+
+fn assignment_statement(p: &mut Parser, m: Mark) {
+    assignment(p);
+    p.expect(T![;]);
+    p.complete(m, ASSIGNMENT_STATEMENT);
 }
 
 pub(crate) fn include(p: &mut Parser<'_>, m: Mark) {
@@ -50,7 +55,8 @@ pub(crate) fn use_(p: &mut Parser<'_>, m: Mark) {
     }
 }
 
-pub(crate) fn assignment(p: &mut Parser<'_>, m: Mark) {
+pub(crate) fn assignment(p: &mut Parser<'_>) {
+    let m = p.start();
     p.bump(IDENT);
 
     p.eat(T![=]);

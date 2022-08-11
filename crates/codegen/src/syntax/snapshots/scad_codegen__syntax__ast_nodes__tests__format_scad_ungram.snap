@@ -4,19 +4,21 @@ expression: "&formatted"
 ---
 Package = Statement*;
 
-Statement = Include | Use | (Assignment ';') | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation;
+Statement = Include | Use | AssignmentStatement | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation;
 
 Include = 'include' 'file';
 
 Use = 'use' 'file';
 
-Assignment = name:'ident' '=' value:Expr;
+AssignmentStatement = Assignment ';';
 
 NamedFunctionDefinition = 'function' 'ident' '(' params:Parameters? ')' '=' body:Expr ';';
 
 NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' body:Statement;
 
 ModuleInstantiation = 'ident' '(' args:Arguments? ')';
+
+Assignment = name:'ident' '=' value:Expr;
 
 Expressions = Expr (',' Expr)*;
 

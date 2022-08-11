@@ -4,7 +4,7 @@ Package = Statement*
 Statement =
   Include
 | Use
-| Assignment ';'
+| AssignmentStatement
 | NamedFunctionDefinition
 | NamedModuleDefinition
 | ModuleInstantiation
@@ -12,6 +12,8 @@ Statement =
 Include = 'include' 'file'
 
 Use = 'use' 'file'
+
+AssignmentStatement = Assignment ';'
 
 Expressions = Expr (',' Expr)*
 
