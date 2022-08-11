@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use rowan::ast::AstNode;
 use scad_syntax::ast::{
     Argument, Assignment, Atom, BinOp, Expr, LiteralExpr, LookupExpr, ModuleInstantiation, Package,
     Statement, VectorExpr,
@@ -51,9 +50,6 @@ impl Interpreter {
 
     fn evaluate_assignment(&mut self, a: Assignment) -> Result<(), Exception> {
         let ident = a.ident_token().unwrap();
-        dbg!(a.syntax().children().collect::<Vec<_>>());
-
-        dbg!(a.syntax().children().find_map(Expr::cast));
         let value = self.evaluate_expr(a.expr().unwrap())?;
         self.namespace.insert(ident.text().to_string(), value);
 
@@ -225,6 +221,7 @@ pub struct Exception {}
 
 #[cfg(test)]
 mod tests {
+    use rowan::ast::AstNode;
     use scad_syntax::ParseError;
 
     use super::*;
@@ -239,7 +236,6 @@ mod tests {
         ";
         let tokens = scad_syntax::tokenize(src);
         let (pkg, errors) = scad_syntax::parse(tokens);
-        dbg!(&pkg);
         for ParseError { location, msg } in &errors {
             let token = pkg.syntax().covering_element(*location);
             eprintln!("Error: {msg} at\n{token:?}");
