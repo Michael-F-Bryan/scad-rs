@@ -22,8 +22,11 @@ pub fn parse<'a>(
     (Package::cast(node).unwrap(), errors)
 }
 
+/// A basic parser error.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ParseError {
+    /// Where the error occurred in the source code.
     pub location: TextRange,
+    /// The error message.
     pub msg: String,
 }

@@ -1,3 +1,5 @@
+//! A naive tree-walking interpreter for the OpenSCAD language.
+
 use std::collections::HashMap;
 
 use scad_syntax::ast::{

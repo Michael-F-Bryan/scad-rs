@@ -7,7 +7,7 @@ on:
       - main
 
 env:
-  DEFAULT_CRATE_NAME: scad
+  DEFAULT_CRATE_NAME: scad_syntax
   RUST_BACKTRACE: 1
 
 jobs:
