@@ -308,7 +308,7 @@ impl NamedFunctionDefinition {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' body:Statement;\n"]
+#[doc = "NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' '{' body:Statement* '}';\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct NamedModuleDefinition(SyntaxNode<OpenSCAD>);
@@ -362,8 +362,20 @@ impl NamedModuleDefinition {
             .filter_map(|t| t.into_token())
             .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
     }
-    pub fn statement(&self) -> Option<Statement> {
-        self.0.children().find_map(Statement::cast)
+    pub fn l_curly_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_CURLY)
+    }
+    pub fn statements(&self) -> impl Iterator<Item = Statement> {
+        self.0.children().filter_map(Statement::cast)
+    }
+    pub fn r_curly_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_CURLY)
     }
 }
 #[doc = "A strongly typed wrapper around a [`MODULE_INSTANTIATION`][SyntaxKind::MODULE_INSTANTIATION] node."]
@@ -514,12 +526,12 @@ impl Expressions {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "Expr = Atom | ListExpression | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr | VectorExpr;\n"]
+#[doc = "Expr = Atom | ListExpr | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Expr {
     Atom(Atom),
-    ListExpression(ListExpression),
+    ListExpr(ListExpr),
     RangeExpression(RangeExpression),
     UnaryExpr(UnaryExpr),
     TernaryExpr(TernaryExpr),
@@ -527,7 +539,6 @@ pub enum Expr {
     ListComprehensionExpr(ListComprehensionExpr),
     LetClause(LetClause),
     BinExpr(BinExpr),
-    VectorExpr(VectorExpr),
 }
 impl AstNode for Expr {
     type Language = OpenSCAD;
@@ -536,7 +547,7 @@ impl AstNode for Expr {
         Self: Sized,
     {
         Atom::can_cast(kind)
-            || ListExpression::can_cast(kind)
+            || ListExpr::can_cast(kind)
             || RangeExpression::can_cast(kind)
             || UnaryExpr::can_cast(kind)
             || TernaryExpr::can_cast(kind)
@@ -544,7 +555,6 @@ impl AstNode for Expr {
             || ListComprehensionExpr::can_cast(kind)
             || LetClause::can_cast(kind)
             || BinExpr::can_cast(kind)
-            || VectorExpr::can_cast(kind)
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
     where
@@ -553,8 +563,8 @@ impl AstNode for Expr {
         if let Some(variant) = Atom::cast(node.clone()) {
             return Some(Expr::Atom(variant));
         }
-        if let Some(variant) = ListExpression::cast(node.clone()) {
-            return Some(Expr::ListExpression(variant));
+        if let Some(variant) = ListExpr::cast(node.clone()) {
+            return Some(Expr::ListExpr(variant));
         }
         if let Some(variant) = RangeExpression::cast(node.clone()) {
             return Some(Expr::RangeExpression(variant));
@@ -577,15 +587,12 @@ impl AstNode for Expr {
         if let Some(variant) = BinExpr::cast(node.clone()) {
             return Some(Expr::BinExpr(variant));
         }
-        if let Some(variant) = VectorExpr::cast(node.clone()) {
-            return Some(Expr::VectorExpr(variant));
-        }
         None
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         match self {
             Expr::Atom(node) => node.syntax(),
-            Expr::ListExpression(node) => node.syntax(),
+            Expr::ListExpr(node) => node.syntax(),
             Expr::RangeExpression(node) => node.syntax(),
             Expr::UnaryExpr(node) => node.syntax(),
             Expr::TernaryExpr(node) => node.syntax(),
@@ -593,7 +600,6 @@ impl AstNode for Expr {
             Expr::ListComprehensionExpr(node) => node.syntax(),
             Expr::LetClause(node) => node.syntax(),
             Expr::BinExpr(node) => node.syntax(),
-            Expr::VectorExpr(node) => node.syntax(),
         }
     }
 }
@@ -648,28 +654,28 @@ impl AstNode for Atom {
         }
     }
 }
-#[doc = "A strongly typed wrapper around a [`LIST_EXPRESSION`][SyntaxKind::LIST_EXPRESSION] node."]
+#[doc = "A strongly typed wrapper around a [`LIST_EXPR`][SyntaxKind::LIST_EXPR] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "ListExpression = '[' Expressions ']';\n"]
+#[doc = "ListExpr = '[' Expressions ']';\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ListExpression(SyntaxNode<OpenSCAD>);
-impl AstNode for ListExpression {
+pub struct ListExpr(SyntaxNode<OpenSCAD>);
+impl AstNode for ListExpr {
     type Language = OpenSCAD;
     fn can_cast(kind: SyntaxKind) -> bool
     where
         Self: Sized,
     {
-        kind == SyntaxKind::LIST_EXPRESSION
+        kind == SyntaxKind::LIST_EXPR
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
     where
         Self: Sized,
     {
-        if ListExpression::can_cast(node.kind()) {
-            Some(ListExpression(node))
+        if ListExpr::can_cast(node.kind()) {
+            Some(ListExpr(node))
         } else {
             None
         }
@@ -678,7 +684,7 @@ impl AstNode for ListExpression {
         &self.0
     }
 }
-impl ListExpression {
+impl ListExpr {
     pub fn l_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
         self.0
             .children_with_tokens()
@@ -931,7 +937,7 @@ impl ListComprehensionExpr {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements Expr;\n"]
+#[doc = "LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementsOrExpr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct LetClause(SyntaxNode<OpenSCAD>);
@@ -979,11 +985,10 @@ impl LetClause {
             .filter_map(|t| t.into_token())
             .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
     }
-    pub fn list_comprehension_elements(&self) -> Option<ListComprehensionElements> {
-        self.0.children().find_map(ListComprehensionElements::cast)
-    }
-    pub fn expr(&self) -> Option<Expr> {
-        self.0.children().find_map(Expr::cast)
+    pub fn list_comprehension_elements_or_expr(&self) -> Option<ListComprehensionElementsOrExpr> {
+        self.0
+            .children()
+            .find_map(ListComprehensionElementsOrExpr::cast)
     }
 }
 #[doc = "A strongly typed wrapper around a [`BIN_EXPR`][SyntaxKind::BIN_EXPR] node."]
@@ -1022,53 +1027,6 @@ impl BinExpr {
     }
     pub fn bin_op(&self) -> Option<BinOp> {
         self.0.children().find_map(BinOp::cast)
-    }
-}
-#[doc = "A strongly typed wrapper around a [`VECTOR_EXPR`][SyntaxKind::VECTOR_EXPR] node."]
-#[doc = ""]
-#[doc = "Grammar:"]
-#[doc = "```text"]
-#[doc = "VectorExpr = '[' Expressions ']';\n"]
-#[doc = "```"]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct VectorExpr(SyntaxNode<OpenSCAD>);
-impl AstNode for VectorExpr {
-    type Language = OpenSCAD;
-    fn can_cast(kind: SyntaxKind) -> bool
-    where
-        Self: Sized,
-    {
-        kind == SyntaxKind::VECTOR_EXPR
-    }
-    fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
-    where
-        Self: Sized,
-    {
-        if VectorExpr::can_cast(node.kind()) {
-            Some(VectorExpr(node))
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        &self.0
-    }
-}
-impl VectorExpr {
-    pub fn l_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::L_BRACKET)
-    }
-    pub fn expressions(&self) -> Option<Expressions> {
-        self.0.children().find_map(Expressions::cast)
-    }
-    pub fn r_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
     }
 }
 #[doc = "A strongly typed `LiteralExpr` node."]

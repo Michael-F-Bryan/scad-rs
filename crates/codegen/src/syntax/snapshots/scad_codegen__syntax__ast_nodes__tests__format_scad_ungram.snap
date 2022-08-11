@@ -14,7 +14,7 @@ AssignmentStatement = Assignment ';';
 
 NamedFunctionDefinition = 'function' 'ident' '(' params:Parameters? ')' '=' body:Expr ';';
 
-NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' body:Statement;
+NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' '{' body:Statement* '}';
 
 ModuleInstantiation = 'ident' '(' args:Arguments? ')' Child;
 
@@ -22,11 +22,11 @@ Assignment = name:'ident' '=' value:Expr;
 
 Expressions = Expr (',' Expr)*;
 
-Expr = Atom | ListExpression | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr | VectorExpr;
+Expr = Atom | ListExpr | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr;
 
 Atom = LiteralExpr | LookupExpr | IndexExpr | FunctionCall;
 
-ListExpression = '[' Expressions ']';
+ListExpr = '[' Expressions ']';
 
 RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep;
 
@@ -38,11 +38,9 @@ ParenExpr = '(' Expr ')';
 
 ListComprehensionExpr = '(' ListComprehensionElements ')';
 
-LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements Expr;
+LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementsOrExpr;
 
 BinExpr = Expr BinOp Expr;
-
-VectorExpr = '[' Expressions ']';
 
 LiteralExpr = 'true' | 'false' | 'undef' | 'integer' | 'float' | 'string';
 

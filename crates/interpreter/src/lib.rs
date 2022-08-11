@@ -3,8 +3,8 @@
 use std::collections::HashMap;
 
 use scad_syntax::ast::{
-    Argument, Assignment, Atom, BinOp, Expr, LiteralExpr, LookupExpr, ModuleInstantiation, Package,
-    Statement, VectorExpr,
+    Argument, Assignment, Atom, BinOp, Expr, ListExpr, LiteralExpr, LookupExpr,
+    ModuleInstantiation, Package, Statement,
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -61,8 +61,7 @@ impl Interpreter {
     fn evaluate_expr(&mut self, expr: Expr) -> Result<Value, Exception> {
         match expr {
             Expr::Atom(atom) => self.evaluate_atom(atom),
-            Expr::VectorExpr(vector) => self.evaluate_vector(vector),
-            Expr::ListExpression(_) => todo!(),
+            Expr::ListExpr(list) => self.evaluate_list(list),
             Expr::RangeExpression(_) => todo!(),
             Expr::UnaryExpr(_) => todo!(),
             Expr::TernaryExpr(_) => todo!(),
@@ -131,14 +130,14 @@ impl Interpreter {
         }
     }
 
-    fn evaluate_vector(&mut self, vector: VectorExpr) -> Result<Value, Exception> {
+    fn evaluate_list(&mut self, list: ListExpr) -> Result<Value, Exception> {
         let mut values = Vec::new();
 
-        for expr in vector.expressions().unwrap().exprs() {
+        for expr in list.expressions().unwrap().exprs() {
             values.push(self.evaluate_expr(expr)?);
         }
 
-        Ok(Value::Vector(values))
+        Ok(Value::List(values))
     }
 
     fn evaluate_module_instantiation(
@@ -168,7 +167,7 @@ impl Interpreter {
     fn evaluate_cube(&self, args: Vec<Value>) -> Result<Geometry, Exception> {
         assert_eq!(args.len(), 1);
         let vector = match &args[0] {
-            Value::Vector(v) => v,
+            Value::List(v) => v,
             _ => todo!(),
         };
         let args: Vec<f64> = vector.iter().map(|v| v.as_float().unwrap()).collect();
@@ -200,7 +199,7 @@ enum Value {
     Integer(i64),
     Float(f64),
     String(String),
-    Vector(Vec<Value>),
+    List(Vec<Value>),
 }
 
 impl Value {

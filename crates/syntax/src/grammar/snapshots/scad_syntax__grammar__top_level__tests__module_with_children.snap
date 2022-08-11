@@ -1,0 +1,46 @@
+---
+source: crates/syntax/src/grammar/top_level.rs
+description: "statement(translate([a, b, c]) {\n            cube(10);\n            cube(20);\n        })"
+---
+Node(
+    MODULE_INSTANTIATION@0..38
+      IDENT@0..9 "translate"
+      L_PAREN@9..10 "("
+      ARGUMENTS@10..17
+        LIST_EXPR@10..17
+          L_BRACKET@10..11 "["
+          EXPRESSIONS@11..16
+            LOOKUP_EXPR@11..12
+              IDENT@11..12 "a"
+            COMMA@12..13 ","
+            LOOKUP_EXPR@13..14
+              IDENT@13..14 "b"
+            COMMA@14..15 ","
+            LOOKUP_EXPR@15..16
+              IDENT@15..16 "c"
+          R_BRACKET@16..17 "]"
+      R_PAREN@17..18 ")"
+      BRACED_CHILDREN@18..38
+        L_CURLY@18..19 "{"
+        CHILDREN@19..37
+          MODULE_INSTANTIATION@19..28
+            IDENT@19..23 "cube"
+            L_PAREN@23..24 "("
+            ARGUMENTS@24..26
+              INTEGER@24..26
+                INTEGER@24..26 "10"
+            R_PAREN@26..27 ")"
+            SEMICOLON@27..28
+              SEMICOLON@27..28 ";"
+          MODULE_INSTANTIATION@28..37
+            IDENT@28..32 "cube"
+            L_PAREN@32..33 "("
+            ARGUMENTS@33..35
+              INTEGER@33..35
+                INTEGER@33..35 "20"
+            R_PAREN@35..36 ")"
+            SEMICOLON@36..37
+              SEMICOLON@36..37 ";"
+        R_CURLY@37..38 "}"
+    ,
+)

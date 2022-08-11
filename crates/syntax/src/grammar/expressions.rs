@@ -39,7 +39,7 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
             unary_expr(p);
         }
         T!["["] => {
-            vector(p);
+            list_expr(p);
         }
         other => {
             p.error(format!("Expected an expression but found {other:?}"));
@@ -48,14 +48,14 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
     }
 }
 
-fn vector(p: &mut Parser<'_>) {
+fn list_expr(p: &mut Parser<'_>) {
     let m = p.start();
     p.bump(T!["["]);
 
     expressions(p);
 
     p.expect(T!["]"]);
-    p.complete(m, VECTOR_EXPR);
+    p.complete(m, LIST_EXPR);
 }
 
 fn expressions(p: &mut Parser<'_>) {

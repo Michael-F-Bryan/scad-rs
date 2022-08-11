@@ -1,0 +1,27 @@
+---
+source: crates/syntax/src/grammar/top_level.rs
+description: statement(function x(y=2) = y + 2;)
+---
+Node(
+    NAMED_FUNCTION_DEFINITION@0..19
+      FUNCTION_KW@0..8 "function"
+      IDENT@8..9 "x"
+      L_PAREN@9..10 "("
+      PARAMETERS@10..13
+        ASSIGNMENT@10..13
+          IDENT@10..11 "y"
+          EQUALS@11..12 "="
+          INTEGER@12..13
+            INTEGER@12..13 "2"
+      R_PAREN@13..14 ")"
+      EQUALS@14..15 "="
+      BIN_EXPR@15..18
+        LOOKUP_EXPR@15..16
+          IDENT@15..16 "y"
+        PLUS@16..17
+          PLUS@16..17 "+"
+        INTEGER@17..18
+          INTEGER@17..18 "2"
+      SEMICOLON@18..19 ";"
+    ,
+)

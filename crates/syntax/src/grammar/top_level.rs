@@ -31,7 +31,62 @@ pub(crate) fn statement(p: &mut Parser<'_>) {
         IDENT if p.nth_at(1, T!["("]) => {
             module_instantiation(p, m);
         }
+        T![function] => {
+            named_function_definition(p, m);
+        }
+        T![module] => {
+            named_module_definition(p, m);
+        }
         _ => p.error_recover("Expected a statement", m, CONTINUE),
+    }
+}
+
+fn named_module_definition(p: &mut Parser<'_>, m: Mark) {
+    p.bump(T![module]);
+    p.expect(IDENT);
+    p.expect(T!["("]);
+    parameters(p);
+    p.expect(T![")"]);
+    p.expect(T!["{"]);
+
+    while !p.at(T!["}"]) {
+        statement(p);
+    }
+    p.expect(T!["}"]);
+    p.complete(m, NAMED_MODULE_DEFINITION);
+}
+
+fn named_function_definition(p: &mut Parser<'_>, m: Mark) {
+    p.bump(T![function]);
+    p.expect(IDENT);
+    p.expect(T!["("]);
+    parameters(p);
+    p.expect(T![")"]);
+    p.expect(T![=]);
+    expressions::expr(p);
+    p.expect(T![;]);
+    p.complete(m, NAMED_FUNCTION_DEFINITION);
+}
+
+fn parameters(p: &mut Parser<'_>) {
+    let m = p.start();
+
+    while p.at(IDENT) {
+        parameter(p);
+
+        if !p.eat(T![,]) {
+            break;
+        }
+    }
+
+    p.complete(m, PARAMETERS);
+}
+
+fn parameter(p: &mut Parser<'_>) {
+    if p.nth_at(1, T![=]) {
+        assignment(p);
+    } else {
+        p.bump(IDENT);
     }
 }
 
@@ -40,8 +95,41 @@ fn module_instantiation(p: &mut Parser<'_>, m: Mark) {
     p.bump(T!["("]);
     expressions::arguments(p);
     p.expect(T![")"]);
-    p.expect(T![;]);
+    child(p);
     p.complete(m, MODULE_INSTANTIATION);
+}
+
+fn children(p: &mut Parser<'_>) {
+    let m = p.start();
+
+    while matches!(p.current(), T![;] | T!["{"] | IDENT) {
+        dbg!(p.current());
+        child(p);
+    }
+
+    p.complete(m, CHILDREN);
+}
+
+fn child(p: &mut Parser<'_>) {
+    match p.current() {
+        T![;] => {
+            let m = p.start();
+            p.bump(T![;]);
+            p.complete(m, T![;]);
+        }
+        T!["{"] => {
+            let m = p.start();
+            p.bump(T!["{"]);
+            children(p);
+            p.expect(T!["}"]);
+            p.complete(m, BRACED_CHILDREN);
+        }
+        IDENT => {
+            let m = p.start();
+            module_instantiation(p, m);
+        }
+        _ => unreachable!(),
+    }
 }
 
 fn assignment_statement(p: &mut Parser<'_>, m: Mark) {
@@ -98,5 +186,18 @@ mod tests {
             d = "Hello, World!";
         "#),
         cube: statement("cube([2,3,4]);"),
+        multiple_module_instantiations: statement("translate([a, b, c]) cube([2, 3, 4]);"),
+        module_with_children: statement("translate([a, b, c]) {
+            cube(10);
+            cube(20);
+        }"),
+        function_definition_no_params: statement("function x() = 5;"),
+        function_definition_single_unnamed_param: statement("function x(y) = y + 2;"),
+        function_definition_single_param_with_default: statement("function x(y=2) = y + 2;"),
+        function_definition_multiple_params: statement("function x(a, b=2, c) = a+b+c;"),
+        move_module: statement("module move(x=0,y) {
+            translate() rotate(5) children();
+            cube();
+        }")
     }
 }

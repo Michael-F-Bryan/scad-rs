@@ -7,7 +7,7 @@ Node(
       IDENT@0..4 "cube"
       L_PAREN@4..5 "("
       ARGUMENTS@5..12
-        VECTOR_EXPR@5..12
+        LIST_EXPR@5..12
           L_BRACKET@5..6 "["
           EXPRESSIONS@6..11
             INTEGER@6..7
@@ -20,6 +20,7 @@ Node(
               INTEGER@10..11 "4"
           R_BRACKET@11..12 "]"
       R_PAREN@12..13 ")"
-      SEMICOLON@13..14 ";"
+      SEMICOLON@13..14
+        SEMICOLON@13..14 ";"
     ,
 )

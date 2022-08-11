@@ -1,0 +1,48 @@
+---
+source: crates/syntax/src/grammar/top_level.rs
+description: "statement(module move(x=0,y) {\n            translate() rotate(5) children();\n            cube();\n        })"
+---
+Node(
+    NAMED_MODULE_DEFINITION@0..57
+      MODULE_KW@0..6 "module"
+      IDENT@6..10 "move"
+      L_PAREN@10..11 "("
+      PARAMETERS@11..16
+        ASSIGNMENT@11..14
+          IDENT@11..12 "x"
+          EQUALS@12..13 "="
+          INTEGER@13..14
+            INTEGER@13..14 "0"
+        COMMA@14..15 ","
+        IDENT@15..16 "y"
+      R_PAREN@16..17 ")"
+      L_CURLY@17..18 "{"
+      MODULE_INSTANTIATION@18..49
+        IDENT@18..27 "translate"
+        L_PAREN@27..28 "("
+        ARGUMENTS@28..28
+        R_PAREN@28..29 ")"
+        MODULE_INSTANTIATION@29..49
+          IDENT@29..35 "rotate"
+          L_PAREN@35..36 "("
+          ARGUMENTS@36..37
+            INTEGER@36..37
+              INTEGER@36..37 "5"
+          R_PAREN@37..38 ")"
+          MODULE_INSTANTIATION@38..49
+            IDENT@38..46 "children"
+            L_PAREN@46..47 "("
+            ARGUMENTS@47..47
+            R_PAREN@47..48 ")"
+            SEMICOLON@48..49
+              SEMICOLON@48..49 ";"
+      MODULE_INSTANTIATION@49..56
+        IDENT@49..53 "cube"
+        L_PAREN@53..54 "("
+        ARGUMENTS@54..54
+        R_PAREN@54..55 ")"
+        SEMICOLON@55..56
+          SEMICOLON@55..56 ";"
+      R_CURLY@56..57 "}"
+    ,
+)

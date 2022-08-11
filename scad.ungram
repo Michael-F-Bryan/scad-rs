@@ -1,3 +1,9 @@
+// Grammar for the OpenSCAD programming language.
+//
+// For information on how this file is used, see the original article from
+// rust-analyzer:
+//
+// https://rust-analyzer.github.io/blog/2020/10/24/introducing-ungrammar.html
 
 Package = Statement*
 
@@ -19,7 +25,7 @@ Expressions = Expr (',' Expr)*
 
 Expr =
   Atom
-| ListExpression
+| ListExpr
 | RangeExpression
 | UnaryExpr
 | TernaryExpr
@@ -27,9 +33,6 @@ Expr =
 | ListComprehensionExpr
 | LetClause
 | BinExpr
-| VectorExpr
-
-VectorExpr = '[' Expressions ']'
 
 Atom =
   LiteralExpr
@@ -61,7 +64,7 @@ RangeExpressionFromTo = '[' Expr ':' Expr ']'
 
 RangeExpressionFromToStep = '[' Expr ':' Expr ':' Expr ']'
 
-ListExpression = '[' Expressions ']'
+ListExpr = '[' Expressions ']'
 
 ListComprehensionElements =
   LetClause
@@ -70,7 +73,7 @@ ListComprehensionElements =
 
 ListComprehensionElementsOrExpr = ListComprehensionElements | Expr
 
-LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements Expr
+LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementsOrExpr
 
 ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr
 
@@ -78,7 +81,7 @@ IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementsOrExpr
 
 NamedFunctionDefinition = 'function' 'ident' '(' params:Parameters? ')' '=' body:Expr ';'
 
-NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' body:Statement
+NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' '{' body:Statement* '}'
 
 FunctionCall = 'ident' '(' args:Arguments? ')'
 
