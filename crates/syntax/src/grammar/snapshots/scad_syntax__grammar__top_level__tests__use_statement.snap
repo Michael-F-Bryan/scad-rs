@@ -1,10 +1,10 @@
 ---
 source: crates/syntax/src/grammar/top_level.rs
-description: "statement(use \"./foo/bar\")"
+description: statement(use <./foo/bar>)
 ---
 Node(
     USE@0..14
       USE_KW@0..3 "use"
-      STRING@3..14 "\"./foo/bar\""
+      FILE@3..14 "<./foo/bar>"
     ,
 )

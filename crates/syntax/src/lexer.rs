@@ -50,11 +50,11 @@ fn lexer() -> Lexer {
             (LESS_THAN_EQUALS.into(), "<="),
             (LESS_THAN.into(), "<"),
             // HACK: To avoid accidentally matching "a < b && b > c", we assume
-            // file paths don't contain whitespace. Ideally, we would write our
-            // own lexer which has smarts like expecting a file path to contain
-            // "/" or "\", but that's more effort than I'd like to invest right
-            // now.
-            (FILE.into(), r"<\S+>"),
+            // file paths don't contain certain characters. Ideally, we would
+            // write our own lexer which has smarts like expecting a file path
+            // to contain "/" or "\", but that's more effort than I'd like to
+            // invest right now.
+            (FILE.into(), r"<[^\n&|<>]+>"),
             (LET_KW.into(), "let"),
             (MINUS.into(), "-"),
             (INTEGER.into(), r"\d+"),

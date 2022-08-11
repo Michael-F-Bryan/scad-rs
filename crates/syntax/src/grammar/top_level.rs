@@ -33,8 +33,7 @@ pub(crate) fn statement(p: &mut Parser<'_>) {
 pub(crate) fn include(p: &mut Parser<'_>, m: Mark) {
     p.bump(T![include]);
 
-    if p.at(STRING) {
-        p.bump(STRING);
+    if p.eat(FILE) {
         p.complete(m, INCLUDE);
     } else {
         p.error_recover("Expected a file name", m, CONTINUE);
@@ -44,8 +43,7 @@ pub(crate) fn include(p: &mut Parser<'_>, m: Mark) {
 pub(crate) fn use_(p: &mut Parser<'_>, m: Mark) {
     p.bump(T![use]);
 
-    if p.at(STRING) {
-        p.bump(STRING);
+    if p.eat(FILE) {
         p.complete(m, USE);
     } else {
         p.error_recover("Expected a file name", m, CONTINUE);
@@ -67,15 +65,16 @@ mod tests {
 
     parse_tests! {
         empty_package: package(""),
-        include_statement: statement(r#"include "./foo/bar""#),
-        use_statement: statement(r#"use "./foo/bar""#),
+        include_statement: statement("include <./foo/bar>"),
+        use_statement: statement("use <./foo/bar>"),
         assignment_statement: statement("x = 42;"),
         kitchen_sink: package(r#"
-            include "foo/bar.scad"
-            use "baz.scad"
+            include <foo/bar.scad>
+            use <baz.scad>
             a = 42;
             b = (42);
             c = 1 + 1;
+            d = "Hello, World!";
         "#),
     }
 }

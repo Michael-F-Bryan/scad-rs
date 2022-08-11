@@ -1,15 +1,15 @@
 ---
 source: crates/syntax/src/grammar/top_level.rs
-description: "package(\n            include \"foo/bar.scad\"\n            use \"baz.scad\"\n            a = 42;\n            b = (42);\n            c = 1 + 1;\n        )"
+description: "package(\n            include <foo/bar.scad>\n            use <baz.scad>\n            a = 42;\n            b = (42);\n            c = 1 + 1;\n            d = \"Hello, World!\";\n        )"
 ---
 Node(
-    PACKAGE@0..52
+    PACKAGE@0..70
       INCLUDE@0..21
         INCLUDE_KW@0..7 "include"
-        STRING@7..21 "\"foo/bar.scad\""
+        FILE@7..21 "<foo/bar.scad>"
       USE@21..34
         USE_KW@21..24 "use"
-        STRING@24..34 "\"baz.scad\""
+        FILE@24..34 "<baz.scad>"
       ASSIGNMENT@34..38
         IDENT@34..35 "a"
         EQUALS@35..36 "="
@@ -30,5 +30,10 @@ Node(
           PLUS@49..50 "+"
           INTEGER@50..51 "1"
       SEMICOLON@51..52 ";"
+      ASSIGNMENT@52..69
+        IDENT@52..53 "d"
+        EQUALS@53..54 "="
+        STRING@54..69 "\"Hello, World!\""
+      SEMICOLON@69..70 ";"
     ,
 )
