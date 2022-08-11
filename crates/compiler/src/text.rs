@@ -4,14 +4,15 @@ use std::{borrow::Borrow, ops::Deref, sync::Arc};
 #[derive(Debug, Clone, Eq, Hash, PartialOrd, Ord)]
 pub struct Text(Arc<str>);
 
-impl Borrow<str> for Text {
-    fn borrow(&self) -> &str {
+impl Text {
+    /// Get a reference to the underlying [`str`].
+    pub fn as_str(&self) -> &str {
         self
     }
 }
 
-impl Text {
-    pub fn as_str(&self) -> &str {
+impl Borrow<str> for Text {
+    fn borrow(&self) -> &str {
         self
     }
 }

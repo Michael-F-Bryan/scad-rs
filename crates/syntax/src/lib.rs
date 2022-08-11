@@ -10,7 +10,7 @@ mod syntax_kind;
 
 mod grammar;
 mod lexer;
-pub mod parser;
+mod parser;
 
 pub use crate::{grammar::parse, lexer::tokenize, syntax_kind::SyntaxKind};
 

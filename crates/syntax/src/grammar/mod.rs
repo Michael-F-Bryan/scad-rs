@@ -11,6 +11,7 @@ pub(crate) use self::top_level::*;
 use crate::{ast::Package, parser::Parser, SyntaxKind};
 use rowan::{ast::AstNode, TextRange};
 
+/// Parse a set of tokens into a [`Package`].
 pub fn parse<'a>(
     tokens: impl IntoIterator<Item = (SyntaxKind, &'a str)>,
 ) -> (Package, Vec<ParseError>) {

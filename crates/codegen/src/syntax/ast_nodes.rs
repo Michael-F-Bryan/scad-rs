@@ -136,6 +136,7 @@ pub struct AstNodes {
 impl ToTokens for AstNodes {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.extend(quote! {
+            //! Automatically generated, strongly-typed [`AstNode`]s.
             use rowan::{ast::AstNode, api::SyntaxNode, SyntaxToken};
             use crate::{OpenSCAD, SyntaxKind};
         });
@@ -162,6 +163,7 @@ impl AstNode {
         } = self;
 
         let formatted_rule = quote! {
+           #[doc = "## Grammar"]
            #[doc = "```text"]
            #[doc = #formatted_rule]
            #[doc = "```"]
@@ -170,7 +172,7 @@ impl AstNode {
         match kind {
             AstNodeKind::StructNode { syntax_kind, .. } => {
                 let docs =
-                    format!("A strongly typed wrapper around a [`SyntaxKind::{syntax_kind}`].");
+                    format!("A strongly typed wrapper around a [`{syntax_kind}`][SyntaxKind::{syntax_kind}].");
                 quote! {
                     #[doc = #docs]
                     #formatted_rule

@@ -3,17 +3,21 @@ use rowan::TextRange;
 
 use crate::Text;
 
+/// A message from the compiler.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Diagnostic {
+    /// How severe is this diagnostic?
     pub severity: Severity,
+    /// The message itself.
     pub message: Text,
+    /// The location in the source text.
     pub location: TextRange,
 }
 
 /// How severe a diagnostic is.
 ///
 /// ```rust
-/// use scad::Severity;
+/// use scad_compiler::Severity;
 ///
 /// assert!(Severity::Bug > Severity::Error);
 /// assert!(Severity::Error > Severity::Warning);
@@ -32,18 +36,22 @@ pub enum Severity {
     Bug,
 }
 
+/// A set of [`Diagnostic`]s.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
 pub struct Diagnostics(HashSet<Diagnostic>);
 
 impl Diagnostics {
+    /// Create an empty [`Diagnostics`] set.
     pub fn empty() -> Diagnostics {
         Diagnostics::default()
     }
 
+    /// Add a new [`Diagnostic`] to this set.
     pub fn push(&mut self, diag: impl IntoDiagnostic) {
         self.0.insert(diag.into_diagnostic());
     }
 
+    /// How many [`Diagnostic`]s were there?
     pub fn len(&self) -> usize {
         self.0.len()
     }
@@ -52,22 +60,27 @@ impl Diagnostics {
         self.0.is_empty()
     }
 
+    /// Iterate over all the [`Diagnostic`]s in this set.
     pub fn iter(&self) -> impl Iterator<Item = &'_ Diagnostic> + '_ {
         self.0.iter()
     }
 
+    /// Are there any diagnostics more sever than a particular [`Severity`]?
     pub fn has_severity(&self, severity: Severity) -> bool {
         self.iter().any(|diag| diag.severity >= severity)
     }
 
+    /// Does this set of diagnostics contain any [`Severity::Error`]s?
     pub fn has_errors(&self) -> bool {
         self.has_severity(Severity::Error)
     }
 
+    /// Does this set of diagnostics contain any [`Severity::Warning`]s?
     pub fn has_warnings(&self) -> bool {
         self.has_severity(Severity::Warning)
     }
 
+    /// Merge a set of [`Diagnostics`] into this one.
     pub fn merge(self: &mut Diagnostics, other: Diagnostics) {
         self.0.extend(other.0);
     }
