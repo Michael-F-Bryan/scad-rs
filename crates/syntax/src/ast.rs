@@ -33,6 +33,11 @@ impl AstNode for Package {
         &self.0
     }
 }
+impl Package {
+    pub fn statements(&self) -> impl Iterator<Item = Statement> {
+        self.0.children().filter_map(Statement::cast)
+    }
+}
 #[doc = "A strongly typed `Statement` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -44,7 +49,7 @@ pub enum Statement {
     Include(Include),
     Use(Use),
     Assignment(Assignment),
-    Semicolon(SyntaxToken<OpenSCAD>),
+    Semicolon(SyntaxNode<OpenSCAD>),
     NamedFunctionDefinition(NamedFunctionDefinition),
     NamedModuleDefinition(NamedModuleDefinition),
     ModuleInstantiation(ModuleInstantiation),
@@ -70,7 +75,15 @@ impl AstNode for Statement {
         todo!();
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        todo!();
+        match self {
+            Statement::Include(node) => node.syntax(),
+            Statement::Use(node) => node.syntax(),
+            Statement::Assignment(node) => node.syntax(),
+            Statement::Semicolon(node) => node,
+            Statement::NamedFunctionDefinition(node) => node.syntax(),
+            Statement::NamedModuleDefinition(node) => node.syntax(),
+            Statement::ModuleInstantiation(node) => node.syntax(),
+        }
     }
 }
 #[doc = "A strongly typed wrapper around a [`INCLUDE`][SyntaxKind::INCLUDE] node."]
@@ -103,6 +116,20 @@ impl AstNode for Include {
         &self.0
     }
 }
+impl Include {
+    pub fn include_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::INCLUDE_KW)
+    }
+    pub fn file_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::FILE)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`USE`][SyntaxKind::USE] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -131,6 +158,20 @@ impl AstNode for Use {
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         &self.0
+    }
+}
+impl Use {
+    pub fn use_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::USE_KW)
+    }
+    pub fn file_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::FILE)
     }
 }
 #[doc = "A strongly typed wrapper around a [`ASSIGNMENT`][SyntaxKind::ASSIGNMENT] node."]
@@ -163,6 +204,23 @@ impl AstNode for Assignment {
         &self.0
     }
 }
+impl Assignment {
+    pub fn ident_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::IDENT)
+    }
+    pub fn equals_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::EQUALS)
+    }
+    pub fn expr(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`NAMED_FUNCTION_DEFINITION`][SyntaxKind::NAMED_FUNCTION_DEFINITION] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -191,6 +249,50 @@ impl AstNode for NamedFunctionDefinition {
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         &self.0
+    }
+}
+impl NamedFunctionDefinition {
+    pub fn function_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::FUNCTION_KW)
+    }
+    pub fn ident_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::IDENT)
+    }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn parameters_opt(&self) -> Option<Parameters> {
+        self.0.children().find_map(Parameters::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
+    }
+    pub fn equals_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::EQUALS)
+    }
+    pub fn expr(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+    pub fn semicolon_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::SEMICOLON)
     }
 }
 #[doc = "A strongly typed wrapper around a [`NAMED_MODULE_DEFINITION`][SyntaxKind::NAMED_MODULE_DEFINITION] node."]
@@ -223,6 +325,38 @@ impl AstNode for NamedModuleDefinition {
         &self.0
     }
 }
+impl NamedModuleDefinition {
+    pub fn module_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::MODULE_KW)
+    }
+    pub fn ident_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::IDENT)
+    }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn parameters_opt(&self) -> Option<Parameters> {
+        self.0.children().find_map(Parameters::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
+    }
+    pub fn statement(&self) -> Option<Statement> {
+        self.0.children().find_map(Statement::cast)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`MODULE_INSTANTIATION`][SyntaxKind::MODULE_INSTANTIATION] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -253,6 +387,29 @@ impl AstNode for ModuleInstantiation {
         &self.0
     }
 }
+impl ModuleInstantiation {
+    pub fn ident_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::IDENT)
+    }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn arguments_opt(&self) -> Option<Arguments> {
+        self.0.children().find_map(Arguments::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`EXPRESSIONS`][SyntaxKind::EXPRESSIONS] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -281,6 +438,17 @@ impl AstNode for Expressions {
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         &self.0
+    }
+}
+impl Expressions {
+    pub fn exprs(&self) -> impl Iterator<Item = Expr> {
+        self.0.children().filter_map(Expr::cast)
+    }
+    pub fn comma_tokens(&self) -> impl Iterator<Item = SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .filter(|tok| tok.kind() == SyntaxKind::COMMA)
     }
 }
 #[doc = "A strongly typed `Expr` node."]
@@ -328,7 +496,19 @@ impl AstNode for Expr {
         todo!();
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        todo!();
+        match self {
+            Expr::LiteralExpr(node) => node.syntax(),
+            Expr::IndexExpr(node) => node.syntax(),
+            Expr::ListExpression(node) => node.syntax(),
+            Expr::RangeExpression(node) => node.syntax(),
+            Expr::UnaryExpr(node) => node.syntax(),
+            Expr::TernaryExpr(node) => node.syntax(),
+            Expr::ParenExpr(node) => node.syntax(),
+            Expr::ListComprehensionExpr(node) => node.syntax(),
+            Expr::LetClause(node) => node.syntax(),
+            Expr::FunctionCall(node) => node.syntax(),
+            Expr::BinExpr(node) => node.syntax(),
+        }
     }
 }
 #[doc = "A strongly typed `LiteralExpr` node."]
@@ -339,12 +519,12 @@ impl AstNode for Expr {
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum LiteralExpr {
-    TrueKw(SyntaxToken<OpenSCAD>),
-    FalseKw(SyntaxToken<OpenSCAD>),
-    UndefKw(SyntaxToken<OpenSCAD>),
-    NumberKw(SyntaxToken<OpenSCAD>),
-    String(SyntaxToken<OpenSCAD>),
-    Ident(SyntaxToken<OpenSCAD>),
+    TrueKw(SyntaxNode<OpenSCAD>),
+    FalseKw(SyntaxNode<OpenSCAD>),
+    UndefKw(SyntaxNode<OpenSCAD>),
+    NumberKw(SyntaxNode<OpenSCAD>),
+    String(SyntaxNode<OpenSCAD>),
+    Ident(SyntaxNode<OpenSCAD>),
 }
 impl AstNode for LiteralExpr {
     type Language = OpenSCAD;
@@ -366,7 +546,14 @@ impl AstNode for LiteralExpr {
         todo!();
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        todo!();
+        match self {
+            LiteralExpr::TrueKw(node) => node,
+            LiteralExpr::FalseKw(node) => node,
+            LiteralExpr::UndefKw(node) => node,
+            LiteralExpr::NumberKw(node) => node,
+            LiteralExpr::String(node) => node,
+            LiteralExpr::Ident(node) => node,
+        }
     }
 }
 #[doc = "A strongly typed wrapper around a [`INDEX_EXPR`][SyntaxKind::INDEX_EXPR] node."]
@@ -399,6 +586,23 @@ impl AstNode for IndexExpr {
         &self.0
     }
 }
+impl IndexExpr {
+    pub fn exprs(&self) -> impl Iterator<Item = Expr> {
+        self.0.children().filter_map(Expr::cast)
+    }
+    pub fn l_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_BRACKET)
+    }
+    pub fn r_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`LIST_EXPRESSION`][SyntaxKind::LIST_EXPRESSION] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -429,6 +633,23 @@ impl AstNode for ListExpression {
         &self.0
     }
 }
+impl ListExpression {
+    pub fn l_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_BRACKET)
+    }
+    pub fn expressions(&self) -> Option<Expressions> {
+        self.0.children().find_map(Expressions::cast)
+    }
+    pub fn r_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
+    }
+}
 #[doc = "A strongly typed `RangeExpression` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -455,7 +676,10 @@ impl AstNode for RangeExpression {
         todo!();
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        todo!();
+        match self {
+            RangeExpression::RangeExpressionFromTo(node) => node.syntax(),
+            RangeExpression::RangeExpressionFromToStep(node) => node.syntax(),
+        }
     }
 }
 #[doc = "A strongly typed wrapper around a [`UNARY_EXPR`][SyntaxKind::UNARY_EXPR] node."]
@@ -488,6 +712,29 @@ impl AstNode for UnaryExpr {
         &self.0
     }
 }
+impl UnaryExpr {
+    pub fn bang_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::BANG)
+    }
+    pub fn plus_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::PLUS)
+    }
+    pub fn minus_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::MINUS)
+    }
+    pub fn expr(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`TERNARY_EXPR`][SyntaxKind::TERNARY_EXPR] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -516,6 +763,23 @@ impl AstNode for TernaryExpr {
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         &self.0
+    }
+}
+impl TernaryExpr {
+    pub fn exprs(&self) -> impl Iterator<Item = Expr> {
+        self.0.children().filter_map(Expr::cast)
+    }
+    pub fn question_mark_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::QUESTION_MARK)
+    }
+    pub fn colon_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::COLON)
     }
 }
 #[doc = "A strongly typed wrapper around a [`PAREN_EXPR`][SyntaxKind::PAREN_EXPR] node."]
@@ -548,6 +812,23 @@ impl AstNode for ParenExpr {
         &self.0
     }
 }
+impl ParenExpr {
+    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn expr(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`LIST_COMPREHENSION_EXPR`][SyntaxKind::LIST_COMPREHENSION_EXPR] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -576,6 +857,23 @@ impl AstNode for ListComprehensionExpr {
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         &self.0
+    }
+}
+impl ListComprehensionExpr {
+    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn list_comprehension_elements(&self) -> Option<ListComprehensionElements> {
+        self.0.children().find_map(ListComprehensionElements::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
     }
 }
 #[doc = "A strongly typed wrapper around a [`LET_CLAUSE`][SyntaxKind::LET_CLAUSE] node."]
@@ -608,6 +906,35 @@ impl AstNode for LetClause {
         &self.0
     }
 }
+impl LetClause {
+    pub fn let_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::LET_KW)
+    }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn assignments_opt(&self) -> Option<AssignmentsOpt> {
+        self.0.children().find_map(AssignmentsOpt::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
+    }
+    pub fn list_comprehension_elements(&self) -> Option<ListComprehensionElements> {
+        self.0.children().find_map(ListComprehensionElements::cast)
+    }
+    pub fn expr(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`FUNCTION_CALL`][SyntaxKind::FUNCTION_CALL] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -636,6 +963,29 @@ impl AstNode for FunctionCall {
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         &self.0
+    }
+}
+impl FunctionCall {
+    pub fn ident_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::IDENT)
+    }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn arguments_opt(&self) -> Option<Arguments> {
+        self.0.children().find_map(Arguments::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
     }
 }
 #[doc = "A strongly typed wrapper around a [`BIN_EXPR`][SyntaxKind::BIN_EXPR] node."]
@@ -668,6 +1018,89 @@ impl AstNode for BinExpr {
         &self.0
     }
 }
+impl BinExpr {
+    pub fn exprs(&self) -> impl Iterator<Item = Expr> {
+        self.0.children().filter_map(Expr::cast)
+    }
+    pub fn plus_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::PLUS)
+    }
+    pub fn minus_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::MINUS)
+    }
+    pub fn star_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::STAR)
+    }
+    pub fn slash_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::SLASH)
+    }
+    pub fn percent_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::PERCENT)
+    }
+    pub fn caret_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::CARET)
+    }
+    pub fn greater_than_equals_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::GREATER_THAN_EQUALS)
+    }
+    pub fn greater_than_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::GREATER_THAN)
+    }
+    pub fn equals_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::EQUALS)
+    }
+    pub fn less_than_equals_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::LESS_THAN_EQUALS)
+    }
+    pub fn less_than_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::LESS_THAN)
+    }
+    pub fn and_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::AND)
+    }
+    pub fn or_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::OR)
+    }
+}
 #[doc = "A strongly typed `ListComprehensionElements` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -695,7 +1128,11 @@ impl AstNode for ListComprehensionElements {
         todo!();
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        todo!();
+        match self {
+            ListComprehensionElements::LetClause(node) => node.syntax(),
+            ListComprehensionElements::ForClause(node) => node.syntax(),
+            ListComprehensionElements::IfClause(node) => node.syntax(),
+        }
     }
 }
 #[doc = "A strongly typed wrapper around a [`RANGE_EXPRESSION_FROM_TO`][SyntaxKind::RANGE_EXPRESSION_FROM_TO] node."]
@@ -728,6 +1165,29 @@ impl AstNode for RangeExpressionFromTo {
         &self.0
     }
 }
+impl RangeExpressionFromTo {
+    pub fn l_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_BRACKET)
+    }
+    pub fn exprs(&self) -> impl Iterator<Item = Expr> {
+        self.0.children().filter_map(Expr::cast)
+    }
+    pub fn colon_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::COLON)
+    }
+    pub fn r_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`RANGE_EXPRESSION_FROM_TO_STEP`][SyntaxKind::RANGE_EXPRESSION_FROM_TO_STEP] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -756,6 +1216,29 @@ impl AstNode for RangeExpressionFromToStep {
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         &self.0
+    }
+}
+impl RangeExpressionFromToStep {
+    pub fn l_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_BRACKET)
+    }
+    pub fn exprs(&self) -> impl Iterator<Item = Expr> {
+        self.0.children().filter_map(Expr::cast)
+    }
+    pub fn colon_tokens(&self) -> impl Iterator<Item = SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .filter(|tok| tok.kind() == SyntaxKind::COLON)
+    }
+    pub fn r_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
     }
 }
 #[doc = "A strongly typed wrapper around a [`FOR_CLAUSE`][SyntaxKind::FOR_CLAUSE] node."]
@@ -788,6 +1271,34 @@ impl AstNode for ForClause {
         &self.0
     }
 }
+impl ForClause {
+    pub fn for_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::FOR_KW)
+    }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn assignments(&self) -> Option<Assignments> {
+        self.0.children().find_map(Assignments::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
+    }
+    pub fn list_comprehension_elements_or_expr(&self) -> Option<ListComprehensionElementsOrExpr> {
+        self.0
+            .children()
+            .find_map(ListComprehensionElementsOrExpr::cast)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`IF_CLAUSE`][SyntaxKind::IF_CLAUSE] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -818,6 +1329,34 @@ impl AstNode for IfClause {
         &self.0
     }
 }
+impl IfClause {
+    pub fn if_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::IF_KW)
+    }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn expr(&self) -> Option<Expr> {
+        self.0.children().find_map(Expr::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
+    }
+    pub fn list_comprehension_elements_or_expr(&self) -> Option<ListComprehensionElementsOrExpr> {
+        self.0
+            .children()
+            .find_map(ListComprehensionElementsOrExpr::cast)
+    }
+}
 #[doc = "A strongly typed `ListComprehensionElementsOrExpr` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -844,7 +1383,10 @@ impl AstNode for ListComprehensionElementsOrExpr {
         todo!();
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        todo!();
+        match self {
+            ListComprehensionElementsOrExpr::ListComprehensionElements(node) => node.syntax(),
+            ListComprehensionElementsOrExpr::Expr(node) => node.syntax(),
+        }
     }
 }
 #[doc = "A strongly typed wrapper around a [`ASSIGNMENTS_OPT`][SyntaxKind::ASSIGNMENTS_OPT] node."]
@@ -877,6 +1419,11 @@ impl AstNode for AssignmentsOpt {
         &self.0
     }
 }
+impl AssignmentsOpt {
+    pub fn assignments_opt(&self) -> Option<Assignments> {
+        self.0.children().find_map(Assignments::cast)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`ASSIGNMENTS`][SyntaxKind::ASSIGNMENTS] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -905,6 +1452,17 @@ impl AstNode for Assignments {
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         &self.0
+    }
+}
+impl Assignments {
+    pub fn assignments(&self) -> impl Iterator<Item = Assignment> {
+        self.0.children().filter_map(Assignment::cast)
+    }
+    pub fn comma_tokens(&self) -> impl Iterator<Item = SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .filter(|tok| tok.kind() == SyntaxKind::COMMA)
     }
 }
 #[doc = "A strongly typed wrapper around a [`PARAMETERS`][SyntaxKind::PARAMETERS] node."]
@@ -937,6 +1495,17 @@ impl AstNode for Parameters {
         &self.0
     }
 }
+impl Parameters {
+    pub fn parameters(&self) -> impl Iterator<Item = Parameter> {
+        self.0.children().filter_map(Parameter::cast)
+    }
+    pub fn comma_tokens(&self) -> impl Iterator<Item = SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .filter(|tok| tok.kind() == SyntaxKind::COMMA)
+    }
+}
 #[doc = "A strongly typed wrapper around a [`ARGUMENTS`][SyntaxKind::ARGUMENTS] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -965,6 +1534,17 @@ impl AstNode for Arguments {
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         &self.0
+    }
+}
+impl Arguments {
+    pub fn arguments(&self) -> impl Iterator<Item = Argument> {
+        self.0.children().filter_map(Argument::cast)
+    }
+    pub fn comma_tokens(&self) -> impl Iterator<Item = SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .filter(|tok| tok.kind() == SyntaxKind::COMMA)
     }
 }
 #[doc = "A strongly typed wrapper around a [`CHILDREN`][SyntaxKind::CHILDREN] node."]
@@ -997,6 +1577,11 @@ impl AstNode for Children {
         &self.0
     }
 }
+impl Children {
+    pub fn childs(&self) -> impl Iterator<Item = Child> {
+        self.0.children().filter_map(Child::cast)
+    }
+}
 #[doc = "A strongly typed `Child` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -1005,7 +1590,7 @@ impl AstNode for Children {
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Child {
-    Semicolon(SyntaxToken<OpenSCAD>),
+    Semicolon(SyntaxNode<OpenSCAD>),
     BracedChildren(BracedChildren),
     ModuleInstantiation(ModuleInstantiation),
 }
@@ -1026,7 +1611,11 @@ impl AstNode for Child {
         todo!();
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        todo!();
+        match self {
+            Child::Semicolon(node) => node,
+            Child::BracedChildren(node) => node.syntax(),
+            Child::ModuleInstantiation(node) => node.syntax(),
+        }
     }
 }
 #[doc = "A strongly typed wrapper around a [`BRACED_CHILDREN`][SyntaxKind::BRACED_CHILDREN] node."]
@@ -1059,6 +1648,23 @@ impl AstNode for BracedChildren {
         &self.0
     }
 }
+impl BracedChildren {
+    pub fn l_curly_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_CURLY)
+    }
+    pub fn children(&self) -> Option<Children> {
+        self.0.children().find_map(Children::cast)
+    }
+    pub fn r_curly_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_CURLY)
+    }
+}
 #[doc = "A strongly typed `Parameter` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -1067,7 +1673,7 @@ impl AstNode for BracedChildren {
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Parameter {
-    Ident(SyntaxToken<OpenSCAD>),
+    Ident(SyntaxNode<OpenSCAD>),
     Assignment(Assignment),
 }
 impl AstNode for Parameter {
@@ -1085,7 +1691,10 @@ impl AstNode for Parameter {
         todo!();
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        todo!();
+        match self {
+            Parameter::Ident(node) => node,
+            Parameter::Assignment(node) => node.syntax(),
+        }
     }
 }
 #[doc = "A strongly typed `Argument` node."]
@@ -1114,6 +1723,9 @@ impl AstNode for Argument {
         todo!();
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        todo!();
+        match self {
+            Argument::Expr(node) => node.syntax(),
+            Argument::Assignment(node) => node.syntax(),
+        }
     }
 }

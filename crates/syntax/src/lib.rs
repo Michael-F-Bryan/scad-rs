@@ -15,11 +15,11 @@
 //!
 //! ```rust
 //! let src = r#"
-//! use <MCAD/math.scad>
+//!   use <MCAD/math.scad>
 //!
-//! x = 1;
-//! y = 2;
-//! x_plus_y = x + y;
+//!   x = 1;
+//!   y = 2;
+//!   x_plus_y = x + y;
 //! "#;
 //!
 //! let tokens = scad_syntax::tokenize(src);

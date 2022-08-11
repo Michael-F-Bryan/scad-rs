@@ -1,4 +1,4 @@
-use heck::{ToPascalCase, ToShoutySnekCase};
+use heck::{ToPascalCase, ToShoutySnekCase, ToSnakeCase};
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use ungrammar::{Grammar, Node, NodeData, Rule};
@@ -11,14 +11,42 @@ pub fn ast_nodes(grammar: &Grammar, syntax_kind: &SyntaxKind) -> impl ToTokens {
     for node in grammar.iter() {
         let NodeData { name, rule } = &grammar[node];
 
+        let kind = top_level(grammar, rule, name, syntax_kind);
         nodes.push(AstNode {
             formatted_rule: format_rule(grammar, node),
             type_name: format_ident!("{}", name.to_pascal_case()),
-            kind: top_level(grammar, rule, name, syntax_kind),
+            kind: deduplicate_fields(kind),
         });
     }
 
     AstNodes { nodes }
+}
+
+fn deduplicate_fields(mut kind: AstNodeKind) -> AstNodeKind {
+    let fields = match &mut kind {
+        AstNodeKind::EnumNode { variants } => variants,
+        AstNodeKind::StructNode { fields, .. } => fields,
+    };
+
+    let mut deduplicated: Vec<Field> = Vec::new();
+
+    for field in fields.drain(..) {
+        match deduplicated
+            .iter_mut()
+            .find(|f| f.syntax_kind == field.syntax_kind)
+        {
+            Some(original) => {
+                original.multiplicity = Multiplicity::Multiple;
+            }
+            None => {
+                deduplicated.push(field);
+            }
+        }
+    }
+
+    *fields = deduplicated;
+
+    kind
 }
 
 fn top_level(grammar: &Grammar, rule: &Rule, name: &str, syntax_kind: &SyntaxKind) -> AstNodeKind {
@@ -31,11 +59,11 @@ fn top_level(grammar: &Grammar, rule: &Rule, name: &str, syntax_kind: &SyntaxKin
         },
         Rule::Node(n) => AstNodeKind::StructNode {
             syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-            _fields: vec![node_field(grammar, *n)],
+            fields: vec![node_field(grammar, *n)],
         },
         Rule::Token(t) => AstNodeKind::StructNode {
             syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-            _fields: vec![token_field(syntax_kind, grammar, *t)],
+            fields: vec![token_field(syntax_kind, grammar, *t)],
         },
         Rule::Rep(rule) => {
             let mut fields = top_level_fields(grammar, rule, syntax_kind);
@@ -44,7 +72,7 @@ fn top_level(grammar: &Grammar, rule: &Rule, name: &str, syntax_kind: &SyntaxKin
             }
             AstNodeKind::StructNode {
                 syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-                _fields: fields,
+                fields,
             }
         }
         Rule::Opt(rule) => {
@@ -54,12 +82,12 @@ fn top_level(grammar: &Grammar, rule: &Rule, name: &str, syntax_kind: &SyntaxKin
             }
             AstNodeKind::StructNode {
                 syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-                _fields: fields,
+                fields,
             }
         }
         Rule::Seq(rules) => AstNodeKind::StructNode {
             syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-            _fields: rules
+            fields: rules
                 .iter()
                 .flat_map(|r| top_level_fields(grammar, r, syntax_kind))
                 .collect(),
@@ -71,7 +99,7 @@ fn top_level(grammar: &Grammar, rule: &Rule, name: &str, syntax_kind: &SyntaxKin
             }
             AstNodeKind::StructNode {
                 syntax_kind: format_ident!("{}", name.TO_SHOUTY_SNEK_CASE()),
-                _fields: fields,
+                fields,
             }
         }
     }
@@ -185,7 +213,7 @@ impl AstNode {
                 let variants = variants.iter().map(|Field { name, kind, .. }| {
                     let ty = match kind {
                         VariantKind::AstNode(n) => n.to_token_stream(),
-                        VariantKind::Token => quote!(SyntaxToken<OpenSCAD>),
+                        VariantKind::Token => quote!(SyntaxNode<OpenSCAD>),
                     };
 
                     quote!(#name(#ty))
@@ -245,6 +273,10 @@ impl AstNode {
                         quote!(kind == SyntaxKind::#syntax_kind)
                     }
                 });
+                let syntax = variants.iter().map(|Field { name, kind, .. }| match kind {
+                    VariantKind::AstNode(_) => quote!(#type_name::#name(node) => node.syntax()),
+                    VariantKind::Token => quote!(#type_name::#name(node) => node),
+                });
 
                 quote! {
                     impl AstNode for #type_name {
@@ -265,10 +297,30 @@ impl AstNode {
                         }
 
                         fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-                            todo!();
+                            match self {
+                                #(#syntax,)*
+                            }
                         }
                     }
                 }
+            }
+        }
+    }
+
+    fn accessors(&self) -> TokenStream {
+        let AstNode {
+            type_name, kind, ..
+        } = self;
+        let fields = match kind {
+            AstNodeKind::StructNode { fields, .. } => fields,
+            AstNodeKind::EnumNode { .. } => return TokenStream::new(),
+        };
+
+        let accessors = fields.iter().map(accessor);
+
+        quote! {
+            impl #type_name {
+                #( #accessors )*
             }
         }
     }
@@ -278,6 +330,56 @@ impl ToTokens for AstNode {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.extend(self.definition());
         tokens.extend(self.ast_node_impl());
+        tokens.extend(self.accessors());
+    }
+}
+
+fn accessor(field: &Field) -> TokenStream {
+    let Field {
+        name,
+        multiplicity,
+        kind,
+        syntax_kind,
+    } = field;
+
+    let mut method_name = name.to_string().to_snake_case();
+    if matches!(kind, VariantKind::Token) {
+        method_name.push_str("_token");
+    }
+    if matches!(multiplicity, Multiplicity::Multiple) && !method_name.ends_with('s') {
+        method_name.push('s');
+    }
+    if matches!(multiplicity, Multiplicity::Optional) {
+        method_name.push_str("_opt");
+    }
+
+    let method_name = format_ident!("{method_name}");
+
+    match (kind, multiplicity) {
+        (VariantKind::AstNode(node_ty), Multiplicity::Multiple) => quote! {
+            pub fn #method_name(&self) -> impl Iterator<Item = #node_ty> {
+                self.0.children().filter_map(#node_ty::cast)
+            }
+        },
+        (VariantKind::AstNode(node_ty), Multiplicity::One | Multiplicity::Optional) => quote! {
+                pub fn #method_name(&self) -> Option<#node_ty> {
+                    self.0.children().find_map(#node_ty::cast)
+                }
+        },
+        (VariantKind::Token, Multiplicity::Multiple) => quote! {
+                pub fn #method_name(&self) -> impl Iterator<Item = SyntaxToken<OpenSCAD>> {
+                    self.0.children_with_tokens()
+                        .filter_map(|t| t.into_token())
+                        .filter(|tok| tok.kind() == SyntaxKind::#syntax_kind)
+                }
+        },
+        (VariantKind::Token, Multiplicity::One | Multiplicity::Optional) => quote! {
+                pub fn #method_name(&self) -> Option<SyntaxToken<OpenSCAD>> {
+                    self.0.children_with_tokens()
+                        .filter_map(|t| t.into_token())
+                        .find(|tok| tok.kind() == SyntaxKind::#syntax_kind)
+                }
+        },
     }
 }
 
@@ -285,7 +387,7 @@ impl ToTokens for AstNode {
 enum AstNodeKind {
     StructNode {
         syntax_kind: Ident,
-        _fields: Vec<Field>,
+        fields: Vec<Field>,
     },
     EnumNode {
         variants: Vec<Field>,
