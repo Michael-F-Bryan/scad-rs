@@ -50,11 +50,24 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
             expr(p);
             p.expect(T![")"]);
         }
+        T![-] | T![!] | T![+] => {
+            unary_expr(p);
+        }
         other => {
             p.error(format!("Expected an expression but found {other:?}"));
             p.do_bump(1);
         }
     }
+}
+
+pub(crate) fn unary_expr(p: &mut Parser<'_>) {
+    let m = p.start();
+
+    assert!((T![-] | T![!] | T![+]).contains(p.current()));
+    p.bump(p.current());
+
+    expr(p);
+    p.complete(m, UNARY_EXPR);
 }
 
 pub(crate) fn function_call(p: &mut Parser<'_>) {
@@ -110,8 +123,9 @@ mod tests {
         false_expr: expr("false"),
         undef_expr: expr("undef"),
         string_expr: expr(r#""Hello, World!""#),
-        #[ignore = "Negative numbers aren't implemented yet"]
         negative_number: expr("-42"),
+        not: expr("!true"),
+        positive_number: expr("+42"),
         function_call: expr("foo()"),
         function_call_with_single_arg: expr("foo(42)"),
         function_call_with_multiple_arguments: expr("foo(42, a)"),
