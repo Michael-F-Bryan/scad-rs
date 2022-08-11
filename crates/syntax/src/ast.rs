@@ -3,8 +3,9 @@
 #![doc = r" Automatically generated, strongly-typed [`AstNode`]s."]
 use crate::{OpenSCAD, SyntaxKind};
 use rowan::{api::SyntaxNode, ast::AstNode, SyntaxToken};
-#[doc = "A strongly typed wrapper around a [`PACKAGE`][SyntaxKind::PACKAGE]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`PACKAGE`][SyntaxKind::PACKAGE] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Package = Statement*;\n"]
 #[doc = "```"]
@@ -32,7 +33,9 @@ impl AstNode for Package {
         &self.0
     }
 }
-#[doc = "## Grammar"]
+#[doc = "A strongly typed `Statement` node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Statement = Include | Use | (Assignment ';') | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation;\n"]
 #[doc = "```"]
@@ -70,8 +73,9 @@ impl AstNode for Statement {
         todo!();
     }
 }
-#[doc = "A strongly typed wrapper around a [`INCLUDE`][SyntaxKind::INCLUDE]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`INCLUDE`][SyntaxKind::INCLUDE] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Include = 'include' 'file';\n"]
 #[doc = "```"]
@@ -99,8 +103,9 @@ impl AstNode for Include {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`USE`][SyntaxKind::USE]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`USE`][SyntaxKind::USE] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Use = 'use' 'file';\n"]
 #[doc = "```"]
@@ -128,8 +133,9 @@ impl AstNode for Use {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`ASSIGNMENT`][SyntaxKind::ASSIGNMENT]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`ASSIGNMENT`][SyntaxKind::ASSIGNMENT] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Assignment = name:'ident' '=' value:Expr;\n"]
 #[doc = "```"]
@@ -157,8 +163,9 @@ impl AstNode for Assignment {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`NAMED_FUNCTION_DEFINITION`][SyntaxKind::NAMED_FUNCTION_DEFINITION]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`NAMED_FUNCTION_DEFINITION`][SyntaxKind::NAMED_FUNCTION_DEFINITION] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "NamedFunctionDefinition = 'function' 'ident' '(' params:Parameters? ')' '=' body:Expr ';';\n"]
 #[doc = "```"]
@@ -186,8 +193,9 @@ impl AstNode for NamedFunctionDefinition {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`NAMED_MODULE_DEFINITION`][SyntaxKind::NAMED_MODULE_DEFINITION]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`NAMED_MODULE_DEFINITION`][SyntaxKind::NAMED_MODULE_DEFINITION] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "NamedModuleDefinition = 'module' 'ident' '(' params:Parameters? ')' body:Statement;\n"]
 #[doc = "```"]
@@ -215,8 +223,9 @@ impl AstNode for NamedModuleDefinition {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`MODULE_INSTANTIATION`][SyntaxKind::MODULE_INSTANTIATION]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`MODULE_INSTANTIATION`][SyntaxKind::MODULE_INSTANTIATION] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "ModuleInstantiation = 'ident' '(' args:Arguments? ')';\n"]
 #[doc = "```"]
@@ -244,8 +253,9 @@ impl AstNode for ModuleInstantiation {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`EXPRESSIONS`][SyntaxKind::EXPRESSIONS]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`EXPRESSIONS`][SyntaxKind::EXPRESSIONS] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Expressions = Expr (',' Expr)*;\n"]
 #[doc = "```"]
@@ -273,7 +283,9 @@ impl AstNode for Expressions {
         &self.0
     }
 }
-#[doc = "## Grammar"]
+#[doc = "A strongly typed `Expr` node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Expr = LiteralExpr | IndexExpr | ListExpression | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | FunctionCall | BinExpr;\n"]
 #[doc = "```"]
@@ -319,7 +331,9 @@ impl AstNode for Expr {
         todo!();
     }
 }
-#[doc = "## Grammar"]
+#[doc = "A strongly typed `LiteralExpr` node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "LiteralExpr = 'true' | 'false' | 'undef' | 'number' | 'string' | variable:'ident';\n"]
 #[doc = "```"]
@@ -355,8 +369,9 @@ impl AstNode for LiteralExpr {
         todo!();
     }
 }
-#[doc = "A strongly typed wrapper around a [`INDEX_EXPR`][SyntaxKind::INDEX_EXPR]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`INDEX_EXPR`][SyntaxKind::INDEX_EXPR] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "IndexExpr = Expr '[' Expr ']';\n"]
 #[doc = "```"]
@@ -384,8 +399,9 @@ impl AstNode for IndexExpr {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`LIST_EXPRESSION`][SyntaxKind::LIST_EXPRESSION]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`LIST_EXPRESSION`][SyntaxKind::LIST_EXPRESSION] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "ListExpression = '[' Expressions ']';\n"]
 #[doc = "```"]
@@ -413,7 +429,9 @@ impl AstNode for ListExpression {
         &self.0
     }
 }
-#[doc = "## Grammar"]
+#[doc = "A strongly typed `RangeExpression` node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep;\n"]
 #[doc = "```"]
@@ -440,8 +458,9 @@ impl AstNode for RangeExpression {
         todo!();
     }
 }
-#[doc = "A strongly typed wrapper around a [`UNARY_EXPR`][SyntaxKind::UNARY_EXPR]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`UNARY_EXPR`][SyntaxKind::UNARY_EXPR] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "UnaryExpr = ('!' | '+' | '-') Expr;\n"]
 #[doc = "```"]
@@ -469,8 +488,9 @@ impl AstNode for UnaryExpr {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`TERNARY_EXPR`][SyntaxKind::TERNARY_EXPR]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`TERNARY_EXPR`][SyntaxKind::TERNARY_EXPR] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "TernaryExpr = Expr '?' Expr ':' Expr;\n"]
 #[doc = "```"]
@@ -498,8 +518,9 @@ impl AstNode for TernaryExpr {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`PAREN_EXPR`][SyntaxKind::PAREN_EXPR]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`PAREN_EXPR`][SyntaxKind::PAREN_EXPR] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "ParenExpr = '(' Expr ')';\n"]
 #[doc = "```"]
@@ -527,8 +548,9 @@ impl AstNode for ParenExpr {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`LIST_COMPREHENSION_EXPR`][SyntaxKind::LIST_COMPREHENSION_EXPR]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`LIST_COMPREHENSION_EXPR`][SyntaxKind::LIST_COMPREHENSION_EXPR] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "ListComprehensionExpr = '(' ListComprehensionElements ')';\n"]
 #[doc = "```"]
@@ -556,8 +578,9 @@ impl AstNode for ListComprehensionExpr {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`LET_CLAUSE`][SyntaxKind::LET_CLAUSE]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`LET_CLAUSE`][SyntaxKind::LET_CLAUSE] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElements Expr;\n"]
 #[doc = "```"]
@@ -585,8 +608,9 @@ impl AstNode for LetClause {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`FUNCTION_CALL`][SyntaxKind::FUNCTION_CALL]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`FUNCTION_CALL`][SyntaxKind::FUNCTION_CALL] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "FunctionCall = 'ident' '(' args:Arguments? ')';\n"]
 #[doc = "```"]
@@ -614,8 +638,9 @@ impl AstNode for FunctionCall {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`BIN_EXPR`][SyntaxKind::BIN_EXPR]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`BIN_EXPR`][SyntaxKind::BIN_EXPR] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "BinExpr = Expr ('+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||') Expr;\n"]
 #[doc = "```"]
@@ -643,7 +668,9 @@ impl AstNode for BinExpr {
         &self.0
     }
 }
-#[doc = "## Grammar"]
+#[doc = "A strongly typed `ListComprehensionElements` node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "ListComprehensionElements = LetClause | ForClause | IfClause;\n"]
 #[doc = "```"]
@@ -671,8 +698,9 @@ impl AstNode for ListComprehensionElements {
         todo!();
     }
 }
-#[doc = "A strongly typed wrapper around a [`RANGE_EXPRESSION_FROM_TO`][SyntaxKind::RANGE_EXPRESSION_FROM_TO]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`RANGE_EXPRESSION_FROM_TO`][SyntaxKind::RANGE_EXPRESSION_FROM_TO] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "RangeExpressionFromTo = '[' Expr ':' Expr ']';\n"]
 #[doc = "```"]
@@ -700,8 +728,9 @@ impl AstNode for RangeExpressionFromTo {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`RANGE_EXPRESSION_FROM_TO_STEP`][SyntaxKind::RANGE_EXPRESSION_FROM_TO_STEP]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`RANGE_EXPRESSION_FROM_TO_STEP`][SyntaxKind::RANGE_EXPRESSION_FROM_TO_STEP] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "RangeExpressionFromToStep = '[' Expr ':' Expr ':' Expr ']';\n"]
 #[doc = "```"]
@@ -729,8 +758,9 @@ impl AstNode for RangeExpressionFromToStep {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`FOR_CLAUSE`][SyntaxKind::FOR_CLAUSE]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`FOR_CLAUSE`][SyntaxKind::FOR_CLAUSE] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr;\n"]
 #[doc = "```"]
@@ -758,8 +788,9 @@ impl AstNode for ForClause {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`IF_CLAUSE`][SyntaxKind::IF_CLAUSE]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`IF_CLAUSE`][SyntaxKind::IF_CLAUSE] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementsOrExpr;\n"]
 #[doc = "```"]
@@ -787,7 +818,9 @@ impl AstNode for IfClause {
         &self.0
     }
 }
-#[doc = "## Grammar"]
+#[doc = "A strongly typed `ListComprehensionElementsOrExpr` node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "ListComprehensionElementsOrExpr = ListComprehensionElements | Expr;\n"]
 #[doc = "```"]
@@ -814,8 +847,9 @@ impl AstNode for ListComprehensionElementsOrExpr {
         todo!();
     }
 }
-#[doc = "A strongly typed wrapper around a [`ASSIGNMENTS_OPT`][SyntaxKind::ASSIGNMENTS_OPT]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`ASSIGNMENTS_OPT`][SyntaxKind::ASSIGNMENTS_OPT] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "AssignmentsOpt = Assignments?;\n"]
 #[doc = "```"]
@@ -843,8 +877,9 @@ impl AstNode for AssignmentsOpt {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`ASSIGNMENTS`][SyntaxKind::ASSIGNMENTS]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`ASSIGNMENTS`][SyntaxKind::ASSIGNMENTS] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Assignments = Assignment (',' Assignment)*;\n"]
 #[doc = "```"]
@@ -872,8 +907,9 @@ impl AstNode for Assignments {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`PARAMETERS`][SyntaxKind::PARAMETERS]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`PARAMETERS`][SyntaxKind::PARAMETERS] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Parameters = Parameter (',' Parameter)*;\n"]
 #[doc = "```"]
@@ -901,8 +937,9 @@ impl AstNode for Parameters {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`ARGUMENTS`][SyntaxKind::ARGUMENTS]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`ARGUMENTS`][SyntaxKind::ARGUMENTS] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Arguments = Argument (',' Argument)*;\n"]
 #[doc = "```"]
@@ -930,8 +967,9 @@ impl AstNode for Arguments {
         &self.0
     }
 }
-#[doc = "A strongly typed wrapper around a [`CHILDREN`][SyntaxKind::CHILDREN]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`CHILDREN`][SyntaxKind::CHILDREN] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Children = Child*;\n"]
 #[doc = "```"]
@@ -959,7 +997,9 @@ impl AstNode for Children {
         &self.0
     }
 }
-#[doc = "## Grammar"]
+#[doc = "A strongly typed `Child` node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Child = ';' | BracedChildren | ModuleInstantiation;\n"]
 #[doc = "```"]
@@ -989,8 +1029,9 @@ impl AstNode for Child {
         todo!();
     }
 }
-#[doc = "A strongly typed wrapper around a [`BRACED_CHILDREN`][SyntaxKind::BRACED_CHILDREN]."]
-#[doc = "## Grammar"]
+#[doc = "A strongly typed wrapper around a [`BRACED_CHILDREN`][SyntaxKind::BRACED_CHILDREN] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "BracedChildren = '{' Children '}';\n"]
 #[doc = "```"]
@@ -1018,7 +1059,9 @@ impl AstNode for BracedChildren {
         &self.0
     }
 }
-#[doc = "## Grammar"]
+#[doc = "A strongly typed `Parameter` node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Parameter = variable:'ident' | Assignment;\n"]
 #[doc = "```"]
@@ -1045,7 +1088,9 @@ impl AstNode for Parameter {
         todo!();
     }
 }
-#[doc = "## Grammar"]
+#[doc = "A strongly typed `Argument` node."]
+#[doc = ""]
+#[doc = "Grammar:"]
 #[doc = "```text"]
 #[doc = "Argument = Expr | Assignment;\n"]
 #[doc = "```"]

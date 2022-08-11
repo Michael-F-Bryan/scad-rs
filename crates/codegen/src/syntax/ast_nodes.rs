@@ -163,7 +163,8 @@ impl AstNode {
         } = self;
 
         let formatted_rule = quote! {
-           #[doc = "## Grammar"]
+           #[doc = ""]
+           #[doc = "Grammar:"]
            #[doc = "```text"]
            #[doc = #formatted_rule]
            #[doc = "```"]
@@ -172,7 +173,7 @@ impl AstNode {
         match kind {
             AstNodeKind::StructNode { syntax_kind, .. } => {
                 let docs =
-                    format!("A strongly typed wrapper around a [`{syntax_kind}`][SyntaxKind::{syntax_kind}].");
+                    format!("A strongly typed wrapper around a [`{syntax_kind}`][SyntaxKind::{syntax_kind}] node.");
                 quote! {
                     #[doc = #docs]
                     #formatted_rule
@@ -189,8 +190,10 @@ impl AstNode {
 
                     quote!(#name(#ty))
                 });
+                let docs = format!("A strongly typed `{type_name}` node.");
 
                 quote! {
+                    #[doc = #docs]
                     #formatted_rule
                     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
                     pub enum #type_name {

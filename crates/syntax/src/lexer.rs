@@ -19,12 +19,13 @@ pub fn tokenize(input: &str) -> impl Iterator<Item = (SyntaxKind, &'_ str)> {
 }
 
 fn lexer() -> Lexer {
-    let builder = LexerBuilder::new().error_token(ERROR.into());
-
-    // basic tokens
-    builder
+    LexerBuilder::new()
+        // Special stuff
+        .error_token(ERROR.into())
+        .token(WHITESPACE.into(), r"\s+")
         // These tokens require some custom logic
         .external_token(COMMENT.into(), r"/\*", block_comment)
+        // Symbols
         .tokens(&[
             (AND.into(), "&&"),
             (STAR.into(), r"\*"),
@@ -39,31 +40,11 @@ fn lexer() -> Lexer {
             (DOT.into(), r"\."),
             (CARET.into(), r"\^"),
             (HASH.into(), "#"),
-            (FALSE_KW.into(), "false"),
-            (FOR_KW.into(), "for"),
-            (FUNCTION_KW.into(), "function"),
-            (MODULE_KW.into(), "module"),
             (GREATER_THAN_EQUALS.into(), ">="),
             (GREATER_THAN.into(), ">"),
-            (IF_KW.into(), "if"),
-            (INCLUDE_KW.into(), "include"),
             (LESS_THAN_EQUALS.into(), "<="),
             (LESS_THAN.into(), "<"),
-            // HACK: To avoid accidentally matching "a < b && b > c", we assume
-            // file paths don't contain certain characters. Ideally, we would
-            // write our own lexer which has smarts like expecting a file path
-            // to contain "/" or "\", but that's more effort than I'd like to
-            // invest right now.
-            (FILE.into(), r"<[^\n&|<>]+>"),
-            (LET_KW.into(), "let"),
             (MINUS.into(), "-"),
-            (INTEGER.into(), r"\d+"),
-            // https://stackoverflow.com/a/55592455
-            (
-                FLOAT.into(),
-                r"\d+([.]\d*)?([eE][+-]?\d+)?|[.]\d+([eE][+-]?\d+)?",
-            ),
-            (INTEGER.into(), r"\d+"),
             (L_CURLY.into(), r"\{"),
             (L_PAREN.into(), r"\("),
             (L_BRACKET.into(), r"\["),
@@ -73,14 +54,39 @@ fn lexer() -> Lexer {
             (QUESTION_MARK.into(), r"\?"),
             (SEMICOLON.into(), ";"),
             (SLASH.into(), "/"),
-            // https://wordaligned.org/articles/string-literals-and-regular-expressions
-            (STRING.into(), r#""([^"\\]|\\.)*""#),
+        ])
+        // keywords
+        .tokens(&[
+            (FALSE_KW.into(), "false"),
+            (FOR_KW.into(), "for"),
+            (FUNCTION_KW.into(), "function"),
+            (MODULE_KW.into(), "module"),
+            (IF_KW.into(), "if"),
+            (INCLUDE_KW.into(), "include"),
+            (LET_KW.into(), "let"),
             (TRUE_KW.into(), "true"),
             (USE_KW.into(), "use"),
             (UNDEF_KW.into(), "undef"),
-            (WHITESPACE.into(), r"\s+"),
         ])
-        // Note: push this to the bottom so it's the lowest precedence
+        // literals
+        .tokens(&[
+            // HACK: To avoid accidentally matching "a < b && b > c", we assume
+            // file paths don't contain certain characters. Ideally, we would
+            // write our own lexer which has smarts like expecting a file path
+            // to contain "/" or "\", but that's more effort than I'd like to
+            // invest right now.
+            (FILE.into(), r"<[^\n&|<>]+>"),
+            (INTEGER.into(), r"\d+"),
+            // https://stackoverflow.com/a/55592455
+            (
+                FLOAT.into(),
+                r"\d+([.]\d*)?([eE][+-]?\d+)?|[.]\d+([eE][+-]?\d+)?",
+            ),
+            // https://wordaligned.org/articles/string-literals-and-regular-expressions
+            (STRING.into(), r#""([^"\\]|\\.)*""#),
+        ])
+        // Note: This needs to be towards the bottom so it has a lower
+        // precedence than keywords
         .token(IDENT.into(), r"[\$\p{Alphabetic}][\w_]*")
         .build()
 }

@@ -66,7 +66,7 @@ mod parser;
 
 pub use crate::{grammar::parse, lexer::tokenize, syntax_kind::SyntaxKind};
 
-/// A tag type used to represent the OpenSCAD language.
+/// A tag type used by [`rowan`] to represent the OpenSCAD language.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct OpenSCAD;
 
