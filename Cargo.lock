@@ -239,35 +239,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "noisy_float"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "978fe6e6ebc0bf53de533cd456ca2d9de13de13856eda1518a285d7705a213af"
-dependencies = [
- "num-traits",
-]
-
-[[package]]
-name = "num-derive"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "876a53fff98e03a936a674b29568b0e605f06b29372c2489ff4de23f1949743d"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "num-traits"
-version = "0.2.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "578ede34cf02f8924ab9447f50c28075b4d3e5b269972345e7e0372b38c6cdcd"
-dependencies = [
- "autocfg",
-]
-
-[[package]]
 name = "once_cell"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -454,22 +425,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "scad"
-version = "0.1.0"
-dependencies = [
- "im",
- "insta",
- "m_lexer",
- "noisy_float",
- "num-derive",
- "num-traits",
- "once_cell",
- "rowan",
- "salsa",
- "walkdir",
-]
-
-[[package]]
 name = "scad-codegen"
 version = "0.0.0"
 dependencies = [
@@ -490,6 +445,7 @@ dependencies = [
  "im",
  "insta",
  "once_cell",
+ "rowan",
  "salsa",
  "scad-syntax",
  "walkdir",
