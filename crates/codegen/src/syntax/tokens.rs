@@ -154,7 +154,7 @@ fn punctuation() -> Vec<Token> {
         .collect()
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TokenKind {
     Symbol,
     Keyword,

@@ -90,7 +90,7 @@ pub enum Value {
     String(Text),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExecutionError;
 
 #[cfg(test)]

@@ -65,19 +65,13 @@ impl SyntaxKind {
 
         let punctuation: Vec<_> = tokens
             .iter()
-            .filter(|t| match t.kind {
-                TokenKind::Symbol => true,
-                _ => false,
-            })
+            .filter(|t| matches!(t.kind, TokenKind::Symbol))
             .map(|t| &t.syntax_kind)
             .collect();
 
         let keywords: Vec<_> = tokens
             .iter()
-            .filter(|t| match t.kind {
-                TokenKind::Keyword => true,
-                _ => false,
-            })
+            .filter(|t| matches!(t.kind, TokenKind::Keyword))
             .map(|t| &t.syntax_kind)
             .collect();
 

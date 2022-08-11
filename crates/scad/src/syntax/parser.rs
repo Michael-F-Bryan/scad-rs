@@ -54,7 +54,7 @@ impl<'src> Parser<'src> {
         let (k, text) = self.peek();
         if k != kind {
             self.builder.start_node(SyntaxKind::ERROR.into());
-            self.token(k.into(), text);
+            self.token(k, text);
             self.builder.finish_node();
             return Err(ParseError);
         }
@@ -331,7 +331,7 @@ fn parse_package(parser: &mut Parser<'_>) {
     while parser.current() != SyntaxKind::EOF {
         let cp = parser.builder.checkpoint();
 
-        if let Err(_) = parse_statement(&mut parser) {
+        if parse_statement(&mut parser).is_err() {
             // Fast-forward until the next "safe" point so we can continue
             parser.builder.start_node_at(cp, SyntaxKind::ERROR.into());
             let terminals = [SyntaxKind::EOF, SyntaxKind::SEMICOLON];

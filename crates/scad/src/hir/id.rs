@@ -5,7 +5,7 @@ use crate::Text;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Id(Vector<Text>);
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Identifiers {
     segments: Vector<Text>,
 }

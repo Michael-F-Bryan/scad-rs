@@ -31,11 +31,11 @@ pub struct Assignment(SyntaxNode<OpenSCAD>);
 
 impl Assignment {
     pub fn identifier(&self) -> Option<Ident> {
-        self.0.children().find_map(|c| Ident::cast(c))
+        self.0.children().find_map(Ident::cast)
     }
 
     pub fn expression(&self) -> Option<Expr> {
-        self.0.children().find_map(|c| Expr::cast(c))
+        self.0.children().find_map(Expr::cast)
     }
 }
 

@@ -21,7 +21,7 @@ impl TokenSet {
         let mut i = 0;
 
         while i < kinds.len() {
-            set = set | mask(kinds[i]);
+            set |= mask(kinds[i]);
             i += 1;
         }
 
