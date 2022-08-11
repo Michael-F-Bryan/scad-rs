@@ -1,6 +1,6 @@
 mod diagnostics;
-pub mod lowering;
 pub mod hir;
+pub mod lowering;
 mod text;
 
 pub use crate::{
