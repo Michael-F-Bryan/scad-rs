@@ -45,7 +45,6 @@ Expr =
 | TernaryExpr
 | ParenExpr
 | ListComprehensionExpr
-| LetClause
 | BinExpr
 
 Atom =
@@ -64,11 +63,11 @@ IndexExpr = Expr '[' Expr ']'
 
 ParenExpr = '(' Expr ')'
 
-ListComprehensionExpr = '(' ListComprehensionElements ')'
+ListComprehensionExpr = '[' ForClause ']'
 
 BinExpr = Expr BinOp Expr
 
-BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||'
+BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '<=' | '<' | '&&' | '||'
 
 UnaryExpr = ('!' | '+' | '-') Expr
 

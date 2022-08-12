@@ -1,6 +1,6 @@
 #[cfg(test)]
 macro_rules! parse_tests {
-    ( $( $(#[$meta:meta])* $name:ident : $func:ident ($src:expr) ),* $(,)?) => {
+    ( $( $(#[$meta:meta])* $name:ident : $func:ident ($src:expr $(,)?) ),* $(,)?) => {
         $(
             #[test]
             $(#[$meta])*

@@ -506,7 +506,7 @@ impl IfStatement {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "Expr = Atom | ListExpr | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr;\n"]
+#[doc = "Expr = Atom | ListExpr | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | BinExpr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Expr {
@@ -517,7 +517,6 @@ pub enum Expr {
     TernaryExpr(TernaryExpr),
     ParenExpr(ParenExpr),
     ListComprehensionExpr(ListComprehensionExpr),
-    LetClause(LetClause),
     BinExpr(BinExpr),
 }
 impl AstNode for Expr {
@@ -533,7 +532,6 @@ impl AstNode for Expr {
             || TernaryExpr::can_cast(kind)
             || ParenExpr::can_cast(kind)
             || ListComprehensionExpr::can_cast(kind)
-            || LetClause::can_cast(kind)
             || BinExpr::can_cast(kind)
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
@@ -561,9 +559,6 @@ impl AstNode for Expr {
         if let Some(variant) = ListComprehensionExpr::cast(node.clone()) {
             return Some(Expr::ListComprehensionExpr(variant));
         }
-        if let Some(variant) = LetClause::cast(node.clone()) {
-            return Some(Expr::LetClause(variant));
-        }
         if let Some(variant) = BinExpr::cast(node.clone()) {
             return Some(Expr::BinExpr(variant));
         }
@@ -578,7 +573,6 @@ impl AstNode for Expr {
             Expr::TernaryExpr(node) => node.syntax(),
             Expr::ParenExpr(node) => node.syntax(),
             Expr::ListComprehensionExpr(node) => node.syntax(),
-            Expr::LetClause(node) => node.syntax(),
             Expr::BinExpr(node) => node.syntax(),
         }
     }
@@ -1088,7 +1082,7 @@ impl ParenExpr {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "ListComprehensionExpr = '(' ListComprehensionElements ')';\n"]
+#[doc = "ListComprehensionExpr = '[' ForClause ']';\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ListComprehensionExpr(SyntaxNode<OpenSCAD>);
@@ -1115,78 +1109,20 @@ impl AstNode for ListComprehensionExpr {
     }
 }
 impl ListComprehensionExpr {
-    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+    pub fn l_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
         self.0
             .children_with_tokens()
             .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+            .find(|tok| tok.kind() == SyntaxKind::L_BRACKET)
     }
-    pub fn list_comprehension_elements(&self) -> Option<ListComprehensionElements> {
-        self.0.children().find_map(ListComprehensionElements::cast)
+    pub fn for_clause(&self) -> Option<ForClause> {
+        self.0.children().find_map(ForClause::cast)
     }
-    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+    pub fn r_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
         self.0
             .children_with_tokens()
             .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
-    }
-}
-#[doc = "A strongly typed wrapper around a [`LET_CLAUSE`][SyntaxKind::LET_CLAUSE] node."]
-#[doc = ""]
-#[doc = "Grammar:"]
-#[doc = "```text"]
-#[doc = "LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementsOrExpr;\n"]
-#[doc = "```"]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct LetClause(SyntaxNode<OpenSCAD>);
-impl AstNode for LetClause {
-    type Language = OpenSCAD;
-    fn can_cast(kind: SyntaxKind) -> bool
-    where
-        Self: Sized,
-    {
-        kind == SyntaxKind::LET_CLAUSE
-    }
-    fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
-    where
-        Self: Sized,
-    {
-        if LetClause::can_cast(node.kind()) {
-            Some(LetClause(node))
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        &self.0
-    }
-}
-impl LetClause {
-    pub fn let_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::LET_KW)
-    }
-    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
-    }
-    pub fn assignments_opt(&self) -> Option<AssignmentsOpt> {
-        self.0.children().find_map(AssignmentsOpt::cast)
-    }
-    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
-    }
-    pub fn list_comprehension_elements_or_expr(&self) -> Option<ListComprehensionElementsOrExpr> {
-        self.0
-            .children()
-            .find_map(ListComprehensionElementsOrExpr::cast)
+            .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
     }
 }
 #[doc = "A strongly typed wrapper around a [`BIN_EXPR`][SyntaxKind::BIN_EXPR] node."]
@@ -1434,54 +1370,69 @@ impl FunctionCall {
             .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
     }
 }
-#[doc = "A strongly typed `ListComprehensionElements` node."]
+#[doc = "A strongly typed wrapper around a [`FOR_CLAUSE`][SyntaxKind::FOR_CLAUSE] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "ListComprehensionElements = LetClause | ForClause | IfClause;\n"]
+#[doc = "ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ListComprehensionElements {
-    LetClause(LetClause),
-    ForClause(ForClause),
-    IfClause(IfClause),
-}
-impl AstNode for ListComprehensionElements {
+pub struct ForClause(SyntaxNode<OpenSCAD>);
+impl AstNode for ForClause {
     type Language = OpenSCAD;
     fn can_cast(kind: SyntaxKind) -> bool
     where
         Self: Sized,
     {
-        LetClause::can_cast(kind) || ForClause::can_cast(kind) || IfClause::can_cast(kind)
+        kind == SyntaxKind::FOR_CLAUSE
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
     where
         Self: Sized,
     {
-        if let Some(variant) = LetClause::cast(node.clone()) {
-            return Some(ListComprehensionElements::LetClause(variant));
+        if ForClause::can_cast(node.kind()) {
+            Some(ForClause(node))
+        } else {
+            None
         }
-        if let Some(variant) = ForClause::cast(node.clone()) {
-            return Some(ListComprehensionElements::ForClause(variant));
-        }
-        if let Some(variant) = IfClause::cast(node.clone()) {
-            return Some(ListComprehensionElements::IfClause(variant));
-        }
-        None
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
-        match self {
-            ListComprehensionElements::LetClause(node) => node.syntax(),
-            ListComprehensionElements::ForClause(node) => node.syntax(),
-            ListComprehensionElements::IfClause(node) => node.syntax(),
-        }
+        &self.0
+    }
+}
+impl ForClause {
+    pub fn for_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::FOR_KW)
+    }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn assignments(&self) -> Option<Assignments> {
+        self.0.children().find_map(Assignments::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
+    }
+    pub fn list_comprehension_elements_or_expr(&self) -> Option<ListComprehensionElementsOrExpr> {
+        self.0
+            .children()
+            .find_map(ListComprehensionElementsOrExpr::cast)
     }
 }
 #[doc = "A strongly typed `BinOp` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||';\n"]
+#[doc = "BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '<=' | '<' | '&&' | '||';\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum BinOp {
@@ -1493,7 +1444,7 @@ pub enum BinOp {
     Caret(SyntaxNode<OpenSCAD>),
     GreaterThanEquals(SyntaxNode<OpenSCAD>),
     GreaterThan(SyntaxNode<OpenSCAD>),
-    Equals(SyntaxNode<OpenSCAD>),
+    DoubleEquals(SyntaxNode<OpenSCAD>),
     LessThanEquals(SyntaxNode<OpenSCAD>),
     LessThan(SyntaxNode<OpenSCAD>),
     And(SyntaxNode<OpenSCAD>),
@@ -1513,7 +1464,7 @@ impl AstNode for BinOp {
             || kind == SyntaxKind::CARET
             || kind == SyntaxKind::GREATER_THAN_EQUALS
             || kind == SyntaxKind::GREATER_THAN
-            || kind == SyntaxKind::EQUALS
+            || kind == SyntaxKind::DOUBLE_EQUALS
             || kind == SyntaxKind::LESS_THAN_EQUALS
             || kind == SyntaxKind::LESS_THAN
             || kind == SyntaxKind::AND
@@ -1547,8 +1498,8 @@ impl AstNode for BinOp {
         if node.kind() == SyntaxKind::GREATER_THAN {
             return Some(BinOp::GreaterThan(node));
         }
-        if node.kind() == SyntaxKind::EQUALS {
-            return Some(BinOp::Equals(node));
+        if node.kind() == SyntaxKind::DOUBLE_EQUALS {
+            return Some(BinOp::DoubleEquals(node));
         }
         if node.kind() == SyntaxKind::LESS_THAN_EQUALS {
             return Some(BinOp::LessThanEquals(node));
@@ -1574,7 +1525,7 @@ impl AstNode for BinOp {
             BinOp::Caret(node) => node,
             BinOp::GreaterThanEquals(node) => node,
             BinOp::GreaterThan(node) => node,
-            BinOp::Equals(node) => node,
+            BinOp::DoubleEquals(node) => node,
             BinOp::LessThanEquals(node) => node,
             BinOp::LessThan(node) => node,
             BinOp::And(node) => node,
@@ -1688,28 +1639,71 @@ impl RangeExpressionFromToStep {
             .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
     }
 }
-#[doc = "A strongly typed wrapper around a [`FOR_CLAUSE`][SyntaxKind::FOR_CLAUSE] node."]
+#[doc = "A strongly typed `ListComprehensionElements` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr;\n"]
+#[doc = "ListComprehensionElements = LetClause | ForClause | IfClause;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ForClause(SyntaxNode<OpenSCAD>);
-impl AstNode for ForClause {
+pub enum ListComprehensionElements {
+    LetClause(LetClause),
+    ForClause(ForClause),
+    IfClause(IfClause),
+}
+impl AstNode for ListComprehensionElements {
     type Language = OpenSCAD;
     fn can_cast(kind: SyntaxKind) -> bool
     where
         Self: Sized,
     {
-        kind == SyntaxKind::FOR_CLAUSE
+        LetClause::can_cast(kind) || ForClause::can_cast(kind) || IfClause::can_cast(kind)
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
     where
         Self: Sized,
     {
-        if ForClause::can_cast(node.kind()) {
-            Some(ForClause(node))
+        if let Some(variant) = LetClause::cast(node.clone()) {
+            return Some(ListComprehensionElements::LetClause(variant));
+        }
+        if let Some(variant) = ForClause::cast(node.clone()) {
+            return Some(ListComprehensionElements::ForClause(variant));
+        }
+        if let Some(variant) = IfClause::cast(node.clone()) {
+            return Some(ListComprehensionElements::IfClause(variant));
+        }
+        None
+    }
+    fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
+        match self {
+            ListComprehensionElements::LetClause(node) => node.syntax(),
+            ListComprehensionElements::ForClause(node) => node.syntax(),
+            ListComprehensionElements::IfClause(node) => node.syntax(),
+        }
+    }
+}
+#[doc = "A strongly typed wrapper around a [`LET_CLAUSE`][SyntaxKind::LET_CLAUSE] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
+#[doc = "```text"]
+#[doc = "LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementsOrExpr;\n"]
+#[doc = "```"]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct LetClause(SyntaxNode<OpenSCAD>);
+impl AstNode for LetClause {
+    type Language = OpenSCAD;
+    fn can_cast(kind: SyntaxKind) -> bool
+    where
+        Self: Sized,
+    {
+        kind == SyntaxKind::LET_CLAUSE
+    }
+    fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        if LetClause::can_cast(node.kind()) {
+            Some(LetClause(node))
         } else {
             None
         }
@@ -1718,12 +1712,12 @@ impl AstNode for ForClause {
         &self.0
     }
 }
-impl ForClause {
-    pub fn for_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
+impl LetClause {
+    pub fn let_kw_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
         self.0
             .children_with_tokens()
             .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::FOR_KW)
+            .find(|tok| tok.kind() == SyntaxKind::LET_KW)
     }
     pub fn l_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
         self.0
@@ -1731,8 +1725,8 @@ impl ForClause {
             .filter_map(|t| t.into_token())
             .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
     }
-    pub fn assignments(&self) -> Option<Assignments> {
-        self.0.children().find_map(Assignments::cast)
+    pub fn assignments_opt(&self) -> Option<AssignmentsOpt> {
+        self.0.children().find_map(AssignmentsOpt::cast)
     }
     pub fn r_paren_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
         self.0

@@ -1,0 +1,47 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: "expr([ for (a = [0,2], b = [0,2]) a+b])"
+---
+Node(
+    LIST_COMPREHENSION_EXPR@0..25
+      L_BRACKET@0..1 "["
+      FOR_CLAUSE@1..24
+        FOR_KW@1..4 "for"
+        L_PAREN@4..5 "("
+        ASSIGNMENTS@5..20
+          ASSIGNMENT@5..12
+            IDENT@5..6 "a"
+            EQUALS@6..7 "="
+            LIST_EXPR@7..12
+              L_BRACKET@7..8 "["
+              EXPRESSIONS@8..11
+                INTEGER@8..9
+                  INTEGER@8..9 "0"
+                COMMA@9..10 ","
+                INTEGER@10..11
+                  INTEGER@10..11 "2"
+              R_BRACKET@11..12 "]"
+          COMMA@12..13 ","
+          ASSIGNMENT@13..20
+            IDENT@13..14 "b"
+            EQUALS@14..15 "="
+            LIST_EXPR@15..20
+              L_BRACKET@15..16 "["
+              EXPRESSIONS@16..19
+                INTEGER@16..17
+                  INTEGER@16..17 "0"
+                COMMA@17..18 ","
+                INTEGER@18..19
+                  INTEGER@18..19 "2"
+              R_BRACKET@19..20 "]"
+        R_PAREN@20..21 ")"
+        BIN_EXPR@21..24
+          LOOKUP_EXPR@21..22
+            IDENT@21..22 "a"
+          PLUS@22..23
+            PLUS@22..23 "+"
+          LOOKUP_EXPR@23..24
+            IDENT@23..24 "b"
+      R_BRACKET@24..25 "]"
+    ,
+)

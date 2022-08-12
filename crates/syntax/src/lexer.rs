@@ -40,6 +40,7 @@ fn lexer() -> Lexer {
             (COMMA.into(), ","),
             (COMMENT.into(), r"//[^\n]*"),
             (EQUALS.into(), "="),
+            (DOUBLE_EQUALS.into(), "=="),
             (DOT.into(), r"\."),
             (CARET.into(), r"\^"),
             (HASH.into(), "#"),

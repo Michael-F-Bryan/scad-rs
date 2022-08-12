@@ -68,6 +68,7 @@ const PUNCTUATION_NAMES: &[(&str, &str)] = &[
     (">", "GREATER_THAN"),
     (">=", "GREATER_THAN_EQUALS"),
     ("=", "EQUALS"),
+    ("==", "DOUBLE_EQUALS"),
     ("#", "HASH"),
 ];
 

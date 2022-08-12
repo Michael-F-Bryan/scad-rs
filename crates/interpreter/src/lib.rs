@@ -68,7 +68,6 @@ impl Interpreter {
             Expr::TernaryExpr(_) => todo!(),
             Expr::ParenExpr(_) => todo!(),
             Expr::ListComprehensionExpr(_) => todo!(),
-            Expr::LetClause(_) => todo!(),
             Expr::BinExpr(b) => {
                 let mut exprs = b.exprs();
                 let lhs = self.evaluate_expr(exprs.next().unwrap())?;
@@ -83,7 +82,7 @@ impl Interpreter {
                     BinOp::Caret(_) => todo!(),
                     BinOp::GreaterThanEquals(_) => todo!(),
                     BinOp::GreaterThan(_) => todo!(),
-                    BinOp::Equals(_) => todo!(),
+                    BinOp::DoubleEquals(_) => todo!(),
                     BinOp::LessThanEquals(_) => todo!(),
                     BinOp::LessThan(_) => todo!(),
                     BinOp::And(_) => todo!(),

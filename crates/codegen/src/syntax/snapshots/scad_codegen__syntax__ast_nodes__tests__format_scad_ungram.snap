@@ -20,7 +20,7 @@ ModuleInstantiation = 'ident' '(' args:Arguments? ')' Child;
 
 IfStatement = 'if' '(' Expr ')' Actions ('else' Actions)?;
 
-Expr = Atom | ListExpr | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | LetClause | BinExpr;
+Expr = Atom | ListExpr | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | BinExpr;
 
 Actions = Action | BracedActions;
 
@@ -44,9 +44,7 @@ TernaryExpr = Expr '?' Expr ':' Expr;
 
 ParenExpr = '(' Expr ')';
 
-ListComprehensionExpr = '(' ListComprehensionElements ')';
-
-LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementsOrExpr;
+ListComprehensionExpr = '[' ForClause ']';
 
 BinExpr = Expr BinOp Expr;
 
@@ -58,15 +56,17 @@ IndexExpr = Expr '[' Expr ']';
 
 FunctionCall = 'ident' '(' args:Arguments? ')';
 
-ListComprehensionElements = LetClause | ForClause | IfClause;
+ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr;
 
-BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '=' | '<=' | '<' | '&&' | '||';
+BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '<=' | '<' | '&&' | '||';
 
 RangeExpressionFromTo = '[' Expr ':' Expr ']';
 
 RangeExpressionFromToStep = '[' Expr ':' Expr ':' Expr ']';
 
-ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr;
+ListComprehensionElements = LetClause | ForClause | IfClause;
+
+LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementsOrExpr;
 
 IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementsOrExpr;
 
