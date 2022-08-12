@@ -63,7 +63,7 @@ impl Interpreter {
         match expr {
             Expr::Atom(atom) => self.evaluate_atom(atom),
             Expr::ListExpr(list) => self.evaluate_list(list),
-            Expr::RangeExpression(_) => todo!(),
+            Expr::RangeExpr(_) => todo!(),
             Expr::UnaryExpr(_) => todo!(),
             Expr::TernaryExpr(_) => todo!(),
             Expr::ParenExpr(_) => todo!(),

@@ -40,7 +40,7 @@ Expressions = Expr (',' Expr)*
 Expr =
   Atom
 | ListExpr
-| RangeExpression
+| RangeExpr
 | UnaryExpr
 | TernaryExpr
 | ParenExpr
@@ -71,11 +71,11 @@ BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '<=' | '<' | '&&
 
 UnaryExpr = ('!' | '+' | '-') Expr
 
-RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep
+RangeExpr= RangeExprFromTo | RangeExprFromToStep
 
-RangeExpressionFromTo = '[' Expr ':' Expr ']'
+RangeExprFromTo = '[' Expr ':' Expr ']'
 
-RangeExpressionFromToStep = '[' Expr ':' Expr ':' Expr ']'
+RangeExprFromToStep = '[' Expr ':' Expr ':' Expr ']'
 
 ListExpr = '[' Expressions ']'
 

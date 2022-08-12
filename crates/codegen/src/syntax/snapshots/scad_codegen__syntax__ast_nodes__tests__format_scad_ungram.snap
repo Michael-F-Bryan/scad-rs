@@ -20,7 +20,7 @@ ModuleInstantiation = 'ident' '(' args:Arguments? ')' Child;
 
 IfStatement = 'if' '(' Expr ')' Actions ('else' Actions)?;
 
-Expr = Atom | ListExpr | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | BinExpr;
+Expr = Atom | ListExpr | RangeExpr | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | BinExpr;
 
 Actions = Action | BracedActions;
 
@@ -36,7 +36,7 @@ Atom = LiteralExpr | LookupExpr | IndexExpr | FunctionCall;
 
 ListExpr = '[' Expressions ']';
 
-RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep;
+RangeExpr = RangeExprFromTo | RangeExprFromToStep;
 
 UnaryExpr = ('!' | '+' | '-') Expr;
 
@@ -60,9 +60,9 @@ ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExp
 
 BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '<=' | '<' | '&&' | '||';
 
-RangeExpressionFromTo = '[' Expr ':' Expr ']';
+RangeExprFromTo = '[' Expr ':' Expr ']';
 
-RangeExpressionFromToStep = '[' Expr ':' Expr ':' Expr ']';
+RangeExprFromToStep = '[' Expr ':' Expr ':' Expr ']';
 
 ListComprehensionElements = LetClause | ForClause | IfClause;
 

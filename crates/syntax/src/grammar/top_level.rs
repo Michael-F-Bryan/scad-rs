@@ -259,7 +259,6 @@ mod tests {
         ),
         if_statement: statement("if (test) cube();"),
         if_else_statement: statement("if (test) truthy(); else falsy();"),
-        #[ignore]
         if_else_statement_with_braces: statement("
             if (test) {
                 truthy_1();

@@ -506,13 +506,13 @@ impl IfStatement {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "Expr = Atom | ListExpr | RangeExpression | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | BinExpr;\n"]
+#[doc = "Expr = Atom | ListExpr | RangeExpr | UnaryExpr | TernaryExpr | ParenExpr | ListComprehensionExpr | BinExpr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Expr {
     Atom(Atom),
     ListExpr(ListExpr),
-    RangeExpression(RangeExpression),
+    RangeExpr(RangeExpr),
     UnaryExpr(UnaryExpr),
     TernaryExpr(TernaryExpr),
     ParenExpr(ParenExpr),
@@ -527,7 +527,7 @@ impl AstNode for Expr {
     {
         Atom::can_cast(kind)
             || ListExpr::can_cast(kind)
-            || RangeExpression::can_cast(kind)
+            || RangeExpr::can_cast(kind)
             || UnaryExpr::can_cast(kind)
             || TernaryExpr::can_cast(kind)
             || ParenExpr::can_cast(kind)
@@ -544,8 +544,8 @@ impl AstNode for Expr {
         if let Some(variant) = ListExpr::cast(node.clone()) {
             return Some(Expr::ListExpr(variant));
         }
-        if let Some(variant) = RangeExpression::cast(node.clone()) {
-            return Some(Expr::RangeExpression(variant));
+        if let Some(variant) = RangeExpr::cast(node.clone()) {
+            return Some(Expr::RangeExpr(variant));
         }
         if let Some(variant) = UnaryExpr::cast(node.clone()) {
             return Some(Expr::UnaryExpr(variant));
@@ -568,7 +568,7 @@ impl AstNode for Expr {
         match self {
             Expr::Atom(node) => node.syntax(),
             Expr::ListExpr(node) => node.syntax(),
-            Expr::RangeExpression(node) => node.syntax(),
+            Expr::RangeExpr(node) => node.syntax(),
             Expr::UnaryExpr(node) => node.syntax(),
             Expr::TernaryExpr(node) => node.syntax(),
             Expr::ParenExpr(node) => node.syntax(),
@@ -893,41 +893,41 @@ impl ListExpr {
             .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
     }
 }
-#[doc = "A strongly typed `RangeExpression` node."]
+#[doc = "A strongly typed `RangeExpr` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "RangeExpression = RangeExpressionFromTo | RangeExpressionFromToStep;\n"]
+#[doc = "RangeExpr = RangeExprFromTo | RangeExprFromToStep;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum RangeExpression {
-    RangeExpressionFromTo(RangeExpressionFromTo),
-    RangeExpressionFromToStep(RangeExpressionFromToStep),
+pub enum RangeExpr {
+    RangeExprFromTo(RangeExprFromTo),
+    RangeExprFromToStep(RangeExprFromToStep),
 }
-impl AstNode for RangeExpression {
+impl AstNode for RangeExpr {
     type Language = OpenSCAD;
     fn can_cast(kind: SyntaxKind) -> bool
     where
         Self: Sized,
     {
-        RangeExpressionFromTo::can_cast(kind) || RangeExpressionFromToStep::can_cast(kind)
+        RangeExprFromTo::can_cast(kind) || RangeExprFromToStep::can_cast(kind)
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
     where
         Self: Sized,
     {
-        if let Some(variant) = RangeExpressionFromTo::cast(node.clone()) {
-            return Some(RangeExpression::RangeExpressionFromTo(variant));
+        if let Some(variant) = RangeExprFromTo::cast(node.clone()) {
+            return Some(RangeExpr::RangeExprFromTo(variant));
         }
-        if let Some(variant) = RangeExpressionFromToStep::cast(node.clone()) {
-            return Some(RangeExpression::RangeExpressionFromToStep(variant));
+        if let Some(variant) = RangeExprFromToStep::cast(node.clone()) {
+            return Some(RangeExpr::RangeExprFromToStep(variant));
         }
         None
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         match self {
-            RangeExpression::RangeExpressionFromTo(node) => node.syntax(),
-            RangeExpression::RangeExpressionFromToStep(node) => node.syntax(),
+            RangeExpr::RangeExprFromTo(node) => node.syntax(),
+            RangeExpr::RangeExprFromToStep(node) => node.syntax(),
         }
     }
 }
@@ -1533,28 +1533,28 @@ impl AstNode for BinOp {
         }
     }
 }
-#[doc = "A strongly typed wrapper around a [`RANGE_EXPRESSION_FROM_TO`][SyntaxKind::RANGE_EXPRESSION_FROM_TO] node."]
+#[doc = "A strongly typed wrapper around a [`RANGE_EXPR_FROM_TO`][SyntaxKind::RANGE_EXPR_FROM_TO] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "RangeExpressionFromTo = '[' Expr ':' Expr ']';\n"]
+#[doc = "RangeExprFromTo = '[' Expr ':' Expr ']';\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct RangeExpressionFromTo(SyntaxNode<OpenSCAD>);
-impl AstNode for RangeExpressionFromTo {
+pub struct RangeExprFromTo(SyntaxNode<OpenSCAD>);
+impl AstNode for RangeExprFromTo {
     type Language = OpenSCAD;
     fn can_cast(kind: SyntaxKind) -> bool
     where
         Self: Sized,
     {
-        kind == SyntaxKind::RANGE_EXPRESSION_FROM_TO
+        kind == SyntaxKind::RANGE_EXPR_FROM_TO
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
     where
         Self: Sized,
     {
-        if RangeExpressionFromTo::can_cast(node.kind()) {
-            Some(RangeExpressionFromTo(node))
+        if RangeExprFromTo::can_cast(node.kind()) {
+            Some(RangeExprFromTo(node))
         } else {
             None
         }
@@ -1563,7 +1563,7 @@ impl AstNode for RangeExpressionFromTo {
         &self.0
     }
 }
-impl RangeExpressionFromTo {
+impl RangeExprFromTo {
     pub fn l_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
         self.0
             .children_with_tokens()
@@ -1586,28 +1586,28 @@ impl RangeExpressionFromTo {
             .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
     }
 }
-#[doc = "A strongly typed wrapper around a [`RANGE_EXPRESSION_FROM_TO_STEP`][SyntaxKind::RANGE_EXPRESSION_FROM_TO_STEP] node."]
+#[doc = "A strongly typed wrapper around a [`RANGE_EXPR_FROM_TO_STEP`][SyntaxKind::RANGE_EXPR_FROM_TO_STEP] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "RangeExpressionFromToStep = '[' Expr ':' Expr ':' Expr ']';\n"]
+#[doc = "RangeExprFromToStep = '[' Expr ':' Expr ':' Expr ']';\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct RangeExpressionFromToStep(SyntaxNode<OpenSCAD>);
-impl AstNode for RangeExpressionFromToStep {
+pub struct RangeExprFromToStep(SyntaxNode<OpenSCAD>);
+impl AstNode for RangeExprFromToStep {
     type Language = OpenSCAD;
     fn can_cast(kind: SyntaxKind) -> bool
     where
         Self: Sized,
     {
-        kind == SyntaxKind::RANGE_EXPRESSION_FROM_TO_STEP
+        kind == SyntaxKind::RANGE_EXPR_FROM_TO_STEP
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
     where
         Self: Sized,
     {
-        if RangeExpressionFromToStep::can_cast(node.kind()) {
-            Some(RangeExpressionFromToStep(node))
+        if RangeExprFromToStep::can_cast(node.kind()) {
+            Some(RangeExprFromToStep(node))
         } else {
             None
         }
@@ -1616,7 +1616,7 @@ impl AstNode for RangeExpressionFromToStep {
         &self.0
     }
 }
-impl RangeExpressionFromToStep {
+impl RangeExprFromToStep {
     pub fn l_bracket_token(&self) -> Option<SyntaxToken<OpenSCAD>> {
         self.0
             .children_with_tokens()

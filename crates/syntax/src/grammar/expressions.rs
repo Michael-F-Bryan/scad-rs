@@ -286,5 +286,11 @@ mod tests {
                 for (a = [steps, -1, 0]) if (b) let (c = d) [a, f]
             ]
         "),
+        #[ignore = "Requires a Pratt parser"]
+        ternary_expr: expr("condition ? truthy : falsy"),
+        #[ignore = "Requires a Pratt parser"]
+        range_expr: expr("[a:b]"),
+        #[ignore = "Requires a Pratt parser"]
+        range_expr_with_step: expr("[a:b:c]"),
     }
 }
