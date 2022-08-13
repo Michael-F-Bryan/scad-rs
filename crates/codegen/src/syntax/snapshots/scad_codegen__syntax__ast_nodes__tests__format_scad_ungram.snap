@@ -56,7 +56,7 @@ IndexExpr = Expr '[' Expr ']';
 
 FunctionCall = 'ident' '(' args:Arguments? ')';
 
-ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr;
+ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementOrExpr;
 
 BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '<=' | '<' | '&&' | '||';
 
@@ -64,13 +64,13 @@ RangeExprFromTo = '[' Expr ':' Expr ']';
 
 RangeExprFromToStep = '[' Expr ':' Expr ':' Expr ']';
 
-ListComprehensionElements = LetClause | ForClause | IfClause;
+ListComprehensionElement = LetClause | ForClause | IfClause;
 
-LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementsOrExpr;
+LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementOrExpr;
 
-IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementsOrExpr;
+IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementOrExpr;
 
-ListComprehensionElementsOrExpr = ListComprehensionElements | Expr;
+ListComprehensionElementOrExpr = ListComprehensionElement | Expr;
 
 AssignmentsOpt = Assignments?;
 

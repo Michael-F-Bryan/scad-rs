@@ -47,12 +47,13 @@ impl TokenSet {
 
 impl Display for TokenSet {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let joined = self
-            .iter()
-            .map(|k| format!("{k:?}"))
-            .collect::<Vec<_>>()
-            .join("|");
-        f.write_str(&joined)
+        for (i, kind) in self.iter().enumerate() {
+            if i > 0 {
+                write!(f, "|")?;
+            }
+            write!(f, "{kind:?}")?;
+        }
+        Ok(())
     }
 }
 

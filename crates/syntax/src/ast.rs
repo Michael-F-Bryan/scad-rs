@@ -1374,7 +1374,7 @@ impl FunctionCall {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr;\n"]
+#[doc = "ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementOrExpr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ForClause(SyntaxNode<OpenSCAD>);
@@ -1422,10 +1422,10 @@ impl ForClause {
             .filter_map(|t| t.into_token())
             .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
     }
-    pub fn list_comprehension_elements_or_expr(&self) -> Option<ListComprehensionElementsOrExpr> {
+    pub fn list_comprehension_element_or_expr(&self) -> Option<ListComprehensionElementOrExpr> {
         self.0
             .children()
-            .find_map(ListComprehensionElementsOrExpr::cast)
+            .find_map(ListComprehensionElementOrExpr::cast)
     }
 }
 #[doc = "A strongly typed `BinOp` node."]
@@ -1639,19 +1639,19 @@ impl RangeExprFromToStep {
             .find(|tok| tok.kind() == SyntaxKind::R_BRACKET)
     }
 }
-#[doc = "A strongly typed `ListComprehensionElements` node."]
+#[doc = "A strongly typed `ListComprehensionElement` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "ListComprehensionElements = LetClause | ForClause | IfClause;\n"]
+#[doc = "ListComprehensionElement = LetClause | ForClause | IfClause;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ListComprehensionElements {
+pub enum ListComprehensionElement {
     LetClause(LetClause),
     ForClause(ForClause),
     IfClause(IfClause),
 }
-impl AstNode for ListComprehensionElements {
+impl AstNode for ListComprehensionElement {
     type Language = OpenSCAD;
     fn can_cast(kind: SyntaxKind) -> bool
     where
@@ -1664,21 +1664,21 @@ impl AstNode for ListComprehensionElements {
         Self: Sized,
     {
         if let Some(variant) = LetClause::cast(node.clone()) {
-            return Some(ListComprehensionElements::LetClause(variant));
+            return Some(ListComprehensionElement::LetClause(variant));
         }
         if let Some(variant) = ForClause::cast(node.clone()) {
-            return Some(ListComprehensionElements::ForClause(variant));
+            return Some(ListComprehensionElement::ForClause(variant));
         }
         if let Some(variant) = IfClause::cast(node.clone()) {
-            return Some(ListComprehensionElements::IfClause(variant));
+            return Some(ListComprehensionElement::IfClause(variant));
         }
         None
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         match self {
-            ListComprehensionElements::LetClause(node) => node.syntax(),
-            ListComprehensionElements::ForClause(node) => node.syntax(),
-            ListComprehensionElements::IfClause(node) => node.syntax(),
+            ListComprehensionElement::LetClause(node) => node.syntax(),
+            ListComprehensionElement::ForClause(node) => node.syntax(),
+            ListComprehensionElement::IfClause(node) => node.syntax(),
         }
     }
 }
@@ -1686,7 +1686,7 @@ impl AstNode for ListComprehensionElements {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementsOrExpr;\n"]
+#[doc = "LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementOrExpr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct LetClause(SyntaxNode<OpenSCAD>);
@@ -1734,17 +1734,17 @@ impl LetClause {
             .filter_map(|t| t.into_token())
             .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
     }
-    pub fn list_comprehension_elements_or_expr(&self) -> Option<ListComprehensionElementsOrExpr> {
+    pub fn list_comprehension_element_or_expr(&self) -> Option<ListComprehensionElementOrExpr> {
         self.0
             .children()
-            .find_map(ListComprehensionElementsOrExpr::cast)
+            .find_map(ListComprehensionElementOrExpr::cast)
     }
 }
 #[doc = "A strongly typed wrapper around a [`IF_CLAUSE`][SyntaxKind::IF_CLAUSE] node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementsOrExpr;\n"]
+#[doc = "IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementOrExpr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct IfClause(SyntaxNode<OpenSCAD>);
@@ -1792,49 +1792,49 @@ impl IfClause {
             .filter_map(|t| t.into_token())
             .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
     }
-    pub fn list_comprehension_elements_or_expr(&self) -> Option<ListComprehensionElementsOrExpr> {
+    pub fn list_comprehension_element_or_expr(&self) -> Option<ListComprehensionElementOrExpr> {
         self.0
             .children()
-            .find_map(ListComprehensionElementsOrExpr::cast)
+            .find_map(ListComprehensionElementOrExpr::cast)
     }
 }
-#[doc = "A strongly typed `ListComprehensionElementsOrExpr` node."]
+#[doc = "A strongly typed `ListComprehensionElementOrExpr` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "ListComprehensionElementsOrExpr = ListComprehensionElements | Expr;\n"]
+#[doc = "ListComprehensionElementOrExpr = ListComprehensionElement | Expr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ListComprehensionElementsOrExpr {
-    ListComprehensionElements(ListComprehensionElements),
+pub enum ListComprehensionElementOrExpr {
+    ListComprehensionElement(ListComprehensionElement),
     Expr(Expr),
 }
-impl AstNode for ListComprehensionElementsOrExpr {
+impl AstNode for ListComprehensionElementOrExpr {
     type Language = OpenSCAD;
     fn can_cast(kind: SyntaxKind) -> bool
     where
         Self: Sized,
     {
-        ListComprehensionElements::can_cast(kind) || Expr::can_cast(kind)
+        ListComprehensionElement::can_cast(kind) || Expr::can_cast(kind)
     }
     fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
     where
         Self: Sized,
     {
-        if let Some(variant) = ListComprehensionElements::cast(node.clone()) {
-            return Some(ListComprehensionElementsOrExpr::ListComprehensionElements(
+        if let Some(variant) = ListComprehensionElement::cast(node.clone()) {
+            return Some(ListComprehensionElementOrExpr::ListComprehensionElement(
                 variant,
             ));
         }
         if let Some(variant) = Expr::cast(node.clone()) {
-            return Some(ListComprehensionElementsOrExpr::Expr(variant));
+            return Some(ListComprehensionElementOrExpr::Expr(variant));
         }
         None
     }
     fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
         match self {
-            ListComprehensionElementsOrExpr::ListComprehensionElements(node) => node.syntax(),
-            ListComprehensionElementsOrExpr::Expr(node) => node.syntax(),
+            ListComprehensionElementOrExpr::ListComprehensionElement(node) => node.syntax(),
+            ListComprehensionElementOrExpr::Expr(node) => node.syntax(),
         }
     }
 }

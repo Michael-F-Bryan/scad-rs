@@ -1,6 +1,12 @@
 //! A naive tree-walking interpreter for the OpenSCAD language.
+mod env;
 
-use std::collections::HashMap;
+pub use crate::env::{Builtin, Environment};
+
+use std::{
+    collections::HashMap,
+    fmt::{self, Display, Formatter},
+};
 
 use scad_syntax::ast::{
     Argument, Assignment, Atom, BinOp, Expr, ListExpr, LiteralExpr, LookupExpr,
@@ -8,16 +14,18 @@ use scad_syntax::ast::{
 };
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Interpreter {
+pub struct Interpreter<E> {
     pkg: Package,
     namespace: HashMap<String, Value>,
+    environment: E,
 }
 
-impl Interpreter {
-    pub fn new(pkg: Package) -> Self {
+impl<E: Environment> Interpreter<E> {
+    pub fn new(pkg: Package, environment: E) -> Self {
         Interpreter {
             pkg,
             namespace: HashMap::new(),
+            environment,
         }
     }
 
@@ -44,10 +52,7 @@ impl Interpreter {
             Statement::NamedFunctionDefinition(_) => todo!(),
             Statement::NamedModuleDefinition(_) => todo!(),
             Statement::IfStatement(_) => todo!(),
-            Statement::ModuleInstantiation(m) => {
-                let geom = self.evaluate_module_instantiation(m)?;
-                Ok(Some(geom))
-            }
+            Statement::ModuleInstantiation(m) => self.evaluate_module_instantiation(m),
         }
     }
 
@@ -105,7 +110,7 @@ impl Interpreter {
         match literal {
             LiteralExpr::FalseKw(_) => Ok(Value::Boolean(false)),
             LiteralExpr::TrueKw(_) => Ok(Value::Boolean(true)),
-            LiteralExpr::UndefKw(_) => Ok(Value::Null),
+            LiteralExpr::UndefKw(_) => Ok(Value::Undef),
             LiteralExpr::Float(f) => Ok(Value::Float(
                 f.first_token().unwrap().text().parse().unwrap(),
             )),
@@ -143,7 +148,7 @@ impl Interpreter {
     fn evaluate_module_instantiation(
         &mut self,
         m: ModuleInstantiation,
-    ) -> Result<Geometry, Exception> {
+    ) -> Result<Option<Geometry>, Exception> {
         let arguments = m
             .arguments_opt()
             .map(|args| args.arguments().collect::<Vec<_>>())
@@ -159,7 +164,11 @@ impl Interpreter {
         }
 
         match m.ident_token().unwrap().text() {
-            "cube" => self.evaluate_cube(args),
+            "cube" => self.evaluate_cube(args).map(Some),
+            "echo" => {
+                self.echo(args);
+                Ok(None)
+            }
             _ => todo!(),
         }
     }
@@ -181,6 +190,15 @@ impl Interpreter {
             _ => todo!(),
         }
     }
+
+    fn echo(&self, args: Vec<Value>) {
+        let msg = args
+            .iter()
+            .map(|v| v.to_string())
+            .collect::<Vec<_>>()
+            .join(" ");
+        eprintln!("Echo: {msg}");
+    }
 }
 
 fn add(lhs: Value, rhs: Value) -> Result<Value, Exception> {
@@ -193,8 +211,8 @@ fn add(lhs: Value, rhs: Value) -> Result<Value, Exception> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-enum Value {
-    Null,
+pub enum Value {
+    Undef,
     Boolean(bool),
     Integer(i64),
     Float(f64),
@@ -208,6 +226,29 @@ impl Value {
             Value::Integer(i) => Some(i as f64),
             Value::Float(f) => Some(f),
             _ => None,
+        }
+    }
+}
+
+impl Display for Value {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Value::Undef => Display::fmt("undef", f),
+            Value::Boolean(b) => Display::fmt(b, f),
+            Value::Integer(i) => Display::fmt(i, f),
+            Value::Float(float) => Display::fmt(float, f),
+            Value::String(s) => Display::fmt(s, f),
+            Value::List(list) => {
+                write!(f, "[")?;
+                for (i, value) in list.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{value}")?;
+                }
+                write!(f, "]")?;
+                Ok(())
+            }
         }
     }
 }
@@ -243,7 +284,7 @@ mod tests {
         }
         assert!(errors.is_empty(), "{errors:#?}");
 
-        let mut interpreter = Interpreter::new(pkg);
+        let mut interpreter = Interpreter::new(pkg, Builtin::default());
 
         interpreter.evaluate().unwrap();
 

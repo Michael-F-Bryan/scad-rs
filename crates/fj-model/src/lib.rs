@@ -1,5 +1,5 @@
 use fj::{Group, Shape, Sketch, Sweep};
-use scad_interpreter::Geometry;
+use scad_interpreter::{Builtin, Geometry};
 
 #[fj::model]
 fn model(filename: String) -> Shape {
@@ -8,7 +8,7 @@ fn model(filename: String) -> Shape {
     let (pkg, errors) = scad_syntax::parse(tokens);
     assert!(errors.is_empty());
 
-    let mut interpreter = scad_interpreter::Interpreter::new(pkg);
+    let mut interpreter = scad_interpreter::Interpreter::new(pkg, Builtin::default());
     let geometry = interpreter.evaluate().unwrap();
 
     to_shape(&geometry).unwrap()

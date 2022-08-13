@@ -79,18 +79,18 @@ RangeExprFromToStep = '[' Expr ':' Expr ':' Expr ']'
 
 ListExpr = '[' Expressions ']'
 
-ListComprehensionElements =
+ListComprehensionElement =
   LetClause
 | ForClause
 | IfClause
 
-ListComprehensionElementsOrExpr = ListComprehensionElements | Expr
+ListComprehensionElementOrExpr = ListComprehensionElement | Expr
 
-LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementsOrExpr
+LetClause = 'let' '(' assignments:AssignmentsOpt ')' ListComprehensionElementOrExpr
 
-ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementsOrExpr
+ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementOrExpr
 
-IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementsOrExpr
+IfClause = 'if' '(' condition:Expr ')' ListComprehensionElementOrExpr
 
 NamedFunctionDefinition = 'function' 'ident' '(' params:Parameters? ')' '=' body:Expr ';'
 
