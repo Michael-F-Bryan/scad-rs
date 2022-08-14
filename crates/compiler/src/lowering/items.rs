@@ -5,33 +5,11 @@ use scad_syntax::{ast, OpenSCAD};
 use crate::{
     diagnostics::DuplicateSymbol,
     hir::{self, Spanned},
-    parsing::Parsing,
+    lowering::Lowering,
     Diagnostics, Text,
 };
 
-/// Lowering from the [`ast`] representation to [`hir`].
-#[salsa::query_group(LoweringStorage)]
-pub trait Lowering: Parsing {
-    fn top_level_items(&self) -> (OrdMap<Text, hir::Item>, Diagnostics);
-
-    fn function_arguments(
-        &self,
-        node: ast::NamedFunctionDefinition,
-    ) -> (Vector<hir::Argument>, Diagnostics);
-
-    fn module_arguments(
-        &self,
-        node: ast::NamedModuleDefinition,
-    ) -> (Vector<hir::Argument>, Diagnostics);
-
-    /// Get all names that are accessible from a particular node.
-    fn named_items_in_scope(
-        &self,
-        target: SyntaxNode<OpenSCAD>,
-    ) -> Vector<(Text, SyntaxNode<OpenSCAD>)>;
-}
-
-fn top_level_items(db: &dyn Lowering) -> (OrdMap<Text, hir::Item>, Diagnostics) {
+pub(crate) fn top_level_items(db: &dyn Lowering) -> (OrdMap<Text, hir::Item>, Diagnostics) {
     let (pkg, mut diags) = db.ast();
     let mut items: OrdMap<Text, hir::Item> = OrdMap::new();
 
@@ -67,55 +45,22 @@ fn item_name(stmt: ast::Statement) -> Option<(Text, hir::Item)> {
     Some((name, item))
 }
 
-fn function_arguments(
-    _: &dyn Lowering,
-    node: ast::NamedFunctionDefinition,
-) -> (Vector<hir::Argument>, Diagnostics) {
-    extract_parameters(node.parameters_opt())
-}
-
-fn module_arguments(
-    _: &dyn Lowering,
-    node: ast::NamedModuleDefinition,
-) -> (Vector<hir::Argument>, Diagnostics) {
-    extract_parameters(node.parameters_opt())
-}
-
-fn extract_parameters(params: Option<ast::Parameters>) -> (Vector<hir::Argument>, Diagnostics) {
-    let params = params.into_iter().flat_map(|p| p.parameters());
-
-    let mut arguments = Vector::new();
-
-    for param in params {
-        let name: Text = match &param {
-            ast::Parameter::Ident(name) => name.text().into(),
-            ast::Parameter::Assignment(ass) => ass.ident_token().unwrap().text().into(),
-        };
-        arguments.push_back(hir::Argument {
-            name,
-            span: param.syntax().text_range(),
-        });
-    }
-
-    (arguments, Diagnostics::empty())
-}
-
-fn named_items_in_scope(
+pub(crate) fn named_items_in_scope(
     db: &dyn Lowering,
     target: SyntaxNode<OpenSCAD>,
-) -> Vector<(Text, SyntaxNode<OpenSCAD>)> {
+) -> Vector<(Text, hir::NameDefinitionSite)> {
     let parent = match target.parent() {
         Some(p) => p,
         None => return Vector::new(),
     };
 
-    let mut named_items: Vector<(Text, SyntaxNode<OpenSCAD>)> = Vector::new();
+    let mut named_items: Vector<(Text, hir::NameDefinitionSite)> = Vector::new();
 
     // First, get any items that were defined before this one
     for child in parent.children() {
         let reached_target = child == target;
-        if let Some(item) = hir::Item::cast(child) && let Some(name) = item.name() {
-            named_items.push_front((name, item.syntax().clone()));
+        if let Some(item) = hir::NameDefinitionSite::cast(child) && let Some(name) = item.name() {
+            named_items.push_front((name, item));
         }
 
         if reached_target {
@@ -127,7 +72,7 @@ fn named_items_in_scope(
     if let Some(function_like) = FunctionLike::cast(parent.clone()) {
         for param in function_like.parameters() {
             if let Some(name) = param.ident() {
-                named_items.push_back((Text::new(name.text()), param.syntax().clone()));
+                named_items.push_back((Text::new(name.text()), param.into()));
             }
         }
     }
@@ -158,7 +103,7 @@ impl FunctionLike {
 
 #[cfg(test)]
 mod tests {
-    use crate::db::Database;
+    use crate::{db::Database, parsing::Parsing};
 
     use super::*;
 
