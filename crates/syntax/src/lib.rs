@@ -65,6 +65,7 @@ mod syntax_kind;
 mod grammar;
 mod lexer;
 mod parser;
+mod methods;
 
 pub use crate::{
     grammar::{parse, ParseError},

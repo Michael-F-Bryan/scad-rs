@@ -8,7 +8,8 @@ Node(
       IDENT@8..9 "x"
       L_PAREN@9..10 "("
       PARAMETERS@10..17
-        IDENT@10..11 "a"
+        IDENT@10..11
+          IDENT@10..11 "a"
         COMMA@11..12 ","
         ASSIGNMENT@12..15
           IDENT@12..13 "b"
@@ -16,7 +17,8 @@ Node(
           INTEGER@14..15
             INTEGER@14..15 "2"
         COMMA@15..16 ","
-        IDENT@16..17 "c"
+        IDENT@16..17
+          IDENT@16..17 "c"
       R_PAREN@17..18 ")"
       EQUALS@18..19 "="
       BIN_EXPR@19..24

@@ -8,7 +8,8 @@ Node(
       IDENT@8..9 "x"
       L_PAREN@9..10 "("
       PARAMETERS@10..11
-        IDENT@10..11 "y"
+        IDENT@10..11
+          IDENT@10..11 "y"
       R_PAREN@11..12 ")"
       EQUALS@12..13 "="
       BIN_EXPR@13..16

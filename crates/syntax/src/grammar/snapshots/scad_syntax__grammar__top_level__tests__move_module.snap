@@ -14,7 +14,8 @@ Node(
           INTEGER@13..14
             INTEGER@13..14 "0"
         COMMA@14..15 ","
-        IDENT@15..16 "y"
+        IDENT@15..16
+          IDENT@15..16 "y"
       R_PAREN@16..17 ")"
       L_CURLY@17..18 "{"
       MODULE_INSTANTIATION@18..49

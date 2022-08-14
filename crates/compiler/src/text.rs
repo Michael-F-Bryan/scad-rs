@@ -5,6 +5,10 @@ use std::{borrow::Borrow, ops::Deref, sync::Arc};
 pub struct Text(Arc<str>);
 
 impl Text {
+    pub fn new(s: &str) -> Self {
+        Text(s.into())
+    }
+
     /// Get a reference to the underlying [`str`].
     pub fn as_str(&self) -> &str {
         self
@@ -37,9 +41,15 @@ impl From<&rowan::SyntaxText> for Text {
     }
 }
 
+impl From<rowan::SyntaxText> for Text {
+    fn from(s: rowan::SyntaxText) -> Self {
+        Text::from(&s)
+    }
+}
+
 impl From<&str> for Text {
     fn from(s: &str) -> Self {
-        Text(s.into())
+        Text::new(s)
     }
 }
 

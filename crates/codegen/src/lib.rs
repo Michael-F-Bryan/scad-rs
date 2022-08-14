@@ -1,3 +1,5 @@
+//! Internal routines for generating various things used by this project.
+
 mod files;
 mod pretty_print;
 pub mod syntax;

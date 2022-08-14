@@ -38,6 +38,7 @@ pub enum Severity {
 
 /// A set of [`Diagnostic`]s.
 #[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
+#[must_use]
 pub struct Diagnostics(HashSet<Diagnostic>);
 
 impl Diagnostics {
@@ -123,5 +124,18 @@ pub trait IntoDiagnostic: Sized {
 impl IntoDiagnostic for Diagnostic {
     fn into_diagnostic(self) -> Diagnostic {
         self
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DuplicateSymbol {
+    pub name: Text,
+    pub original_definition: TextRange,
+    pub duplicate_definition: TextRange,
+}
+
+impl IntoDiagnostic for DuplicateSymbol {
+    fn into_diagnostic(self) -> Diagnostic {
+        todo!()
     }
 }

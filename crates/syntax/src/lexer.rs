@@ -110,7 +110,6 @@ fn block_comment(text: &str) -> Option<usize> {
     }
 
     for (offset, c) in text.char_indices() {
-        dbg!(state, offset, c);
         match state {
             State::Scanning if c == '/' => {
                 state = State::ReadingStart;

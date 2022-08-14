@@ -51,7 +51,6 @@ fn if_statement(p: &mut Parser<'_>, m: Mark) {
     p.expect(T![")"]);
     actions(p);
 
-    dbg!(p.current());
     if p.eat(T![else]) {
         actions(p);
     }
@@ -72,10 +71,8 @@ fn braced_actions(p: &mut Parser<'_>) {
     p.bump(T!["{"]);
 
     while !p.eat(T!["}"]) && !p.at(EOF) {
-        dbg!(p.current());
         action(p);
     }
-    dbg!(p.current());
 
     p.complete(m, BRACED_ACTIONS);
 }
@@ -140,7 +137,9 @@ fn parameter(p: &mut Parser<'_>) {
     if p.nth_at(1, T![=]) {
         assignment(p);
     } else {
+        let m = p.start();
         p.bump(IDENT);
+        p.complete(m, IDENT);
     }
 }
 
@@ -157,7 +156,6 @@ fn children(p: &mut Parser<'_>) {
     let m = p.start();
 
     while matches!(p.current(), T![;] | T!["{"] | IDENT) {
-        dbg!(p.current());
         child(p);
     }
 
