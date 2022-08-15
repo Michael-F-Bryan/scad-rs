@@ -1,22 +1,21 @@
 use im::{OrdMap, Vector};
 use rowan::ast::AstNode;
-use scad_syntax::{ast, SyntaxKind, SyntaxNode, SyntaxToken};
+use scad_syntax::{ast, SyntaxNode};
 
 use crate::{diagnostics::DuplicateSymbol, hir, lowering::Lowering, Diagnostics, Location, Text};
 
-pub(crate) fn declaration(
+pub(crate) fn ident_declaration(
     db: &dyn Lowering,
-    ident: SyntaxToken,
-) -> Option<hir::NameDefinitionSite> {
-    debug_assert_eq!(ident.kind(), SyntaxKind::IDENT);
+    name: Text,
+    scope: SyntaxNode,
+) -> Option<hir::DefinitionId> {
+    let names = db.named_items_in_scope(scope);
 
-    let node = ident.parent().unwrap();
-    let names = db.named_items_in_scope(node);
-    let name = ident.text();
-
-    names
+    let site = names
         .iter()
-        .find_map(|(n, def)| if *n == name { Some(def.clone()) } else { None })
+        .find_map(|(n, def)| if *n == name { Some(*def) } else { None })?;
+
+    Some(site)
 }
 
 pub(crate) fn top_level_items(db: &dyn Lowering) -> (OrdMap<Text, hir::Item>, Diagnostics) {
@@ -58,19 +57,26 @@ fn item_name(stmt: ast::Statement) -> Option<(Text, hir::Item)> {
 pub(crate) fn named_items_in_scope(
     db: &dyn Lowering,
     target: SyntaxNode,
-) -> Vector<(Text, hir::NameDefinitionSite)> {
+) -> Vector<(Text, hir::DefinitionId)> {
     let parent = match target.parent() {
         Some(p) => p,
         None => return Vector::new(),
     };
 
-    let mut named_items: Vector<(Text, hir::NameDefinitionSite)> = Vector::new();
+    let mut named_items: Vector<(Text, hir::DefinitionId)> = Vector::new();
 
     // First, get any items that were defined before this one
     for child in parent.children() {
         let reached_target = child == target;
-        if let Some(item) = hir::NameDefinitionSite::cast(child) && let Some(name) = item.name() {
-            named_items.push_front((name, item));
+        dbg!(&child);
+
+        if let Some(item) = hir::NameDefinitionSite::cast(child) {
+            if !matches!(item, hir::NameDefinitionSite::Parameter(_)) {
+                if let Some(name) = item.name() {
+                    let def_id = db.declaration(item);
+                    named_items.push_front((name, def_id));
+                }
+            }
         }
 
         if reached_target {
@@ -81,8 +87,10 @@ pub(crate) fn named_items_in_scope(
     // next, make sure any parameters defined by the parent are added
     if let Some(function_like) = FunctionLike::cast(parent.clone()) {
         for param in function_like.parameters() {
+            let def_id = db.declaration(param.clone().into());
+
             if let Some(name) = param.ident() {
-                named_items.push_back((Text::new(name.text()), param.into()));
+                named_items.push_back((Text::new(name.text()), def_id));
             }
         }
     }

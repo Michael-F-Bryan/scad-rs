@@ -6,13 +6,13 @@ pub use self::query::{Lowering, LoweringStorage};
 
 mod query {
     use im::{OrdMap, Vector};
-    use scad_syntax::{ast, SyntaxNode, SyntaxToken};
+    use scad_syntax::{ast, SyntaxNode};
 
     use crate::{
         hir,
         lowering::{
             basic_blocks::basic_blocks,
-            items::{declaration, named_items_in_scope, top_level_items},
+            items::{ident_declaration, named_items_in_scope, top_level_items},
             type_inference::inferred_type,
         },
         parsing::Parsing,
@@ -24,11 +24,11 @@ mod query {
     pub trait Lowering: Parsing {
         fn top_level_items(&self) -> (OrdMap<Text, hir::Item>, Diagnostics);
 
+        #[salsa::interned]
+        fn declaration(&self, site: hir::NameDefinitionSite) -> hir::DefinitionId;
+
         /// Get all names that are accessible from a particular node.
-        fn named_items_in_scope(
-            &self,
-            target: SyntaxNode,
-        ) -> Vector<(Text, hir::NameDefinitionSite)>;
+        fn named_items_in_scope(&self, target: SyntaxNode) -> Vector<(Text, hir::DefinitionId)>;
 
         /// Try to infer the type of an [`ast::Expr`], returning
         /// [`hir::Type::Error`] if inference fails.
@@ -38,9 +38,10 @@ mod query {
         ///
         /// # Panics
         ///
-        /// The provided [`SyntaxToken`] must be a
-        /// [`scad_syntax::SyntaxKind::IDENT`] attached to a [`SyntaxNode`].
-        fn declaration(&self, ident: SyntaxToken) -> Option<hir::NameDefinitionSite>;
+        /// The provided [`scad_syntax::SyntaxToken`] must be a
+        /// [`scad_syntax::SyntaxKind::IDENT`] attached to a
+        /// [`SyntaxNode`].
+        fn ident_declaration(&self, name: Text, scope: SyntaxNode) -> Option<hir::DefinitionId>;
 
         fn basic_blocks(&self, statements: Vector<ast::Statement>) -> Vector<hir::BasicBlock>;
     }

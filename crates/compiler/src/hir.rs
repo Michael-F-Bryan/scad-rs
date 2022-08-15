@@ -2,6 +2,7 @@
 
 use im::Vector;
 use rowan::TextRange;
+use salsa::InternKey;
 use scad_syntax::ast;
 
 use crate::Text;
@@ -66,26 +67,18 @@ impl Item {
 
         Some(ident.text().into())
     }
+}
 
-    pub fn as_function(&self) -> Option<&ast::NamedFunctionDefinition> {
-        match self {
-            Item::Function(f) => Some(f),
-            _ => None,
-        }
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub struct DefinitionId(salsa::InternId);
+
+impl InternKey for DefinitionId {
+    fn from_intern_id(v: salsa::InternId) -> Self {
+        DefinitionId(v)
     }
 
-    pub fn as_module(&self) -> Option<&ast::NamedModuleDefinition> {
-        match self {
-            Item::Module(m) => Some(m),
-            _ => None,
-        }
-    }
-
-    pub fn as_constant(&self) -> Option<&ast::AssignmentStatement> {
-        match self {
-            Item::Constant(c) => Some(c),
-            _ => None,
-        }
+    fn as_intern_id(&self) -> salsa::InternId {
+        self.0
     }
 }
 
@@ -141,6 +134,17 @@ pub enum Statement {
         op: BinOp,
         rhs: AssignmentValue,
     },
+    ModuleInvocation {
+        dest: Variable,
+        module: DefinitionId,
+        inputs: Vector<Input>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Input {
+    Anonymous(AssignmentValue),
+    Named { name: Text, value: AssignmentValue },
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -162,7 +166,7 @@ pub enum BinOp {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Variable {
-    Named(Text),
+    Named(DefinitionId),
     Anonymous(usize),
 }
 

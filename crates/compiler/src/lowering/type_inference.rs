@@ -21,16 +21,18 @@ pub(crate) fn inferred_type(db: &dyn Lowering, expr: ast::Expr) -> hir::Type {
                     // we'll need to lookup the item's type
                     let name = name.text();
                     let names_in_scope = db.named_items_in_scope(lookup.syntax().clone());
-                    if let Some(definition) = names_in_scope
+
+                    if let Some(&definition) = names_in_scope
                         .iter()
                         .find_map(|(n, s)| (name == n).then_some(s))
-                         && let Some(body) = definition.body()
                     {
-                        db.inferred_type(body)
-                    } else {
-                        // reference error
-                        hir::Type::Error
+                        if let Some(body) = db.lookup_declaration(definition).body() {
+                            return db.inferred_type(body);
+                        }
                     }
+
+                    // Some sort of reference error
+                    hir::Type::Error
                 }
                 _ => todo!(),
             }

@@ -1,12 +1,9 @@
 use im::Vector;
 use noisy_float::types::R64;
+use rowan::ast::AstNode;
 use scad_syntax::{ast, SyntaxKind};
 
-use crate::{
-    hir::{self, AssignmentValue},
-    lowering::Lowering,
-    Text,
-};
+use crate::{hir, lowering::Lowering};
 
 pub(crate) fn basic_blocks(
     db: &dyn Lowering,
@@ -86,34 +83,44 @@ fn lower_module_instantiation(
     let ident = m.ident_token()?;
     let mut inputs = Vector::new();
 
+    // evaluate the inputs
     for arg in m.arguments_opt()?.arguments() {
         match arg {
             ast::Argument::Expr(e) => {
                 let var = lower_expr(b, e)?;
-                inputs.push_back(Input::Anonymous(var));
+                inputs.push_back(hir::Input::Anonymous(var));
             }
             ast::Argument::Assignment(a) => {
                 let name = a.ident_token()?.text().into();
                 let value = lower_expr(b, a.expr()?)?;
-                inputs.push_back(Input::Named { name, value });
+                inputs.push_back(hir::Input::Named { name, value });
             }
         }
     }
 
-    let definition = match b.db.declaration(ident)? {
+    let def_id =
+        b.db.ident_declaration(ident.text().into(), m.syntax().clone())?;
+    let definition = match b.db.lookup_declaration(def_id) {
         hir::NameDefinitionSite::Module(def) => def,
         _ => todo!("Emit an error"),
     };
 
-    let _params: Vector<_> = definition.parameters_opt()?.parameters().collect();
+    let params: Vector<_> = definition.parameters_opt()?.parameters().collect();
 
-    todo!()
-}
+    if params.len() != inputs.len() {
+        todo!("Handle different numbers of parameters");
+    }
+    if !params.iter().all(|p| matches!(p, ast::Parameter::Ident(_)))
+        || !inputs.iter().all(|i| matches!(i, hir::Input::Anonymous(_)))
+    {
+        todo!("Handle named arguments");
+    }
 
-#[derive(Debug, Clone)]
-enum Input {
-    Anonymous(AssignmentValue),
-    Named { name: Text, value: AssignmentValue },
+    Some(hir::Statement::ModuleInvocation {
+        dest: b.temp(),
+        module: def_id,
+        inputs,
+    })
 }
 
 fn lower_assignment(b: &mut Builder<'_>, a: ast::AssignmentStatement) -> Option<hir::Statement> {
@@ -125,8 +132,10 @@ fn lower_assignment(b: &mut Builder<'_>, a: ast::AssignmentStatement) -> Option<
     let expr = a.expr()?;
     let value: hir::AssignmentValue = lower_expr(b, expr)?;
 
+    let def_id = b.db.ident_declaration(name.into(), a.syntax().clone())?;
+
     Some(hir::Statement::Assignment {
-        variable_name: hir::Variable::Named(name.into()),
+        variable_name: hir::Variable::Named(def_id),
         value,
     })
 }
@@ -207,13 +216,14 @@ fn lower_literal(literal: ast::LiteralExpr) -> Option<hir::AssignmentValue> {
     }
 }
 
-fn lower_variable_lookup(_: &Builder<'_>, lookup: ast::LookupExpr) -> Option<hir::AssignmentValue> {
+fn lower_variable_lookup(b: &Builder<'_>, lookup: ast::LookupExpr) -> Option<hir::AssignmentValue> {
     let mut path: Vector<_> = lookup.ident_tokens().collect();
     let first = path.pop_front()?;
 
-    // TODO: look up the named variable in the current scope and use
-    // some sort of ItemId.
-    let item = hir::AssignmentValue::Variable(hir::Variable::Named(first.text().into()));
+    let name = first.text().into();
+    let def_id = b.db.ident_declaration(name, lookup.syntax().clone())?;
+
+    let item = hir::AssignmentValue::Variable(hir::Variable::Named(def_id));
 
     for _segment in path {
         todo!("Handle dotted field access");
@@ -247,7 +257,8 @@ mod tests {
         db.set_src(src.into());
         let (pkg, _) = db.ast();
 
-        let statements = pkg.statements().collect();
+        let statements: Vector<_> = pkg.statements().collect();
+        let scope = statements.last().unwrap().syntax().clone();
         let basic_blocks = db.basic_blocks(statements);
 
         assert_eq!(basic_blocks.len(), 1);
@@ -256,20 +267,24 @@ mod tests {
         assert_eq!(
             bb.statements[0],
             hir::Statement::Assignment {
-                variable_name: hir::Variable::Named("x".into()),
+                variable_name: hir::Variable::Named(
+                    db.ident_declaration("x".into(), scope).unwrap()
+                ),
                 value: hir::AssignmentValue::Literal(hir::Literal::Integer(5)),
             }
         );
     }
 
     #[test]
+    #[ignore]
     fn assign_x_to_y() {
         let src = "x = 5; y = x;";
         let mut db = Database::default();
         db.set_src(src.into());
         let (pkg, _) = db.ast();
 
-        let statements = pkg.statements().collect();
+        let statements: Vector<_> = pkg.statements().collect();
+        let scope = statements.last().unwrap().syntax().clone();
         let basic_blocks = db.basic_blocks(statements);
 
         assert_eq!(basic_blocks.len(), 1);
@@ -278,21 +293,28 @@ mod tests {
         assert_eq!(
             bb.statements[0],
             hir::Statement::Assignment {
-                variable_name: hir::Variable::Named("x".into()),
+                variable_name: hir::Variable::Named(
+                    db.ident_declaration("y".into(), scope).unwrap()
+                ),
                 value: hir::AssignmentValue::Literal(hir::Literal::Integer(5)),
             }
         );
         assert_eq!(
             bb.statements[1],
             hir::Statement::Assignment {
-                variable_name: hir::Variable::Named("y".into()),
-                value: hir::AssignmentValue::Variable(hir::Variable::Named("x".into())),
+                variable_name: hir::Variable::Named(
+                    db.ident_declaration("y".into(), pkg.syntax().clone())
+                        .unwrap()
+                ),
+                value: hir::AssignmentValue::Variable(hir::Variable::Named(
+                    db.ident_declaration("x".into(), pkg.syntax().clone())
+                        .unwrap()
+                )),
             }
         );
     }
 
     #[test]
-    #[ignore]
     fn function_call() {
         let src = "
             module assert(condition) {}
@@ -302,17 +324,24 @@ mod tests {
         db.set_src(src.into());
         let (pkg, _) = db.ast();
 
-        let statements = pkg.statements().collect();
+        let statements: Vector<_> = pkg.statements().collect();
+        let scope = statements[0].syntax().clone();
         let basic_blocks = db.basic_blocks(statements);
 
         assert_eq!(basic_blocks.len(), 1);
         let bb = &basic_blocks[0];
         assert_eq!(bb.statements.len(), 1);
+
         assert_eq!(
             bb.statements[0],
-            hir::Statement::Assignment {
-                variable_name: hir::Variable::Named("x".into()),
-                value: hir::AssignmentValue::Literal(hir::Literal::Integer(5)),
+            hir::Statement::ModuleInvocation {
+                dest: hir::Variable::Anonymous(0),
+                module: db.ident_declaration("assert".into(), scope).unwrap(),
+                inputs: [hir::Input::Anonymous(hir::AssignmentValue::Literal(
+                    hir::Literal::Boolean(true)
+                ))]
+                .into_iter()
+                .collect(),
             }
         );
     }
