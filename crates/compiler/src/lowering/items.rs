@@ -1,15 +1,18 @@
 use im::{OrdMap, Vector};
 use rowan::ast::AstNode;
-use scad_syntax::{ast, SyntaxKind, SyntaxNode};
+use scad_syntax::{ast, SyntaxKind, SyntaxNode, SyntaxToken};
 
 use crate::{diagnostics::DuplicateSymbol, hir, lowering::Lowering, Diagnostics, Location, Text};
 
-pub(crate) fn declaration(db: &dyn Lowering, ident: SyntaxNode) -> Option<hir::NameDefinitionSite> {
+pub(crate) fn declaration(
+    db: &dyn Lowering,
+    ident: SyntaxToken,
+) -> Option<hir::NameDefinitionSite> {
     debug_assert_eq!(ident.kind(), SyntaxKind::IDENT);
 
-    let names = db.named_items_in_scope(ident.clone());
-    let token = ident.first_token()?;
-    let name = token.text();
+    let node = ident.parent().unwrap();
+    let names = db.named_items_in_scope(node);
+    let name = ident.text();
 
     names
         .iter()

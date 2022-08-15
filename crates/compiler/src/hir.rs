@@ -123,3 +123,72 @@ impl NameDefinitionSite {
         }
     }
 }
+
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
+pub struct BasicBlock {
+    pub statements: Vector<Statement>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Statement {
+    Assignment {
+        variable_name: Variable,
+        value: AssignmentValue,
+    },
+    BinaryOp {
+        dest: Variable,
+        lhs: AssignmentValue,
+        op: BinOp,
+        rhs: AssignmentValue,
+    },
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum BinOp {
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    Percent,
+    Caret,
+    GreaterThanEquals,
+    GreaterThan,
+    DoubleEquals,
+    LessThanEquals,
+    LessThan,
+    And,
+    Or,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Variable {
+    Named(Text),
+    Anonymous(usize),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum AssignmentValue {
+    Literal(Literal),
+    Variable(Variable),
+}
+
+impl From<Literal> for AssignmentValue {
+    fn from(v: Literal) -> Self {
+        Self::Literal(v)
+    }
+}
+
+impl From<Variable> for AssignmentValue {
+    fn from(v: Variable) -> Self {
+        Self::Variable(v)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Literal {
+    Integer(i64),
+    Float(noisy_float::types::R64),
+    Boolean(bool),
+    String(Text),
+    Undefined,
+}

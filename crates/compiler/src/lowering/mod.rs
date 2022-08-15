@@ -1,3 +1,4 @@
+mod basic_blocks;
 mod items;
 mod type_inference;
 
@@ -5,11 +6,12 @@ pub use self::query::{Lowering, LoweringStorage};
 
 mod query {
     use im::{OrdMap, Vector};
-    use scad_syntax::{ast, SyntaxNode};
+    use scad_syntax::{ast, SyntaxNode, SyntaxToken};
 
     use crate::{
         hir,
         lowering::{
+            basic_blocks::basic_blocks,
             items::{declaration, named_items_in_scope, top_level_items},
             type_inference::inferred_type,
         },
@@ -36,8 +38,10 @@ mod query {
         ///
         /// # Panics
         ///
-        /// The provided [`SyntaxNode`] must be a
-        /// [`scad_syntax::SyntaxKind::IDENT`].
-        fn declaration(&self, ident: SyntaxNode) -> Option<hir::NameDefinitionSite>;
+        /// The provided [`SyntaxToken`] must be a
+        /// [`scad_syntax::SyntaxKind::IDENT`] attached to a [`SyntaxNode`].
+        fn declaration(&self, ident: SyntaxToken) -> Option<hir::NameDefinitionSite>;
+
+        fn basic_blocks(&self, statements: Vector<ast::Statement>) -> Vector<hir::BasicBlock>;
     }
 }

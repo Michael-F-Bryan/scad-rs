@@ -126,7 +126,7 @@ impl IntoDiagnostic for Diagnostic {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DuplicateSymbol {
     pub name: Text,
     pub original_definition: Location,

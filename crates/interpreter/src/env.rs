@@ -4,7 +4,7 @@ pub trait Environment {
     fn echo(&mut self, values: &[Value]) -> Result<(), Exception>;
 }
 
-#[derive(Debug, Default, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub struct Builtin;
 

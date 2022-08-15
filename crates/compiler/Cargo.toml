@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 im = "15.1.0"
+noisy_float = "0.2.0"
 rowan = "0.15.8"
 salsa = "0.16.1"
 scad-syntax = { version = "0.1.0", path = "../syntax" }

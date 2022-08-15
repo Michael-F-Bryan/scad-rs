@@ -112,7 +112,7 @@ mod tests {
 
         let f = items["f"].as_function().unwrap();
         let f_body = f.expr().unwrap();
-        assert_eq!(db.inferred_type(f_body.clone()), hir::Type::Float);
+        assert_eq!(db.inferred_type(f_body), hir::Type::Float);
     }
 
     fn assignment_expr(item: &hir::Item) -> Option<ast::Expr> {

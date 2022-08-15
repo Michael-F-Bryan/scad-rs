@@ -1,3 +1,5 @@
+#![warn(elided_lifetimes_in_paths)]
+
 #[macro_use]
 mod macros;
 
