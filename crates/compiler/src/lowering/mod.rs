@@ -5,13 +5,12 @@ pub use self::query::{Lowering, LoweringStorage};
 
 mod query {
     use im::{OrdMap, Vector};
-    use rowan::SyntaxNode;
-    use scad_syntax::{ast, OpenSCAD};
+    use scad_syntax::{ast, SyntaxNode};
 
     use crate::{
         hir,
         lowering::{
-            items::{named_items_in_scope, top_level_items},
+            items::{declaration, named_items_in_scope, top_level_items},
             type_inference::inferred_type,
         },
         parsing::Parsing,
@@ -26,11 +25,19 @@ mod query {
         /// Get all names that are accessible from a particular node.
         fn named_items_in_scope(
             &self,
-            target: SyntaxNode<OpenSCAD>,
+            target: SyntaxNode,
         ) -> Vector<(Text, hir::NameDefinitionSite)>;
 
         /// Try to infer the type of an [`ast::Expr`], returning
         /// [`hir::Type::Error`] if inference fails.
         fn inferred_type(&self, expr: ast::Expr) -> hir::Type;
+
+        /// Find the definition for a particular identifier.
+        ///
+        /// # Panics
+        ///
+        /// The provided [`SyntaxNode`] must be a
+        /// [`scad_syntax::SyntaxKind::IDENT`].
+        fn declaration(&self, ident: SyntaxNode) -> Option<hir::NameDefinitionSite>;
     }
 }

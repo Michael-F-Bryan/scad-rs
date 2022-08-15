@@ -1,13 +1,20 @@
 use im::{OrdMap, Vector};
-use rowan::{ast::AstNode, SyntaxNode};
-use scad_syntax::{ast, OpenSCAD};
+use rowan::ast::AstNode;
+use scad_syntax::{ast, SyntaxKind, SyntaxNode};
 
-use crate::{
-    diagnostics::DuplicateSymbol,
-    hir::{self, Spanned},
-    lowering::Lowering,
-    Diagnostics, Text,
-};
+use crate::{diagnostics::DuplicateSymbol, hir, lowering::Lowering, Diagnostics, Location, Text};
+
+pub(crate) fn declaration(db: &dyn Lowering, ident: SyntaxNode) -> Option<hir::NameDefinitionSite> {
+    debug_assert_eq!(ident.kind(), SyntaxKind::IDENT);
+
+    let names = db.named_items_in_scope(ident.clone());
+    let token = ident.first_token()?;
+    let name = token.text();
+
+    names
+        .iter()
+        .find_map(|(n, def)| if *n == name { Some(def.clone()) } else { None })
+}
 
 pub(crate) fn top_level_items(db: &dyn Lowering) -> (OrdMap<Text, hir::Item>, Diagnostics) {
     let (pkg, mut diags) = db.ast();
@@ -15,13 +22,13 @@ pub(crate) fn top_level_items(db: &dyn Lowering) -> (OrdMap<Text, hir::Item>, Di
 
     for stmt in pkg.statements() {
         if let Some((name, item)) = item_name(stmt) {
-            let span = item.span();
+            let location = Location::for_node(&item);
 
-            if let Some(original) = items.insert(name.clone(), item) {
+            if let Some(original) = items.insert(name.clone(), item.clone()) {
                 diags.push(DuplicateSymbol {
                     name,
-                    original_definition: original.span(),
-                    duplicate_definition: span,
+                    original_definition: Location::for_node(&original),
+                    duplicate_definition: location,
                 });
             }
         }
@@ -47,7 +54,7 @@ fn item_name(stmt: ast::Statement) -> Option<(Text, hir::Item)> {
 
 pub(crate) fn named_items_in_scope(
     db: &dyn Lowering,
-    target: SyntaxNode<OpenSCAD>,
+    target: SyntaxNode,
 ) -> Vector<(Text, hir::NameDefinitionSite)> {
     let parent = match target.parent() {
         Some(p) => p,

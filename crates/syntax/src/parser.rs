@@ -1,11 +1,11 @@
 use std::panic::Location;
 
 use drop_bomb::DropBomb;
-use rowan::{Checkpoint, GreenNodeBuilder, SyntaxNode, TextRange, TextSize};
+use rowan::{Checkpoint, GreenNodeBuilder, TextRange, TextSize};
 
 use crate::{
     grammar::{ParseError, TokenSet},
-    OpenSCAD, SyntaxKind,
+    SyntaxKind, SyntaxNode,
 };
 
 #[derive(Debug)]
@@ -28,7 +28,7 @@ impl<'a> Parser<'a> {
 
     /// Finish parsing, yielding the final [`SyntaxNode`] and any errors that
     /// were found.
-    pub(crate) fn finish(self) -> (SyntaxNode<OpenSCAD>, Vec<ParseError>) {
+    pub(crate) fn finish(self) -> (SyntaxNode, Vec<ParseError>) {
         let Parser {
             builder, errors, ..
         } = self;

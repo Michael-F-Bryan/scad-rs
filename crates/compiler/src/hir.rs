@@ -1,7 +1,7 @@
 //! The high-level intermediate representation.
 
 use im::Vector;
-use rowan::{ast::AstNode, TextRange};
+use rowan::TextRange;
 use scad_syntax::ast;
 
 use crate::Text;
@@ -36,8 +36,14 @@ pub enum Type {
 }
 
 impl Type {
+    /// Is this a [`Type::Error`]?
     pub const fn is_error(&self) -> bool {
         matches!(self, Type::Error)
+    }
+
+    /// Is this a numeric type (i.e. [`Type::Integer`] or [`Type::Float`])?
+    pub const fn is_numeric(&self) -> bool {
+        matches!(self, Type::Integer | Type::Float)
     }
 }
 
@@ -80,16 +86,6 @@ impl Item {
             Item::Constant(c) => Some(c),
             _ => None,
         }
-    }
-}
-
-pub trait Spanned {
-    fn span(&self) -> TextRange;
-}
-
-impl<A: AstNode> Spanned for A {
-    fn span(&self) -> TextRange {
-        self.syntax().text_range()
     }
 }
 

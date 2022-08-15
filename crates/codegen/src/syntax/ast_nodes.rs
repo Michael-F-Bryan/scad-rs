@@ -165,8 +165,8 @@ impl ToTokens for AstNodes {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.extend(quote! {
             //! Automatically generated, strongly-typed [`AstNode`]s.
-            use rowan::{ast::AstNode, api::SyntaxNode, SyntaxToken};
-            use crate::{OpenSCAD, SyntaxKind};
+            use rowan::{ast::AstNode, TextRange};
+            use crate::{SyntaxKind, SyntaxNode, SyntaxToken};
         });
 
         for node in &self.nodes {
@@ -206,14 +206,14 @@ impl AstNode {
                     #[doc = #docs]
                     #formatted_rule
                     #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-                    pub struct #type_name(SyntaxNode<OpenSCAD>);
+                    pub struct #type_name(SyntaxNode);
                 }
             }
             AstNodeKind::EnumNode { variants } => {
                 let variants = variants.iter().map(|Field { name, kind, .. }| {
                     let ty = match kind {
                         VariantKind::AstNode(n) => n.to_token_stream(),
-                        VariantKind::Token => quote!(SyntaxNode<OpenSCAD>),
+                        VariantKind::Token => quote!(SyntaxNode),
                     };
 
                     quote!(#name(#ty))
@@ -240,7 +240,7 @@ impl AstNode {
         match kind {
             AstNodeKind::StructNode { syntax_kind, .. } => quote! {
                 impl AstNode for #type_name {
-                    type Language = OpenSCAD;
+                    type Language = crate::OpenSCAD;
 
                     fn can_cast(kind: SyntaxKind) -> bool
                     where
@@ -249,7 +249,7 @@ impl AstNode {
                         kind == SyntaxKind::#syntax_kind
                     }
 
-                    fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
+                    fn cast(node: SyntaxNode) -> Option<Self>
                     where
                         Self: Sized
                     {
@@ -260,7 +260,7 @@ impl AstNode {
                         }
                     }
 
-                    fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
+                    fn syntax(&self) -> &SyntaxNode {
                         &self.0
                     }
                 }
@@ -304,7 +304,7 @@ impl AstNode {
 
                 quote! {
                     impl AstNode for #type_name {
-                        type Language = OpenSCAD;
+                        type Language = crate::OpenSCAD;
 
                         fn can_cast(kind: SyntaxKind) -> bool
                         where
@@ -313,7 +313,7 @@ impl AstNode {
                             #(#checks)||*
                         }
 
-                        fn cast(node: SyntaxNode<OpenSCAD>) -> Option<Self>
+                        fn cast(node: SyntaxNode) -> Option<Self>
                         where
                             Self: Sized
                         {
@@ -321,7 +321,7 @@ impl AstNode {
                             None
                         }
 
-                        fn syntax(&self) -> &SyntaxNode<OpenSCAD> {
+                        fn syntax(&self) -> &SyntaxNode {
                             match self {
                                 #(#syntax,)*
                             }
@@ -332,7 +332,7 @@ impl AstNode {
         }
     }
 
-    fn accessors(&self) -> TokenStream {
+    fn methods(&self) -> TokenStream {
         let AstNode {
             type_name, kind, ..
         } = self;
@@ -346,6 +346,10 @@ impl AstNode {
         quote! {
             impl #type_name {
                 #( #accessors )*
+
+                pub fn span(&self) -> TextRange {
+                    self.syntax().text_range()
+                }
             }
         }
     }
@@ -355,7 +359,7 @@ impl ToTokens for AstNode {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.extend(self.definition());
         tokens.extend(self.ast_node_impl());
-        tokens.extend(self.accessors());
+        tokens.extend(self.methods());
     }
 }
 
@@ -392,14 +396,14 @@ fn accessor(field: &Field) -> TokenStream {
                 }
         },
         (VariantKind::Token, Multiplicity::Multiple) => quote! {
-                pub fn #method_name(&self) -> impl Iterator<Item = SyntaxToken<OpenSCAD>> {
+                pub fn #method_name(&self) -> impl Iterator<Item = SyntaxToken> {
                     self.0.children_with_tokens()
                         .filter_map(|t| t.into_token())
                         .filter(|tok| tok.kind() == SyntaxKind::#syntax_kind)
                 }
         },
         (VariantKind::Token, Multiplicity::One | Multiplicity::Optional) => quote! {
-                pub fn #method_name(&self) -> Option<SyntaxToken<OpenSCAD>> {
+                pub fn #method_name(&self) -> Option<SyntaxToken> {
                     self.0.children_with_tokens()
                         .filter_map(|t| t.into_token())
                         .find(|tok| tok.kind() == SyntaxKind::#syntax_kind)

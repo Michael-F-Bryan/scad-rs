@@ -1,7 +1,6 @@
 use im::HashSet;
-use rowan::TextRange;
 
-use crate::Text;
+use crate::{Location, Text};
 
 /// A message from the compiler.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -11,7 +10,7 @@ pub struct Diagnostic {
     /// The message itself.
     pub message: Text,
     /// The location in the source text.
-    pub location: TextRange,
+    pub location: Location,
 }
 
 /// How severe a diagnostic is.
@@ -130,8 +129,8 @@ impl IntoDiagnostic for Diagnostic {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DuplicateSymbol {
     pub name: Text,
-    pub original_definition: TextRange,
-    pub duplicate_definition: TextRange,
+    pub original_definition: Location,
+    pub duplicate_definition: Location,
 }
 
 impl IntoDiagnostic for DuplicateSymbol {

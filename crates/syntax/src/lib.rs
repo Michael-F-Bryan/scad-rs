@@ -64,8 +64,8 @@ mod syntax_kind;
 
 mod grammar;
 mod lexer;
-mod parser;
 mod methods;
+mod parser;
 
 pub use crate::{
     grammar::{parse, ParseError},
@@ -88,3 +88,6 @@ impl rowan::Language for OpenSCAD {
         rowan::SyntaxKind(kind.into())
     }
 }
+
+pub type SyntaxToken = rowan::SyntaxToken<OpenSCAD>;
+pub type SyntaxNode = rowan::SyntaxNode<OpenSCAD>;

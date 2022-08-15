@@ -53,13 +53,24 @@ pub(crate) fn inferred_type(db: &dyn Lowering, expr: ast::Expr) -> hir::Type {
 
             if lhs.is_error() || rhs.is_error() {
                 hir::Type::Error
-            } else if lhs == rhs {
-                // Assume all boolean operations will return the same type
-                lhs
+            } else if lhs.is_numeric() && rhs.is_numeric() {
+                widen_integers(lhs, rhs)
             } else {
                 hir::Type::Error
             }
         }
+    }
+}
+
+fn widen_integers(lhs: hir::Type, rhs: hir::Type) -> hir::Type {
+    match (lhs, rhs) {
+        (hir::Type::Integer, hir::Type::Integer) => hir::Type::Integer,
+        (hir::Type::Float, hir::Type::Integer) | (hir::Type::Integer, hir::Type::Float) => {
+            hir::Type::Float
+        }
+        (hir::Type::Float, hir::Type::Float) => hir::Type::Float,
+        (lhs, rhs) if lhs == rhs => lhs,
+        _ => hir::Type::Error,
     }
 }
 
@@ -81,6 +92,8 @@ mod tests {
             // Note: It's okay if we don't know the type for `e` because it's
             // unused.
             function d(e) = c;
+
+            function f(g = 3.14) = g + c;
         ",
         ));
         let (items, _) = db.top_level_items();
@@ -96,6 +109,10 @@ mod tests {
 
         let d_body = items["d"].as_function().unwrap().expr().unwrap();
         assert_eq!(db.inferred_type(d_body), hir::Type::Integer);
+
+        let f = items["f"].as_function().unwrap();
+        let f_body = f.expr().unwrap();
+        assert_eq!(db.inferred_type(f_body.clone()), hir::Type::Float);
     }
 
     fn assignment_expr(item: &hir::Item) -> Option<ast::Expr> {
