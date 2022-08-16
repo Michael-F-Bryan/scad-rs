@@ -80,6 +80,8 @@ fn lower_module_instantiation(
     b: &mut Builder<'_>,
     m: ast::ModuleInstantiation,
 ) -> Option<hir::Statement> {
+    let child: Option<hir::Variable> = m.child().and_then(|c| lower_child(b, c));
+
     let ident = m.ident_token()?;
     let mut inputs = Vector::new();
 
@@ -120,7 +122,16 @@ fn lower_module_instantiation(
         dest: b.temp(),
         module: def_id,
         inputs,
+        child,
     })
+}
+
+fn lower_child(_: &mut Builder<'_>, child: ast::Child) -> Option<hir::Variable> {
+    match child {
+        ast::Child::Semicolon(_) => None,
+        ast::Child::BracedChildren(_) => todo!(),
+        ast::Child::ModuleInstantiation(_) => todo!(),
+    }
 }
 
 fn lower_assignment(b: &mut Builder<'_>, a: ast::AssignmentStatement) -> Option<hir::Statement> {
@@ -151,11 +162,8 @@ fn lower_expr(b: &mut Builder<'_>, expr: ast::Expr) -> Option<hir::AssignmentVal
 
 fn lower_bin_expr(b: &mut Builder<'_>, bin: ast::BinExpr) -> Option<hir::AssignmentValue> {
     let mut exprs = bin.exprs();
-    let lhs = exprs.next()?;
-    let rhs = exprs.next()?;
-
-    let lhs = lower_expr(b, lhs)?;
-    let rhs = lower_expr(b, rhs)?;
+    let lhs = lower_expr(b, exprs.next()?)?;
+    let rhs = lower_expr(b, exprs.next()?)?;
 
     let dest = b.temp();
 
@@ -342,6 +350,38 @@ mod tests {
                 ))]
                 .into_iter()
                 .collect(),
+                child: None,
+            }
+        );
+    }
+
+    #[test]
+    #[ignore = "Not implemented"]
+    fn if_statement() {
+        let src = "if (true) {}";
+        let mut db = Database::default();
+        db.set_src(src.into());
+        let (pkg, _) = db.ast();
+
+        let statements: Vector<_> = pkg.statements().collect();
+        let scope = statements[0].syntax().clone();
+        let basic_blocks = db.basic_blocks(statements);
+
+        assert_eq!(basic_blocks.len(), 2);
+        let bb = &basic_blocks[0];
+        assert_eq!(bb.statements.len(), 1);
+
+        assert_eq!(
+            bb.statements[0],
+            hir::Statement::ModuleInvocation {
+                dest: hir::Variable::Anonymous(0),
+                module: db.ident_declaration("assert".into(), scope).unwrap(),
+                inputs: [hir::Input::Anonymous(hir::AssignmentValue::Literal(
+                    hir::Literal::Boolean(true)
+                ))]
+                .into_iter()
+                .collect(),
+                child: None,
             }
         );
     }

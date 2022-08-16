@@ -138,6 +138,7 @@ pub enum Statement {
         dest: Variable,
         module: DefinitionId,
         inputs: Vector<Input>,
+        child: Option<Variable>,
     },
 }
 

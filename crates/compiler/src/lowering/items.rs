@@ -68,9 +68,11 @@ pub(crate) fn named_items_in_scope(
     // First, get any items that were defined before this one
     for child in parent.children() {
         let reached_target = child == target;
-        dbg!(&child);
 
         if let Some(item) = hir::NameDefinitionSite::cast(child) {
+            // Note: we add parameters separately because
+            // ast::NamedDefinitionSite::Parameter(_) can be mistaken with the
+            // ast::Assignment in ast::AssignmentStatement.
             if !matches!(item, hir::NameDefinitionSite::Parameter(_)) {
                 if let Some(name) = item.name() {
                     let def_id = db.declaration(item);
