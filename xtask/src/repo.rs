@@ -1,5 +1,4 @@
 use std::{
-    ffi::OsString,
     fmt::{self, Formatter},
     path::{Path, PathBuf},
     process::{Command, ExitStatus, Output, Stdio},

@@ -1,5 +1,5 @@
 use std::{
-    fmt::{Debug, Display},
+    fmt::Debug,
     panic::AssertUnwindSafe,
     path::{Path, PathBuf},
 };
@@ -7,7 +7,6 @@ use std::{
 use anyhow::{Context, Error};
 use rayon::prelude::*;
 use scad_syntax::{ast::Package, ParseError};
-use tracing::callsite;
 
 use crate::Fixtures;
 
@@ -88,7 +87,7 @@ impl Compatibility {
                 &cb,
                 &test_files,
                 "parse",
-                |cb, p| cb.should_tokenize(p),
+                |cb, p| cb.should_parse(p),
                 |i| {
                     let tokens = scad_syntax::tokenize(&i.contents);
                     scad_syntax::parse(tokens)
@@ -127,7 +126,7 @@ fn check_inputs<'input, T: 'input>(
             if !filter(cb, &input.path) {
                 tracing::debug!("Skipped");
                 return Report {
-                    path,
+                    _path: path,
                     outcome: Outcome::Skipped,
                 };
             }
@@ -147,14 +146,14 @@ fn check_inputs<'input, T: 'input>(
                         input.path.display()
                     );
                     return Report {
-                        path,
+                        _path: path,
                         outcome: Outcome::Fail(error),
                     };
                 }
             };
 
             Report {
-                path,
+                _path: path,
                 outcome: consume(cb, input.name(), result),
             }
         })
@@ -204,7 +203,7 @@ impl CompatibilityReport {
 
 #[derive(Debug)]
 struct Report {
-    path: PathBuf,
+    _path: PathBuf,
     outcome: Outcome,
 }
 
@@ -236,7 +235,7 @@ impl Callbacks {
 
     fn should_tokenize(&self, path: &Path) -> bool {
         self.skip_tokenizing
-            .into_iter()
+            .iter()
             .all(|suffix| !path.ends_with(suffix))
     }
 
@@ -273,11 +272,11 @@ impl Callbacks {
     }
 
     fn _should_type_check(&self, path: &Path) -> bool {
-        self.should_parse(path) && false
+        self.should_parse(path)
     }
 
     fn _should_run(&self, path: &Path) -> bool {
-        self._should_type_check(path) && false
+        self._should_type_check(path)
     }
 }
 
@@ -286,39 +285,4 @@ enum Outcome {
     Pass,
     Fail(Error),
     Skipped,
-}
-
-fn tokenize_known_files(repo: &Fixtures) {
-    let ignored = [
-        "2D/issues/polyset-reduce-crash.scad",
-        // unterminated tokens
-        "issues/issue1890-comment.scad",
-        "issues/issue1890-string.scad",
-        "issues/issue1890-include.scad",
-        "issues/issue1890-use.scad",
-        // Not utf8
-        "misc/nbsp-latin1-test.scad",
-        "misc/ord-tests.scad",
-    ];
-
-    for filename in repo.scad_files() {
-        if ignored.iter().any(|suffix| filename.ends_with(suffix)) {
-            continue;
-        }
-
-        println!("Reading \"{}\"", filename.display());
-
-        let text = std::fs::read_to_string(&filename).unwrap();
-        let tokens = scad_syntax::tokenize(&text);
-
-        let mut line_number = 1;
-
-        for (kind, text) in tokens {
-            if kind == scad_syntax::SyntaxKind::ERROR {
-                panic!("Invalid token on line {line_number}: {text:?}");
-            }
-
-            line_number += text.chars().filter(|&c| c == '\n').count();
-        }
-    }
 }
