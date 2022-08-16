@@ -1,5 +1,5 @@
 [package]
-name = "integration-tests"
+name = "xtask"
 version = "0.0.0"
 edition = "2021"
 publish = false
@@ -7,5 +7,10 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.61"
+clap = { version = "3.2.17", features = ["derive"] }
+rayon = "1.5.3"
 scad-syntax = { version = "0.1.0", path = "../crates/syntax" }
+tracing = "0.1.36"
+tracing-subscriber = { version = "0.3.15", features = ["env-filter"] }
 walkdir = "2.3.2"

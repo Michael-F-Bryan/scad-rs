@@ -9,6 +9,7 @@ on:
 env:
   DEFAULT_CRATE_NAME: scad_syntax
   RUST_BACKTRACE: 1
+  RUST_LOG: info,xtask=debug
 
 jobs:
   check:
@@ -57,11 +58,11 @@ jobs:
         with:
           command: test
           args: --workspace --verbose --locked
-      - name: Integration Tests
+      - name: Compatibility Report
         uses: actions-rs/cargo@v1
         with:
           command: run
-          args: --verbose --locked --package=integration-tests
+          args: --verbose --locked --package=xtask -- compat
 
   lints:
     name: Linting and Formatting

@@ -1,3 +1,2 @@
 [alias]
-integration-tests = "run --quiet --package=integration-tests --"
-it = "integration-tests"
+xtask = "run --quiet --package=xtask --"
