@@ -50,6 +50,14 @@ pub enum Instruction {
     Constant(u8),
     /// Negate the value at the top of the stack.
     Negate,
+    /// Add the top two values on the stack.
+    Add,
+    /// Subtract the top two values on the stack.
+    Sub,
+    /// Multiply the top two values on the stack.
+    Mul,
+    /// Divide the top two values on the stack.
+    Div,
     /// Return from the current function.
     Return,
 }

@@ -57,6 +57,10 @@ impl Disassembler {
                 writeln!(self, "negate");
             }
             Instruction::Return => writeln!(self, "ret"),
+            Instruction::Add => writeln!(self, "add"),
+            Instruction::Sub => writeln!(self, "sub"),
+            Instruction::Mul => writeln!(self, "mul"),
+            Instruction::Div => writeln!(self, "div"),
         }
     }
 

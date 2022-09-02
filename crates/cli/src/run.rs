@@ -3,7 +3,7 @@ use std::{fs::File, path::PathBuf};
 use anyhow::Context;
 use clap::Parser;
 use scad_bytecode::{Disassembler, Program};
-use scad_vm::VirtualMachine;
+use scad_vm::{Stack, VirtualMachine};
 
 #[derive(Debug, Parser)]
 pub struct Run {
@@ -60,7 +60,7 @@ impl scad_vm::Callbacks for DebugCallbacks {
         current_chunk: &scad_bytecode::Chunk,
         instruction_pointer: usize,
         instruction: scad_bytecode::Instruction,
-        _stack: &[scad_vm::Value],
+        _stack: &Stack,
     ) {
         let line_number = current_chunk.line_numbers[instruction_pointer];
         self.dis
