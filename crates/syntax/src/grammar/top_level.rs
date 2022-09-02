@@ -293,6 +293,7 @@ mod tests {
                 else {scope3_2();}"
         ),
         for_loop_with_module: statement("for(i = [0: 1]) cube(i);"),
+        nested_for: statement("for(i = [0: 10], j = [0, 360]) cube(i, j);"),
         for_if: statement("for(i = [0: 1]) if (true) cube(i);"),
         if_for: statement("if (true) for(i = [0: 1]) cube(i);"),
         for_loop_with_children: statement("

@@ -28,7 +28,7 @@ Actions = Action | BracedActions;
 
 Assignments = Assignment (',' Assignment)*;
 
-Action = AssignmentStatement | ModuleInstantiation | IfStatement;
+Action = AssignmentStatement | ModuleInstantiation | IfStatement | ForStatement;
 
 BracedActions = '{' Action* '}';
 

@@ -62,7 +62,7 @@ fn eat_bin_op(p: &mut Parser<'_>, tokens: impl Into<TokenSet>) -> bool {
     }
 }
 
-///ebnf
+/// ```ebnf
 /// ternary → equality ( "?" equality ":" equality )?
 /// ```
 fn ternary(p: &mut Parser<'_>) {
