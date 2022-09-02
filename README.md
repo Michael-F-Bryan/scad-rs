@@ -19,7 +19,7 @@ I'll typically use [`cargo watch`][cargo-watch] to automatically recompile the
 project and run the test suite.
 
 ```console
-$ cargo watch --clear --ignore "snapshots/*.snap*" \
+$ cargo watch --clear --ignore "snapshots/*.snap.new" \
     -x "check --workspace" \
     -x "test --workspace" \
     -x "doc --workspace --document-private-items" \

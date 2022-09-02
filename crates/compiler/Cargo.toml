@@ -11,4 +11,5 @@ noisy_float = "0.2.0"
 paste = "1.0.8"
 rowan = "0.15.8"
 salsa = "0.16.1"
+scad-bytecode = { version = "0.1.0", path = "../bytecode" }
 scad-syntax = { version = "0.1.0", path = "../syntax" }

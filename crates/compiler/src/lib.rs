@@ -1,11 +1,7 @@
 #![warn(elided_lifetimes_in_paths)]
 
-#[macro_use]
-mod macros;
-
 mod db;
 mod diagnostics;
-pub mod hir;
 pub mod lowering;
 mod parsing;
 mod spans;
