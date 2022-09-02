@@ -44,7 +44,9 @@ fn item_name(stmt: ast::Statement) -> Option<(Text, hir::Item)> {
         ast::Statement::AssignmentStatement(a) => hir::Item::Constant(a),
         ast::Statement::NamedFunctionDefinition(f) => hir::Item::Function(f),
         ast::Statement::NamedModuleDefinition(m) => hir::Item::Module(m),
-        ast::Statement::ModuleInstantiation(_) | ast::Statement::IfStatement(_) => return None,
+        ast::Statement::ModuleInstantiation(_)
+        | ast::Statement::IfStatement(_)
+        | ast::Statement::ForStatement(_) => return None,
         ast::Statement::Include(_) | ast::Statement::Use(_) => {
             todo!("Add imported functions/modules")
         }

@@ -159,6 +159,7 @@ pub enum BinOp {
     GreaterThanEquals,
     GreaterThan,
     DoubleEquals,
+    NotEqual,
     LessThanEquals,
     LessThan,
     And,

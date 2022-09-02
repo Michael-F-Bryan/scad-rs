@@ -62,7 +62,7 @@ impl<'db> Builder<'db> {
                     self.push_stmt(stmt);
                 }
             }
-            ast::Statement::IfStatement(_) => todo!(),
+            ast::Statement::IfStatement(_) | ast::Statement::ForStatement(_) => todo!(),
             ast::Statement::Use(_)
             | ast::Statement::NamedFunctionDefinition(_)
             | ast::Statement::NamedModuleDefinition(_) => {}
@@ -163,16 +163,31 @@ fn lower_expr(b: &mut Builder<'_>, expr: ast::Expr) -> Option<hir::AssignmentVal
 fn lower_bin_expr(b: &mut Builder<'_>, bin: ast::BinExpr) -> Option<hir::AssignmentValue> {
     let mut exprs = bin.exprs();
     let lhs = lower_expr(b, exprs.next()?)?;
-    let rhs = lower_expr(b, exprs.next()?)?;
 
-    let dest = b.temp();
+    let mut dest = b.temp();
 
-    b.push_stmt(hir::Statement::BinaryOp {
-        dest: dest.clone(),
-        lhs,
-        op: translate_bin_op(bin.bin_op()?),
-        rhs,
+    // First, we assign the left-hand side to a variable
+    b.push_stmt(hir::Statement::Assignment {
+        variable_name: dest.clone(),
+        value: lhs,
     });
+
+    // then keep applying binary operations (this implicitly implies everything
+    // is left-associative)
+    for (op, rhs) in bin.bin_ops().zip(exprs) {
+        let rhs = lower_expr(b, rhs)?;
+        // Note: The result of the previous binary expression is the LHS for the
+        // next, and we can use replace() to swap in a new temporary and load
+        // the previous result in a single operation.
+        let lhs = std::mem::replace(&mut dest, b.temp());
+
+        b.push_stmt(hir::Statement::BinaryOp {
+            dest: dest.clone(),
+            lhs: lhs.into(),
+            op: translate_bin_op(op),
+            rhs,
+        });
+    }
 
     Some(dest.into())
 }
@@ -188,6 +203,8 @@ fn translate_bin_op(op: ast::BinOp) -> hir::BinOp {
         ast::BinOp::GreaterThanEquals(_) => hir::BinOp::GreaterThanEquals,
         ast::BinOp::GreaterThan(_) => hir::BinOp::GreaterThan,
         ast::BinOp::DoubleEquals(_) => hir::BinOp::DoubleEquals,
+        ast::BinOp::NotEqual(_) => hir::BinOp::NotEqual,
+
         ast::BinOp::LessThanEquals(_) => hir::BinOp::LessThanEquals,
         ast::BinOp::LessThan(_) => hir::BinOp::LessThan,
         ast::BinOp::And(_) => hir::BinOp::And,
