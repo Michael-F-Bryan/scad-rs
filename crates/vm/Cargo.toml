@@ -1,5 +1,5 @@
 [package]
-name = "scad-interpreter"
+name = "scad-vm"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 rowan = "0.15.8"
-scad-syntax = { version = "0.1.0", path = "../syntax" }
+scad-bytecode = { version = "0.1.0", path = "../bytecode" }

@@ -10,5 +10,5 @@ crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 fj = "0.11.0"
-scad-interpreter = { version = "0.1.0", path = "../interpreter" }
+scad-vm = { version = "0.1.0", path = "../vm" }
 scad-syntax = { version = "0.1.0", path = "../syntax" }
