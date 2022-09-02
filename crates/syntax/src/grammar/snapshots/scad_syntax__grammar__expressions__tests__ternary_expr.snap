@@ -1,0 +1,16 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: "expr(condition ? truthy : falsy)"
+---
+Node(
+    TERNARY_EXPR@0..22
+      LOOKUP_EXPR@0..9
+        IDENT@0..9 "condition"
+      QUESTION_MARK@9..10 "?"
+      LOOKUP_EXPR@10..16
+        IDENT@10..16 "truthy"
+      COLON@16..17 ":"
+      LOOKUP_EXPR@17..22
+        IDENT@17..22 "falsy"
+    ,
+)

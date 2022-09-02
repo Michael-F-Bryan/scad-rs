@@ -12,7 +12,8 @@ const LIST_COMP_TOKENS: TokenSet = TokenSet::new([T![for], T![if], T![let]]);
 /// rule per precedence level.
 ///
 /// ```ebnf
-/// expression     → equality
+/// expression     → ternary
+/// ternary        → equality ( "?" equality ":" equality )?
 /// equality       → comparison ( ( "!=" | "==" ) comparison )?
 /// comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )?
 /// term           → factor ( ( "-" | "+" ) factor )?
@@ -30,7 +31,7 @@ const LIST_COMP_TOKENS: TokenSet = TokenSet::new([T![for], T![if], T![let]]);
 pub(crate) fn expr(p: &mut Parser<'_>) {
     match p.current() {
         T![true] | T![false] | T![undef] | STRING | INTEGER | FLOAT | IDENT | T!["("] => {
-            equality(p);
+            ternary(p);
         }
         T![-] | T![!] | T![+] => {
             unary_expr(p);
@@ -58,6 +59,23 @@ fn eat_bin_op(p: &mut Parser<'_>, tokens: impl Into<TokenSet>) -> bool {
         true
     } else {
         false
+    }
+}
+
+///ebnf
+/// ternary → equality ( "?" equality ":" equality )?
+/// ```
+fn ternary(p: &mut Parser<'_>) {
+    let m = p.start();
+    equality(p);
+
+    if p.eat(T![?]) {
+        equality(p);
+        p.expect(T![:]);
+        equality(p);
+        p.complete(m, TERNARY_EXPR);
+    } else {
+        p.cancel(m);
     }
 }
 
@@ -416,7 +434,6 @@ mod tests {
         unary_not: unary_expr("!true"),
         unary_negative: unary_expr("-5"),
         unary_negative_with_expr: unary_expr("-(5*2)"),
-        #[ignore = "Requires a Pratt parser"]
         ternary_expr: expr("condition ? truthy : falsy"),
         range_expr: expr("[a:b]"),
         range_expr_with_step: expr("[a:b:c]"),
