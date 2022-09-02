@@ -1,0 +1,19 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: unary_expr(-(5*2))
+---
+Node(
+    UNARY_EXPR@0..6
+      MINUS@0..1 "-"
+      PAREN_EXPR@1..6
+        L_PAREN@1..2 "("
+        BIN_EXPR@2..5
+          INTEGER@2..3
+            INTEGER@2..3 "5"
+          STAR@3..4
+            STAR@3..4 "*"
+          INTEGER@4..5
+            INTEGER@4..5 "2"
+        R_PAREN@5..6 ")"
+    ,
+)

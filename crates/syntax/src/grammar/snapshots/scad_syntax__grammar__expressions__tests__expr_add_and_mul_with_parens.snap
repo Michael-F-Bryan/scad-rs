@@ -1,0 +1,22 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: expr((1+2) * 2)
+---
+Node(
+    BIN_EXPR@0..7
+      PAREN_EXPR@0..5
+        L_PAREN@0..1 "("
+        BIN_EXPR@1..4
+          INTEGER@1..2
+            INTEGER@1..2 "1"
+          PLUS@2..3
+            PLUS@2..3 "+"
+          INTEGER@3..4
+            INTEGER@3..4 "2"
+        R_PAREN@4..5 ")"
+      STAR@5..6
+        STAR@5..6 "*"
+      INTEGER@6..7
+        INTEGER@6..7 "2"
+    ,
+)

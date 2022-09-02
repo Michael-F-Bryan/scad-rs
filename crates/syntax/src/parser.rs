@@ -54,17 +54,18 @@ impl<'a> Parser<'a> {
     }
 
     /// Checks if the current token is `kind`.
-    pub(crate) fn at(&self, kind: SyntaxKind) -> bool {
+    pub(crate) fn at(&self, kind: impl Into<TokenSet>) -> bool {
         self.nth_at(0, kind)
     }
 
     /// Look ahead and see if a future token is what we expect.
-    pub(crate) fn nth_at(&self, lookahead: usize, kind: SyntaxKind) -> bool {
-        self.nth(lookahead) == kind
+    pub(crate) fn nth_at(&self, lookahead: usize, kind: impl Into<TokenSet>) -> bool {
+        let token_set = kind.into();
+        token_set.contains(self.nth(lookahead))
     }
 
     /// Try to consume a particular type of token.
-    pub(crate) fn eat(&mut self, kind: SyntaxKind) -> bool {
+    pub(crate) fn eat(&mut self, kind: impl Into<TokenSet>) -> bool {
         if !self.at(kind) {
             return false;
         }
@@ -76,19 +77,23 @@ impl<'a> Parser<'a> {
     /// Assert that we are at a particular token and consume it, panicking if
     /// it wasn't found.
     #[track_caller]
-    pub(crate) fn bump(&mut self, kind: SyntaxKind) {
+    pub(crate) fn bump(&mut self, kind: impl Into<TokenSet>) {
+        let kind = kind.into();
+
         assert!(
             self.eat(kind),
-            "Expected a {kind:?} at position {}",
+            "Expected {kind} at position {}",
             self.position
         );
     }
 
     /// [Eat][Parser::eat] a particular token, emitting an
     /// [`error`][Parser::error] if it wasn't found.
-    pub(crate) fn expect(&mut self, kind: SyntaxKind) {
+    pub(crate) fn expect(&mut self, kind: impl Into<TokenSet>) {
+        let kind = kind.into();
+
         if !self.eat(kind) {
-            self.error(format!("Expected {kind:?}"));
+            self.error(format!("Expected {kind}"));
         }
     }
 

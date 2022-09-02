@@ -65,9 +65,9 @@ ParenExpr = '(' Expr ')'
 
 ListComprehensionExpr = '[' ForClause ']'
 
-BinExpr = Expr BinOp Expr
+BinExpr = Expr (BinOp Expr)*
 
-BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '<=' | '<' | '&&' | '||'
+BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '!=' | '<=' | '<' | '&&' | '||'
 
 UnaryExpr = ('!' | '+' | '-') Expr
 

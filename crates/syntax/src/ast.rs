@@ -1177,7 +1177,7 @@ impl ListComprehensionExpr {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "BinExpr = Expr BinOp Expr;\n"]
+#[doc = "BinExpr = Expr (BinOp Expr)*;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct BinExpr(SyntaxNode);
@@ -1207,8 +1207,8 @@ impl BinExpr {
     pub fn exprs(&self) -> impl Iterator<Item = Expr> {
         self.0.children().filter_map(Expr::cast)
     }
-    pub fn bin_op(&self) -> Option<BinOp> {
-        self.0.children().find_map(BinOp::cast)
+    pub fn bin_ops(&self) -> impl Iterator<Item = BinOp> {
+        self.0.children().filter_map(BinOp::cast)
     }
     pub fn span(&self) -> TextRange {
         self.syntax().text_range()
@@ -1495,7 +1495,7 @@ impl ForClause {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '<=' | '<' | '&&' | '||';\n"]
+#[doc = "BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '!=' | '<=' | '<' | '&&' | '||';\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum BinOp {
@@ -1508,6 +1508,7 @@ pub enum BinOp {
     GreaterThanEquals(SyntaxNode),
     GreaterThan(SyntaxNode),
     DoubleEquals(SyntaxNode),
+    NotEqual(SyntaxNode),
     LessThanEquals(SyntaxNode),
     LessThan(SyntaxNode),
     And(SyntaxNode),
@@ -1528,6 +1529,7 @@ impl AstNode for BinOp {
             || kind == SyntaxKind::GREATER_THAN_EQUALS
             || kind == SyntaxKind::GREATER_THAN
             || kind == SyntaxKind::DOUBLE_EQUALS
+            || kind == SyntaxKind::NOT_EQUAL
             || kind == SyntaxKind::LESS_THAN_EQUALS
             || kind == SyntaxKind::LESS_THAN
             || kind == SyntaxKind::AND
@@ -1564,6 +1566,9 @@ impl AstNode for BinOp {
         if node.kind() == SyntaxKind::DOUBLE_EQUALS {
             return Some(BinOp::DoubleEquals(node));
         }
+        if node.kind() == SyntaxKind::NOT_EQUAL {
+            return Some(BinOp::NotEqual(node));
+        }
         if node.kind() == SyntaxKind::LESS_THAN_EQUALS {
             return Some(BinOp::LessThanEquals(node));
         }
@@ -1589,6 +1594,7 @@ impl AstNode for BinOp {
             BinOp::GreaterThanEquals(node) => node,
             BinOp::GreaterThan(node) => node,
             BinOp::DoubleEquals(node) => node,
+            BinOp::NotEqual(node) => node,
             BinOp::LessThanEquals(node) => node,
             BinOp::LessThan(node) => node,
             BinOp::And(node) => node,

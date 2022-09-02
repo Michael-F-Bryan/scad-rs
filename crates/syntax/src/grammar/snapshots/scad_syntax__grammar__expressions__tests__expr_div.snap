@@ -1,0 +1,14 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: expr(1 / 1)
+---
+Node(
+    BIN_EXPR@0..3
+      INTEGER@0..1
+        INTEGER@0..1 "1"
+      SLASH@1..2
+        SLASH@1..2 "/"
+      INTEGER@2..3
+        INTEGER@2..3 "1"
+    ,
+)

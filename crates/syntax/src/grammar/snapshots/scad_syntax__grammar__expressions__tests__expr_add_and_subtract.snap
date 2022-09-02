@@ -1,0 +1,18 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: expr(1 + 5 - 1)
+---
+Node(
+    BIN_EXPR@0..5
+      INTEGER@0..1
+        INTEGER@0..1 "1"
+      PLUS@1..2
+        PLUS@1..2 "+"
+      INTEGER@2..3
+        INTEGER@2..3 "5"
+      MINUS@3..4
+        MINUS@3..4 "-"
+      INTEGER@4..5
+        INTEGER@4..5 "1"
+    ,
+)

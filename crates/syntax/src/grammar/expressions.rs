@@ -1,41 +1,36 @@
 use crate::{
     grammar::{assignment, top_level, TokenSet},
-    parser::{Mark, Parser},
+    parser::Parser,
     SyntaxKind::*,
 };
 
-const BINARY_OPERANDS: TokenSet = TokenSet::new([
-    T![+],
-    T![-],
-    T![*],
-    T![/],
-    T![%],
-    T![>=],
-    T![>],
-    T![==],
-    T![<=],
-    T![<],
-    T![&&],
-    T![||],
-]);
-
 const LIST_COMP_TOKENS: TokenSet = TokenSet::new([T![for], T![if], T![let]]);
 
+/// Parse an expression.
+///
+/// To handle precedence, we split the grammar for an expression up, using one
+/// rule per precedence level.
+///
+/// ```ebnf
+/// expression     → equality
+/// equality       → comparison ( ( "!=" | "==" ) comparison )?
+/// comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )?
+/// term           → factor ( ( "-" | "+" ) factor )?
+/// factor         → unary ( ( "/" | "*" ) unary )?
+/// unary          → ( "!" | "-" ) unary
+///                | primary
+/// atom        → NUMBER
+///             | STRING
+///             | function_call
+///             | "true"
+///             | "false"
+///             | "nil"
+///             | "(" expression ")"
+/// ```
 pub(crate) fn expr(p: &mut Parser<'_>) {
     match p.current() {
-        T![true] | T![false] | T![undef] | STRING | INTEGER | FLOAT | IDENT => {
-            // TODO: Introduce a Pratt parser here
-            let m = p.start();
-            atom(p);
-
-            if BINARY_OPERANDS.contains(p.current()) {
-                binary_expr(p, m);
-            } else {
-                p.cancel(m);
-            }
-        }
-        T!["("] => {
-            paren_expr(p);
+        T![true] | T![false] | T![undef] | STRING | INTEGER | FLOAT | IDENT | T!["("] => {
+            equality(p);
         }
         T![-] | T![!] | T![+] => {
             unary_expr(p);
@@ -50,6 +45,111 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
             p.error(format!("Expected an expression but found {other:?}"));
             p.do_bump(1);
         }
+    }
+}
+
+fn eat_bin_op(p: &mut Parser<'_>, tokens: impl Into<TokenSet>) -> bool {
+    let current = p.current();
+
+    if p.at(tokens) {
+        let m = p.start();
+        p.bump(current);
+        p.complete(m, current);
+        true
+    } else {
+        false
+    }
+}
+
+/// ```ebnf
+/// equality → comparison ( ( "!=" | "==" ) comparison )*
+/// ```
+fn equality(p: &mut Parser<'_>) {
+    let m = p.start();
+    comparison(p);
+
+    if !p.at(T![!=] | T![==]) {
+        p.cancel(m);
+        return;
+    }
+
+    while eat_bin_op(p, T![!=] | T![==]) {
+        comparison(p);
+    }
+
+    p.complete(m, BIN_EXPR);
+}
+
+/// ```ebnf
+/// comparison → term ( ( ">" | ">=" | "<" | "<=" ) term )*
+/// ```
+fn comparison(p: &mut Parser<'_>) {
+    let m = p.start();
+    term(p);
+
+    if !p.at(T![!=] | T![==]) {
+        p.cancel(m);
+        return;
+    }
+
+    while eat_bin_op(p, T![!=] | T![==]) {
+        term(p);
+    }
+
+    p.complete(m, BIN_EXPR);
+}
+
+/// ```ebnf
+/// term → factor ( ( "-" | "+" ) factor )*
+/// ```
+fn term(p: &mut Parser<'_>) {
+    let m = p.start();
+    factor(p);
+
+    if !p.at(T![-] | T![+]) {
+        p.cancel(m);
+        return;
+    }
+
+    while eat_bin_op(p, T![-] | T![+]) {
+        factor(p);
+    }
+
+    p.complete(m, BIN_EXPR);
+}
+
+/// ```ebnf
+/// factor → unary ( ( "/" | "*" ) unary )*
+/// ```
+fn factor(p: &mut Parser<'_>) {
+    let m = p.start();
+    unary(p);
+
+    if !p.at(T![*] | T![/]) {
+        p.cancel(m);
+        return;
+    }
+
+    while eat_bin_op(p, T![*] | T![/]) {
+        unary(p);
+    }
+
+    p.complete(m, BIN_EXPR);
+}
+
+/// ```ebnf
+/// unary → ( "!" | "-" ) expr
+///       | atom
+/// ```
+fn unary(p: &mut Parser<'_>) {
+    let m = p.start();
+
+    if eat_bin_op(p, T![!] | T![-]) {
+        unary(p);
+        p.complete(m, UNARY_EXPR);
+    } else {
+        p.cancel(m);
+        atom(p);
     }
 }
 
@@ -147,6 +247,14 @@ fn expressions(p: &mut Parser<'_>) {
     p.complete(m, EXPRESSIONS);
 }
 
+/// ```ebnf
+/// atom        → NUMBER
+///             | STRING
+///             | function_call
+///             | "true"
+///             | "false"
+///             | "undef"
+/// ```
 fn atom(p: &mut Parser<'_>) {
     match p.current() {
         IDENT => {
@@ -156,9 +264,9 @@ fn atom(p: &mut Parser<'_>) {
                 lookup_expr(p);
             }
         }
-        _ => {
-            literal(p);
-        }
+        T!["("] => paren_expr(p),
+        STRING | INTEGER | FLOAT | T![true] | T![false] | T![undef] => literal(p),
+        other => todo!("{other:?}"),
     }
 }
 
@@ -230,20 +338,6 @@ pub(crate) fn argument(p: &mut Parser<'_>) {
     }
 }
 
-fn binary_expr(p: &mut Parser<'_>, m: Mark) {
-    bin_op(p);
-    expr(p);
-    p.complete(m, BIN_EXPR);
-}
-
-fn bin_op(p: &mut Parser<'_>) {
-    assert!(BINARY_OPERANDS.contains(p.current()));
-    let m = p.start();
-    let kind = p.current();
-    p.bump(kind);
-    p.complete(m, kind);
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -286,6 +380,18 @@ mod tests {
                 for (a = [steps, -1, 0]) if (b) let (c = d) [a, f]
             ]
         "),
+        expr_add: expr("1 + 1"),
+        expr_sub: expr("1 - 1"),
+        expr_mul: expr("1 * 1"),
+        expr_div: expr("1 / 1"),
+        expr_add_and_mul_with_precedence: expr("1 + 2*2"),
+        expr_mul_and_add_with_precedence: expr("1*2 + 2"),
+        expr_add_and_mul_with_parens: expr("(1+2) * 2"),
+        expr_add_and_subtract: expr("1 + 5 - 1"),
+        precedence_kitchen_sink: expr("1/2 + 4 == 1 - -2*2"),
+        unary_not: unary_expr("!true"),
+        unary_negative: unary_expr("-5"),
+        unary_negative_with_expr: unary_expr("-(5*2)"),
         #[ignore = "Requires a Pratt parser"]
         ternary_expr: expr("condition ? truthy : falsy"),
         #[ignore = "Requires a Pratt parser"]

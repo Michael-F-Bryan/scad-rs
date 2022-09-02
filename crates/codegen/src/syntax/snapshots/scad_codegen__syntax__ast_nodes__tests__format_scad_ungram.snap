@@ -46,7 +46,7 @@ ParenExpr = '(' Expr ')';
 
 ListComprehensionExpr = '[' ForClause ']';
 
-BinExpr = Expr BinOp Expr;
+BinExpr = Expr (BinOp Expr)*;
 
 LiteralExpr = 'true' | 'false' | 'undef' | 'integer' | 'float' | 'string';
 
@@ -58,7 +58,7 @@ FunctionCall = 'ident' '(' args:Arguments? ')';
 
 ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementOrExpr;
 
-BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '<=' | '<' | '&&' | '||';
+BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '!=' | '<=' | '<' | '&&' | '||';
 
 RangeExprFromTo = '[' Expr ':' Expr ']';
 

@@ -1,0 +1,11 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: unary_expr(-5)
+---
+Node(
+    UNARY_EXPR@0..2
+      MINUS@0..1 "-"
+      INTEGER@1..2
+        INTEGER@1..2 "5"
+    ,
+)

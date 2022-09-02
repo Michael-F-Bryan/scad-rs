@@ -1,0 +1,37 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: expr(1/2 + 4 == 1 - -2*2)
+---
+Node(
+    BIN_EXPR@0..13
+      BIN_EXPR@0..5
+        BIN_EXPR@0..3
+          INTEGER@0..1
+            INTEGER@0..1 "1"
+          SLASH@1..2
+            SLASH@1..2 "/"
+          INTEGER@2..3
+            INTEGER@2..3 "2"
+        PLUS@3..4
+          PLUS@3..4 "+"
+        INTEGER@4..5
+          INTEGER@4..5 "4"
+      DOUBLE_EQUALS@5..7
+        DOUBLE_EQUALS@5..7 "=="
+      BIN_EXPR@7..13
+        INTEGER@7..8
+          INTEGER@7..8 "1"
+        MINUS@8..9
+          MINUS@8..9 "-"
+        BIN_EXPR@9..13
+          UNARY_EXPR@9..11
+            MINUS@9..10
+              MINUS@9..10 "-"
+            INTEGER@10..11
+              INTEGER@10..11 "2"
+          STAR@11..12
+            STAR@11..12 "*"
+          INTEGER@12..13
+            INTEGER@12..13 "2"
+    ,
+)
