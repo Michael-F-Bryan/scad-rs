@@ -1,6 +1,8 @@
 //! The bytecode format for a `scad` program.
 
-pub mod disassemble;
+mod disassemble;
+
+pub use crate::disassemble::Disassembler;
 
 use std::{
     fmt::{self, Display, Formatter},
@@ -12,19 +14,13 @@ use noisy_float::types::R64;
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub struct Program {}
+pub struct Program {
+    pub chunk: Chunk,
+}
 
 impl Program {
-    /// Serialize the [`Program`] into its on-disk format.
-    pub fn serialize(&self, mut w: impl Write) -> Result<(), bincode::Error> {
-        writeln!(w, "#!/bin env scadders --requires-at-least={VERSION}")?;
-        w.write_all(b"\0")?;
-
-        bincode::serialize_into(w, self)
-    }
-
     /// Deserialize a [`Program`] from its on-disk format.
-    pub fn deserialize(mut reader: impl Read) -> Result<(), bincode::Error> {
+    pub fn deserialize(mut reader: impl Read) -> Result<Self, bincode::Error> {
         // Skip everything up to and including the null terminator
         let mut buffer = [0];
         loop {
@@ -35,6 +31,14 @@ impl Program {
         }
 
         bincode::deserialize_from(reader)
+    }
+
+    /// Serialize the [`Program`] into its on-disk format.
+    pub fn serialize(&self, mut w: impl Write) -> Result<(), bincode::Error> {
+        writeln!(w, "#!/bin env scad run --requires-at-least={VERSION}")?;
+        w.write_all(b"\0")?;
+
+        bincode::serialize_into(w, self)
     }
 }
 
@@ -69,6 +73,16 @@ pub struct Chunk {
 pub enum Constant {
     Number(R64),
     String(String),
+}
+
+impl Constant {
+    pub fn number(double: f64) -> Self {
+        Constant::Number(R64::new(double))
+    }
+
+    pub fn string(s: impl Into<String>) -> Self {
+        Constant::String(s.into())
+    }
 }
 
 impl Display for Constant {

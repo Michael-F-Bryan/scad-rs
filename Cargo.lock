@@ -659,9 +659,21 @@ dependencies = [
 name = "scad-bytecode"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bincode",
+ "clap",
  "noisy_float",
  "serde",
+]
+
+[[package]]
+name = "scad-cli"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "scad-bytecode",
+ "scad-vm",
 ]
 
 [[package]]

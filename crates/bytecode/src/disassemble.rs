@@ -1,55 +1,59 @@
 //! Disassembly routines for the bytecode format.
 
-use crate::Chunk;
-
-/// Disassemble a single chunk.
-pub fn chunk(w: &mut PrettyPrinter, c: &Chunk) {
-    let mut previous_line_number: Option<u16> = None;
-
-    for (i, inst) in c.instructions.iter().enumerate() {
-        let line_number = c.line_numbers[i];
-
-        if previous_line_number == Some(line_number) {
-            let repeat_character = '|';
-            write!(w, "{repeat_character:>3}");
-        } else {
-            write!(w, "{line_number:>3}");
-        }
-
-        write!(w, " ");
-
-        match *inst {
-            crate::Instruction::Constant(ix) => {
-                let constant = &c.constants[ix as usize];
-                writeln!(w, "constant {constant}");
-            }
-            crate::Instruction::Return => writeln!(w, "ret"),
-        }
-
-        previous_line_number = Some(line_number);
-    }
-}
+use crate::{Chunk, Program};
 
 /// An indent-aware pretty-printer.
 #[derive(Debug, Default, PartialEq)]
-pub struct PrettyPrinter {
+pub struct Disassembler {
     buffer: String,
     indent_level: usize,
 }
 
-impl PrettyPrinter {
+impl Disassembler {
     const INDENT: &str = "  ";
 
     pub fn new() -> Self {
-        PrettyPrinter::default()
+        Disassembler::default()
     }
 
     pub fn finish(self) -> String {
-        let PrettyPrinter { buffer, .. } = self;
+        let Disassembler { buffer, .. } = self;
         buffer
     }
 
-    pub fn write_fmt(&mut self, args: std::fmt::Arguments<'_>) {
+    pub fn program(&mut self, p: &Program) {
+        let Program { chunk } = p;
+        self.chunk(chunk);
+    }
+
+    pub fn chunk(&mut self, c: &Chunk) {
+        let mut previous_line_number: Option<u16> = None;
+
+        for (i, inst) in c.instructions.iter().enumerate() {
+            let line_number = c.line_numbers[i];
+
+            if previous_line_number == Some(line_number) {
+                let repeat_character = '|';
+                write!(self, "{repeat_character:>3}");
+            } else {
+                write!(self, "{line_number:>3}");
+            }
+
+            write!(self, " ");
+
+            match *inst {
+                crate::Instruction::Constant(ix) => {
+                    let constant = &c.constants[ix as usize];
+                    writeln!(self, "constant {constant}");
+                }
+                crate::Instruction::Return => writeln!(self, "ret"),
+            }
+
+            previous_line_number = Some(line_number);
+        }
+    }
+
+    fn write_fmt(&mut self, args: std::fmt::Arguments<'_>) {
         let temp = args.to_string();
 
         if temp.trim_end().contains("\n") {
@@ -65,7 +69,7 @@ impl PrettyPrinter {
 
     fn write_indent(&mut self) {
         for _ in 0..self.indent_level {
-            self.buffer.push_str(PrettyPrinter::INDENT);
+            self.buffer.push_str(Disassembler::INDENT);
         }
     }
 }
@@ -74,7 +78,6 @@ impl PrettyPrinter {
 mod tests {
     use super::*;
     use crate::{Constant, Instruction};
-    use noisy_float::types::R64;
 
     #[test]
     fn disassemble_a_chunk() {
@@ -84,14 +87,14 @@ mod tests {
                 Instruction::Constant(0),
                 Instruction::Return,
             ],
-            constants: vec![Constant::Number(R64::new(1.0))],
+            constants: vec![Constant::number(1.0)],
             line_numbers: vec![1, 2, 2],
         };
-        let mut printer = PrettyPrinter::default();
+        let mut dis = Disassembler::default();
         let expected = "  1 constant 1\n  2 constant 1\n  | ret\n";
 
-        chunk(&mut printer, &c);
+        dis.chunk(&c);
 
-        assert_eq!(printer.buffer, expected);
+        assert_eq!(dis.finish(), expected);
     }
 }
