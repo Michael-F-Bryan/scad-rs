@@ -30,11 +30,9 @@ BracedActions = '{' Action* '}';
 
 Assignment = name:'ident' '=' value:Expr;
 
-Expressions = Expr (',' Expr)*;
-
 Atom = LiteralExpr | LookupExpr | IndexExpr | FunctionCall;
 
-ListExpr = '[' Expressions ']';
+ListExpr = '[' Expr (',' Expr)* ']';
 
 RangeExpr = RangeExprFromTo | RangeExprFromToStep;
 

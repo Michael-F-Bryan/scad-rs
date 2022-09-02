@@ -784,50 +784,6 @@ impl Assignment {
         self.syntax().text_range()
     }
 }
-#[doc = "A strongly typed wrapper around a [`EXPRESSIONS`][SyntaxKind::EXPRESSIONS] node."]
-#[doc = ""]
-#[doc = "Grammar:"]
-#[doc = "```text"]
-#[doc = "Expressions = Expr (',' Expr)*;\n"]
-#[doc = "```"]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Expressions(SyntaxNode);
-impl AstNode for Expressions {
-    type Language = crate::OpenSCAD;
-    fn can_cast(kind: SyntaxKind) -> bool
-    where
-        Self: Sized,
-    {
-        kind == SyntaxKind::EXPRESSIONS
-    }
-    fn cast(node: SyntaxNode) -> Option<Self>
-    where
-        Self: Sized,
-    {
-        if Expressions::can_cast(node.kind()) {
-            Some(Expressions(node))
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.0
-    }
-}
-impl Expressions {
-    pub fn exprs(&self) -> impl Iterator<Item = Expr> {
-        self.0.children().filter_map(Expr::cast)
-    }
-    pub fn comma_tokens(&self) -> impl Iterator<Item = SyntaxToken> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .filter(|tok| tok.kind() == SyntaxKind::COMMA)
-    }
-    pub fn span(&self) -> TextRange {
-        self.syntax().text_range()
-    }
-}
 #[doc = "A strongly typed `Atom` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -883,7 +839,7 @@ impl AstNode for Atom {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "ListExpr = '[' Expressions ']';\n"]
+#[doc = "ListExpr = '[' Expr (',' Expr)* ']';\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ListExpr(SyntaxNode);
@@ -916,8 +872,14 @@ impl ListExpr {
             .filter_map(|t| t.into_token())
             .find(|tok| tok.kind() == SyntaxKind::L_BRACKET)
     }
-    pub fn expressions(&self) -> Option<Expressions> {
-        self.0.children().find_map(Expressions::cast)
+    pub fn exprs(&self) -> impl Iterator<Item = Expr> {
+        self.0.children().filter_map(Expr::cast)
+    }
+    pub fn comma_tokens(&self) -> impl Iterator<Item = SyntaxToken> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .filter(|tok| tok.kind() == SyntaxKind::COMMA)
     }
     pub fn r_bracket_token(&self) -> Option<SyntaxToken> {
         self.0

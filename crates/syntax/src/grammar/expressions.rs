@@ -1,6 +1,6 @@
 use crate::{
     grammar::{assignment, top_level, TokenSet},
-    parser::Parser,
+    parser::{Mark, Parser},
     SyntaxKind::*,
 };
 
@@ -39,7 +39,7 @@ pub(crate) fn expr(p: &mut Parser<'_>) {
             list_comprehension_expr(p);
         }
         T!["["] => {
-            list_expr(p);
+            list_or_range_expr(p);
         }
         other => {
             p.error(format!("Expected an expression but found {other:?}"));
@@ -226,25 +226,49 @@ fn if_clause(p: &mut Parser<'_>) {
     p.complete(m, IF_CLAUSE);
 }
 
-fn list_expr(p: &mut Parser<'_>) {
+fn list_or_range_expr(p: &mut Parser<'_>) {
     let m = p.start();
     p.bump(T!["["]);
 
-    expressions(p);
+    expr(p);
 
-    p.expect(T!["]"]);
-    p.complete(m, LIST_EXPR);
+    if p.at(T![:]) {
+        rest_of_range_expr(p, m);
+    } else {
+        rest_of_list_expr(p, m);
+    }
 }
 
-fn expressions(p: &mut Parser<'_>) {
-    let m = p.start();
+fn rest_of_range_expr(p: &mut Parser<'_>, m: Mark) {
+    p.bump(T![:]);
 
     expr(p);
+
+    let has_step = p.at(T![:]);
+    if has_step {
+        p.bump(T![:]);
+        expr(p);
+    }
+
+    p.expect(T!["]"]);
+
+    if has_step {
+        p.complete(m, RANGE_EXPR_FROM_TO_STEP);
+    } else {
+        p.complete(m, RANGE_EXPR_FROM_TO);
+    }
+}
+
+fn rest_of_list_expr(p: &mut Parser<'_>, m: Mark) {
+    assert!(p.at(T![,]));
 
     while p.eat(T![,]) {
         expr(p);
     }
-    p.complete(m, EXPRESSIONS);
+
+    p.expect(T!["]"]);
+
+    p.complete(m, LIST_EXPR);
 }
 
 /// ```ebnf
@@ -394,9 +418,7 @@ mod tests {
         unary_negative_with_expr: unary_expr("-(5*2)"),
         #[ignore = "Requires a Pratt parser"]
         ternary_expr: expr("condition ? truthy : falsy"),
-        #[ignore = "Requires a Pratt parser"]
         range_expr: expr("[a:b]"),
-        #[ignore = "Requires a Pratt parser"]
         range_expr_with_step: expr("[a:b:c]"),
     }
 }

@@ -14,17 +14,16 @@ Node(
             EQUALS@6..7 "="
             LIST_EXPR@7..19
               L_BRACKET@7..8 "["
-              EXPRESSIONS@8..18
-                LOOKUP_EXPR@8..13
-                  IDENT@8..13 "steps"
-                COMMA@13..14 ","
-                UNARY_EXPR@14..16
-                  MINUS@14..15 "-"
-                  INTEGER@15..16
-                    INTEGER@15..16 "1"
-                COMMA@16..17 ","
-                INTEGER@17..18
-                  INTEGER@17..18 "0"
+              LOOKUP_EXPR@8..13
+                IDENT@8..13 "steps"
+              COMMA@13..14 ","
+              UNARY_EXPR@14..16
+                MINUS@14..15 "-"
+                INTEGER@15..16
+                  INTEGER@15..16 "1"
+              COMMA@16..17 ","
+              INTEGER@17..18
+                INTEGER@17..18 "0"
               R_BRACKET@18..19 "]"
         R_PAREN@19..20 ")"
         IF_CLAUSE@20..38
@@ -45,12 +44,11 @@ Node(
             R_PAREN@32..33 ")"
             LIST_EXPR@33..38
               L_BRACKET@33..34 "["
-              EXPRESSIONS@34..37
-                LOOKUP_EXPR@34..35
-                  IDENT@34..35 "a"
-                COMMA@35..36 ","
-                LOOKUP_EXPR@36..37
-                  IDENT@36..37 "f"
+              LOOKUP_EXPR@34..35
+                IDENT@34..35 "a"
+              COMMA@35..36 ","
+              LOOKUP_EXPR@36..37
+                IDENT@36..37 "f"
               R_BRACKET@37..38 "]"
       R_BRACKET@38..39 "]"
     ,

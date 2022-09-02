@@ -14,12 +14,11 @@ Node(
             EQUALS@6..7 "="
             LIST_EXPR@7..12
               L_BRACKET@7..8 "["
-              EXPRESSIONS@8..11
-                INTEGER@8..9
-                  INTEGER@8..9 "0"
-                COMMA@9..10 ","
-                INTEGER@10..11
-                  INTEGER@10..11 "2"
+              INTEGER@8..9
+                INTEGER@8..9 "0"
+              COMMA@9..10 ","
+              INTEGER@10..11
+                INTEGER@10..11 "2"
               R_BRACKET@11..12 "]"
           COMMA@12..13 ","
           ASSIGNMENT@13..20
@@ -27,12 +26,11 @@ Node(
             EQUALS@14..15 "="
             LIST_EXPR@15..20
               L_BRACKET@15..16 "["
-              EXPRESSIONS@16..19
-                INTEGER@16..17
-                  INTEGER@16..17 "0"
-                COMMA@17..18 ","
-                INTEGER@18..19
-                  INTEGER@18..19 "2"
+              INTEGER@16..17
+                INTEGER@16..17 "0"
+              COMMA@17..18 ","
+              INTEGER@18..19
+                INTEGER@18..19 "2"
               R_BRACKET@19..20 "]"
         R_PAREN@20..21 ")"
         BIN_EXPR@21..24

@@ -9,15 +9,14 @@ Node(
       ARGUMENTS@10..17
         LIST_EXPR@10..17
           L_BRACKET@10..11 "["
-          EXPRESSIONS@11..16
-            LOOKUP_EXPR@11..12
-              IDENT@11..12 "a"
-            COMMA@12..13 ","
-            LOOKUP_EXPR@13..14
-              IDENT@13..14 "b"
-            COMMA@14..15 ","
-            LOOKUP_EXPR@15..16
-              IDENT@15..16 "c"
+          LOOKUP_EXPR@11..12
+            IDENT@11..12 "a"
+          COMMA@12..13 ","
+          LOOKUP_EXPR@13..14
+            IDENT@13..14 "b"
+          COMMA@14..15 ","
+          LOOKUP_EXPR@15..16
+            IDENT@15..16 "c"
           R_BRACKET@16..17 "]"
       R_PAREN@17..18 ")"
       BRACED_CHILDREN@18..38

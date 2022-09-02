@@ -35,8 +35,6 @@ Action =
 
 AssignmentStatement = Assignment ';'
 
-Expressions = Expr (',' Expr)*
-
 Expr =
   Atom
 | ListExpr
@@ -71,13 +69,13 @@ BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '!=' | '<=' | '<
 
 UnaryExpr = ('!' | '+' | '-') Expr
 
-RangeExpr= RangeExprFromTo | RangeExprFromToStep
+RangeExpr = RangeExprFromTo | RangeExprFromToStep
 
 RangeExprFromTo = '[' Expr ':' Expr ']'
 
 RangeExprFromToStep = '[' Expr ':' Expr ':' Expr ']'
 
-ListExpr = '[' Expressions ']'
+ListExpr = '[' Expr (',' Expr)* ']'
 
 ListComprehensionElement =
   LetClause

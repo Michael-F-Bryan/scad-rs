@@ -9,15 +9,14 @@ Node(
       ARGUMENTS@5..12
         LIST_EXPR@5..12
           L_BRACKET@5..6 "["
-          EXPRESSIONS@6..11
-            INTEGER@6..7
-              INTEGER@6..7 "2"
-            COMMA@7..8 ","
-            INTEGER@8..9
-              INTEGER@8..9 "3"
-            COMMA@9..10 ","
-            INTEGER@10..11
-              INTEGER@10..11 "4"
+          INTEGER@6..7
+            INTEGER@6..7 "2"
+          COMMA@7..8 ","
+          INTEGER@8..9
+            INTEGER@8..9 "3"
+          COMMA@9..10 ","
+          INTEGER@10..11
+            INTEGER@10..11 "4"
           R_BRACKET@11..12 "]"
       R_PAREN@12..13 ")"
       SEMICOLON@13..14

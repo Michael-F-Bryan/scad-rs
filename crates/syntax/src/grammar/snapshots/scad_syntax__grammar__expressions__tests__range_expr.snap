@@ -1,0 +1,15 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: "expr([a:b])"
+---
+Node(
+    RANGE_EXPR_FROM_TO@0..5
+      L_BRACKET@0..1 "["
+      LOOKUP_EXPR@1..2
+        IDENT@1..2 "a"
+      COLON@2..3 ":"
+      LOOKUP_EXPR@3..4
+        IDENT@3..4 "b"
+      R_BRACKET@4..5 "]"
+    ,
+)
