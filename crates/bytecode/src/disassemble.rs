@@ -67,6 +67,15 @@ impl Disassembler {
             Instruction::Undef => writeln!(self, "undef"),
             Instruction::True => writeln!(self, "true"),
             Instruction::False => writeln!(self, "false"),
+            Instruction::Pop => writeln!(self, "pop"),
+            Instruction::DefineGlobal(ix) => {
+                let variable_name = &c.constants[ix as usize];
+                writeln!(self, "define_global {variable_name}");
+            }
+            Instruction::LookupVariable(ix) => {
+                let variable_name = &c.constants[ix as usize];
+                writeln!(self, "lookup {variable_name}");
+            }
         }
     }
 

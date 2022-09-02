@@ -48,6 +48,10 @@ impl Program {
 pub enum Instruction {
     /// Load a constant.
     Constant(u8),
+    /// Define a global variable by name.
+    DefineGlobal(u8),
+    /// Lookup a variable by name.
+    LookupVariable(u8),
     /// Load the constant, `undef`.
     Undef,
     /// Load the constant, `true`.
@@ -68,6 +72,8 @@ pub enum Instruction {
     Div,
     /// Return from the current function.
     Return,
+    /// Remove a value from the top of the stack and forget it.
+    Pop,
 }
 
 /// A set of instructions.

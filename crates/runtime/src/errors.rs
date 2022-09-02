@@ -1,4 +1,7 @@
-use std::fmt::{self, Display, Formatter};
+use std::{
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum RuntimeError {
@@ -12,11 +15,14 @@ pub enum RuntimeError {
         lhs: &'static str,
         rhs: &'static str,
     },
+    UnknownVariable {
+        name: Arc<str>,
+    },
 }
 
 impl Display for RuntimeError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match *self {
+        match self {
             RuntimeError::StackUnderflow => "Stack Underflow".fmt(f),
             RuntimeError::InvalidUnaryOperation {
                 operation,
@@ -27,6 +33,9 @@ impl Display for RuntimeError {
                 lhs,
                 rhs,
             } => write!(f, "Unable to {operation} a {lhs} and a {rhs}"),
+            RuntimeError::UnknownVariable { name } => {
+                write!(f, "\"{name}\" is not defined in this scope")
+            }
         }
     }
 }
