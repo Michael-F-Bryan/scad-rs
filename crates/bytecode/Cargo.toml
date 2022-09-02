@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 bincode = "1.3.3"
 noisy_float = { version = "0.2.0", features = ["serde"] }
-serde = { version = "1.0.143", features = ["derive"] }
+serde = { version = "1.0.143", features = ["derive", "rc"] }
 
 [dev-dependencies]
 clap = { version = "3.2.17", features = ["env"] }

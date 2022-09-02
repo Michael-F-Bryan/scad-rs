@@ -7,6 +7,7 @@ pub use crate::disassemble::Disassembler;
 use std::{
     fmt::{self, Display, Formatter},
     io::{Read, Write},
+    sync::Arc,
 };
 
 use noisy_float::types::R64;
@@ -47,17 +48,10 @@ impl Program {
 pub enum Instruction {
     /// Load a constant.
     Constant(u8),
+    /// Negate the value at the top of the stack.
+    Negate,
     /// Return from the current function.
     Return,
-}
-
-impl Display for Instruction {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Instruction::Constant(ix) => write!(f, "constant ${ix}"),
-            Instruction::Return => "ret".fmt(f),
-        }
-    }
 }
 
 /// A set of instructions.
@@ -72,7 +66,7 @@ pub struct Chunk {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum Constant {
     Number(R64),
-    String(String),
+    String(Arc<str>),
 }
 
 impl Constant {
@@ -80,7 +74,7 @@ impl Constant {
         Constant::Number(R64::new(double))
     }
 
-    pub fn string(s: impl Into<String>) -> Self {
+    pub fn string(s: impl Into<Arc<str>>) -> Self {
         Constant::String(s.into())
     }
 }

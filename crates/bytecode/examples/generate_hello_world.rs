@@ -7,21 +7,26 @@ use scad_bytecode::{Chunk, Constant, Instruction, Program};
 fn main() -> Result<(), Error> {
     let Args { output } = Args::from_args();
 
+    // A program that looks like:
+    //   x = "Hello, World";
+    //   y = 42.0;
+    //  return -y;
     let program = Program {
         chunk: Chunk {
             constants: vec![Constant::string("Hello, World!"), Constant::number(42.0)],
             instructions: vec![
                 Instruction::Constant(0),
                 Instruction::Constant(1),
+                Instruction::Negate,
                 Instruction::Return,
             ],
-            line_numbers: vec![0, 1, 2],
+            line_numbers: vec![0, 1, 2, 2],
         },
     };
 
     match output {
         Some(filename) => {
-            let mut f = File::create(&filename).with_context(|| {
+            let f = File::create(&filename).with_context(|| {
                 format!("Unable to open for \"{}\" for writing", filename.display())
             })?;
             program.serialize(f)?;

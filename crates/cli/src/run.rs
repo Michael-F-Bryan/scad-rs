@@ -2,11 +2,14 @@ use std::{fs::File, path::PathBuf};
 
 use anyhow::Context;
 use clap::Parser;
-use scad_bytecode::Program;
+use scad_bytecode::{Disassembler, Program};
 use scad_vm::VirtualMachine;
 
 #[derive(Debug, Parser)]
 pub struct Run {
+    /// Run the VM in debug mode.
+    #[clap(short, long)]
+    debug: bool,
     /// The minimum bytecode version.
     #[clap(long, hide = true)]
     requires_at_least: Option<String>,
@@ -19,6 +22,7 @@ impl Run {
         let Run {
             requires_at_least,
             filename,
+            debug,
         } = self;
 
         if let Some(min_bytecode_version) = requires_at_least {
@@ -31,10 +35,41 @@ impl Run {
         let program = Program::deserialize(f).context("Unable to load the bytecode")?;
         let mut vm = VirtualMachine::load(program);
 
-        if let Err(e) = vm.run() {
+        let result = if debug {
+            vm.run(DebugCallbacks::default())
+        } else {
+            vm.run(ProductionCallbacks)
+        };
+
+        if let Err(e) = result {
             todo!("Print a backtrace for {e}");
         }
 
         Ok(())
     }
 }
+
+#[derive(Debug, Default)]
+struct DebugCallbacks {
+    dis: Disassembler,
+}
+
+impl scad_vm::Callbacks for DebugCallbacks {
+    fn before_execute(
+        &mut self,
+        current_chunk: &scad_bytecode::Chunk,
+        instruction_pointer: usize,
+        instruction: scad_bytecode::Instruction,
+        _stack: &[scad_vm::Value],
+    ) {
+        let line_number = current_chunk.line_numbers[instruction_pointer];
+        self.dis
+            .instruction(current_chunk, instruction, line_number);
+        let formatted = self.dis.finish();
+        eprint!("{formatted}");
+    }
+}
+
+struct ProductionCallbacks;
+
+impl scad_vm::Callbacks for ProductionCallbacks {}

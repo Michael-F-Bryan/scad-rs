@@ -1,12 +1,13 @@
 //! Disassembly routines for the bytecode format.
 
-use crate::{Chunk, Program};
+use crate::{Chunk, Instruction, Program};
 
 /// An indent-aware pretty-printer.
 #[derive(Debug, Default, PartialEq)]
 pub struct Disassembler {
     buffer: String,
     indent_level: usize,
+    previous_line_number: Option<u16>,
 }
 
 impl Disassembler {
@@ -16,9 +17,12 @@ impl Disassembler {
         Disassembler::default()
     }
 
-    pub fn finish(self) -> String {
-        let Disassembler { buffer, .. } = self;
-        buffer
+    /// Finish writing to this [`Disassembler`], returning the text generated
+    /// up to this point and clearing the buffer for reuse.
+    pub fn finish(&mut self) -> String {
+        let formatted = self.buffer.clone();
+        self.buffer.clear();
+        formatted
     }
 
     pub fn program(&mut self, p: &Program) {
@@ -27,29 +31,32 @@ impl Disassembler {
     }
 
     pub fn chunk(&mut self, c: &Chunk) {
-        let mut previous_line_number: Option<u16> = None;
+        self.previous_line_number = None;
 
-        for (i, inst) in c.instructions.iter().enumerate() {
+        for (i, &inst) in c.instructions.iter().enumerate() {
             let line_number = c.line_numbers[i];
+            self.instruction(c, inst, line_number);
 
-            if previous_line_number == Some(line_number) {
-                let repeat_character = '|';
-                write!(self, "{repeat_character:>3}");
-            } else {
-                write!(self, "{line_number:>3}");
+            self.previous_line_number = Some(line_number);
+        }
+    }
+
+    pub fn instruction(&mut self, c: &Chunk, inst: Instruction, line_number: u16) {
+        if self.previous_line_number == Some(line_number) {
+            write!(self, "   |");
+        } else {
+            write!(self, "{line_number:>3}|");
+        }
+        write!(self, "  ");
+        match inst {
+            Instruction::Constant(ix) => {
+                let constant = &c.constants[ix as usize];
+                writeln!(self, "load_constant {constant}");
             }
-
-            write!(self, " ");
-
-            match *inst {
-                crate::Instruction::Constant(ix) => {
-                    let constant = &c.constants[ix as usize];
-                    writeln!(self, "constant {constant}");
-                }
-                crate::Instruction::Return => writeln!(self, "ret"),
+            Instruction::Negate => {
+                writeln!(self, "negate");
             }
-
-            previous_line_number = Some(line_number);
+            Instruction::Return => writeln!(self, "ret"),
         }
     }
 
@@ -82,19 +89,23 @@ mod tests {
     #[test]
     fn disassemble_a_chunk() {
         let c = Chunk {
+            constants: vec![Constant::string("Hello, World!"), Constant::number(42.0)],
             instructions: vec![
                 Instruction::Constant(0),
-                Instruction::Constant(0),
+                Instruction::Constant(1),
+                Instruction::Negate,
                 Instruction::Return,
             ],
-            constants: vec![Constant::number(1.0)],
-            line_numbers: vec![1, 2, 2],
+            line_numbers: vec![0, 1, 2, 2],
         };
         let mut dis = Disassembler::default();
-        let expected = "  1 constant 1\n  2 constant 1\n  | ret\n";
+        let expected =
+            "  0|  load_constant Hello, World!\n  1|  load_constant 42\n  2|  negate\n   |  ret\n";
 
         dis.chunk(&c);
 
-        assert_eq!(dis.finish(), expected);
+        let disassembled = dis.finish();
+        println!("{disassembled}");
+        assert_eq!(disassembled, expected);
     }
 }
