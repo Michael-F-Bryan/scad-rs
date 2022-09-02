@@ -1,5 +1,5 @@
 use std::{
-    ops::{Add, Div, Mul, Neg, Sub},
+    ops::{Add, Div, Mul, Neg, Not, Sub},
     sync::Arc,
 };
 
@@ -16,6 +16,7 @@ pub enum Value {
 }
 
 impl Value {
+    #[inline]
     pub const fn type_name(&self) -> &'static str {
         match self {
             Value::Undef => "undef",
@@ -29,6 +30,7 @@ impl Value {
 impl Neg for Value {
     type Output = Result<Value, RuntimeError>;
 
+    #[inline]
     fn neg(self) -> Self::Output {
         match self {
             Value::Number(n) => Ok(Value::Number(-n)),
@@ -40,9 +42,25 @@ impl Neg for Value {
     }
 }
 
+impl Not for Value {
+    type Output = Result<Value, RuntimeError>;
+
+    #[inline]
+    fn not(self) -> Self::Output {
+        match self {
+            Value::Boolean(b) => Ok(Value::Boolean(!b)),
+            other => Err(RuntimeError::InvalidUnaryOperation {
+                operation: "not",
+                type_name: other.type_name(),
+            }),
+        }
+    }
+}
+
 impl Add for Value {
     type Output = Result<Value, RuntimeError>;
 
+    #[inline]
     fn add(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a + b)),
@@ -59,6 +77,7 @@ impl Add for Value {
 impl Sub for Value {
     type Output = Result<Value, RuntimeError>;
 
+    #[inline]
     fn sub(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a - b)),
@@ -75,6 +94,7 @@ impl Sub for Value {
 impl Mul for Value {
     type Output = Result<Value, RuntimeError>;
 
+    #[inline]
     fn mul(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a * b)),
@@ -90,6 +110,7 @@ impl Mul for Value {
 impl Div for Value {
     type Output = Result<Value, RuntimeError>;
 
+    #[inline]
     fn div(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
             (Value::Number(a), Value::Number(b)) => Ok(Value::Number(a / b)),

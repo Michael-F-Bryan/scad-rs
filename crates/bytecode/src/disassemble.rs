@@ -56,11 +56,17 @@ impl Disassembler {
             Instruction::Negate => {
                 writeln!(self, "negate");
             }
+            Instruction::Not => {
+                writeln!(self, "not");
+            }
             Instruction::Return => writeln!(self, "ret"),
             Instruction::Add => writeln!(self, "add"),
             Instruction::Sub => writeln!(self, "sub"),
             Instruction::Mul => writeln!(self, "mul"),
             Instruction::Div => writeln!(self, "div"),
+            Instruction::Undef => writeln!(self, "undef"),
+            Instruction::True => writeln!(self, "true"),
+            Instruction::False => writeln!(self, "false"),
         }
     }
 

@@ -48,8 +48,16 @@ impl Program {
 pub enum Instruction {
     /// Load a constant.
     Constant(u8),
+    /// Load the constant, `undef`.
+    Undef,
+    /// Load the constant, `true`.
+    True,
+    /// Load the constant, `false`.
+    False,
     /// Negate the value at the top of the stack.
     Negate,
+    /// The logical not operator (often written as `!`).
+    Not,
     /// Add the top two values on the stack.
     Add,
     /// Subtract the top two values on the stack.
@@ -87,7 +95,9 @@ impl Chunk {
 
     pub fn push_constant(&mut self, constant: impl Into<Constant>) -> u8 {
         self.constants.push(constant.into());
-        (self.constants.len() - 1).try_into().unwrap()
+        (self.constants.len() - 1)
+            .try_into()
+            .expect("Chunks can't contain more than 255 constants")
     }
 }
 
