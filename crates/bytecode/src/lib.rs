@@ -71,6 +71,26 @@ pub struct Chunk {
     pub line_numbers: Vec<u16>,
 }
 
+impl Chunk {
+    pub fn empty() -> Chunk {
+        Chunk {
+            constants: Vec::new(),
+            instructions: Vec::new(),
+            line_numbers: Vec::new(),
+        }
+    }
+
+    pub fn push_instruction(&mut self, instruction: Instruction, line_number: u16) {
+        self.instructions.push(instruction);
+        self.line_numbers.push(line_number);
+    }
+
+    pub fn push_constant(&mut self, constant: impl Into<Constant>) -> u8 {
+        self.constants.push(constant.into());
+        (self.constants.len() - 1).try_into().unwrap()
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum Constant {
     Number(R64),

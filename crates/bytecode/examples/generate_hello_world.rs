@@ -8,21 +8,23 @@ fn main() -> Result<(), Error> {
     let Args { output } = Args::from_args();
 
     // A program that looks like:
-    //   x = "Hello, World";
-    //   y = 42.0;
-    //  return -y;
-    let program = Program {
-        chunk: Chunk {
-            constants: vec![Constant::string("Hello, World!"), Constant::number(42.0)],
-            instructions: vec![
-                Instruction::Constant(0),
-                Instruction::Constant(1),
-                Instruction::Negate,
-                Instruction::Return,
-            ],
-            line_numbers: vec![0, 1, 2, 2],
-        },
-    };
+    //   return -((1.2 + 3.4) / 5.6);
+    let mut chunk = Chunk::empty();
+    let a = chunk.push_constant(Constant::number(1.2));
+    chunk.push_instruction(Instruction::Constant(a), 0);
+    let b = chunk.push_constant(Constant::number(3.4));
+    chunk.push_instruction(Instruction::Constant(b), 0);
+
+    chunk.push_instruction(Instruction::Add, 0);
+
+    let c = chunk.push_constant(Constant::number(5.6));
+    chunk.push_instruction(Instruction::Constant(c), 0);
+
+    chunk.push_instruction(Instruction::Div, 0);
+    chunk.push_instruction(Instruction::Negate, 0);
+    chunk.push_instruction(Instruction::Return, 0);
+
+    let program = Program { chunk };
 
     match output {
         Some(filename) => {
