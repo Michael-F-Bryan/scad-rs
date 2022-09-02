@@ -3,7 +3,7 @@ use crate::{
         expressions::{self},
         TokenSet,
     },
-    parser::{Mark, Parser},
+    parser::Parser,
     SyntaxKind::*,
 };
 
@@ -20,31 +20,33 @@ pub(crate) fn package(p: &mut Parser<'_>) {
 }
 
 pub(crate) fn statement(p: &mut Parser<'_>) {
-    let m = p.start();
-
     match p.current() {
-        T![include] => include(p, m),
-        T![use] => use_(p, m),
+        T![include] => include(p),
+        T![use] => use_(p),
         IDENT if p.nth_at(1, T![=]) => {
-            assignment_statement(p, m);
+            assignment_statement(p);
         }
         IDENT if p.nth_at(1, T!["("]) => {
-            module_instantiation(p, m);
+            module_instantiation(p);
         }
         T![function] => {
-            named_function_definition(p, m);
+            named_function_definition(p);
         }
         T![module] => {
-            named_module_definition(p, m);
+            named_module_definition(p);
         }
         T![if] => {
-            if_statement(p, m);
+            if_statement(p);
         }
-        _ => p.error_recover("Expected a statement", m, CONTINUE),
+        _ => {
+            let m = p.start();
+            p.error_recover("Expected a statement", m, CONTINUE);
+        }
     }
 }
 
-fn if_statement(p: &mut Parser<'_>, m: Mark) {
+fn if_statement(p: &mut Parser<'_>) {
+    let m = p.start();
     p.bump(T![if]);
     p.expect(T!["("]);
     expressions::expr(p);
@@ -78,21 +80,23 @@ fn braced_actions(p: &mut Parser<'_>) {
 }
 
 fn action(p: &mut Parser<'_>) {
-    let m = p.start();
-
     match p.current() {
-        T![if] => if_statement(p, m),
+        T![if] => if_statement(p),
         IDENT if p.nth_at(1, T![=]) => {
-            assignment_statement(p, m);
+            assignment_statement(p);
         }
         IDENT if p.nth_at(1, T!["("]) => {
-            module_instantiation(p, m);
+            module_instantiation(p);
         }
-        _ => p.error_recover("Expected an action", m, CONTINUE),
+        _ => {
+            let m = p.start();
+            p.error_recover("Expected an action", m, CONTINUE)
+        }
     }
 }
 
-fn named_module_definition(p: &mut Parser<'_>, m: Mark) {
+fn named_module_definition(p: &mut Parser<'_>) {
+    let m = p.start();
     p.bump(T![module]);
     p.expect(IDENT);
     p.expect(T!["("]);
@@ -107,7 +111,8 @@ fn named_module_definition(p: &mut Parser<'_>, m: Mark) {
     p.complete(m, NAMED_MODULE_DEFINITION);
 }
 
-fn named_function_definition(p: &mut Parser<'_>, m: Mark) {
+fn named_function_definition(p: &mut Parser<'_>) {
+    let m = p.start();
     p.bump(T![function]);
     p.expect(IDENT);
     p.expect(T!["("]);
@@ -143,7 +148,8 @@ fn parameter(p: &mut Parser<'_>) {
     }
 }
 
-fn module_instantiation(p: &mut Parser<'_>, m: Mark) {
+fn module_instantiation(p: &mut Parser<'_>) {
+    let m = p.start();
     p.bump(IDENT);
     p.bump(T!["("]);
     expressions::arguments(p);
@@ -177,20 +183,21 @@ fn child(p: &mut Parser<'_>) {
             p.complete(m, BRACED_CHILDREN);
         }
         IDENT => {
-            let m = p.start();
-            module_instantiation(p, m);
+            module_instantiation(p);
         }
         _ => unreachable!(),
     }
 }
 
-fn assignment_statement(p: &mut Parser<'_>, m: Mark) {
+fn assignment_statement(p: &mut Parser<'_>) {
+    let m = p.start();
     assignment(p);
     p.expect(T![;]);
     p.complete(m, ASSIGNMENT_STATEMENT);
 }
 
-pub(crate) fn include(p: &mut Parser<'_>, m: Mark) {
+pub(crate) fn include(p: &mut Parser<'_>) {
+    let m = p.start();
     p.bump(T![include]);
 
     if p.eat(FILE) {
@@ -200,7 +207,8 @@ pub(crate) fn include(p: &mut Parser<'_>, m: Mark) {
     }
 }
 
-pub(crate) fn use_(p: &mut Parser<'_>, m: Mark) {
+pub(crate) fn use_(p: &mut Parser<'_>) {
+    let m = p.start();
     p.bump(T![use]);
 
     if p.eat(FILE) {
@@ -272,6 +280,14 @@ mod tests {
             else
                 if (test3) {scope3_1();}
                 else {scope3_2();}"
-        )
+        ),
+        for_loop_empty: statement("for(i = [0; 1]);"),
+        for_loop_with_module: statement("for(i = [0; 1]) cube(i);"),
+        for_loop_with_children: statement("
+            for(i = [0; 10; 2]) {
+                cube(i);
+                translate(i);
+            }"
+        ),
     }
 }
