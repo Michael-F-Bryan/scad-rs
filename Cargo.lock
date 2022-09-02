@@ -673,7 +673,7 @@ dependencies = [
  "anyhow",
  "clap",
  "scad-bytecode",
- "scad-vm",
+ "scad-runtime",
 ]
 
 [[package]]
@@ -707,8 +707,16 @@ name = "scad-fj-model"
 version = "0.1.0"
 dependencies = [
  "fj",
+ "scad-runtime",
  "scad-syntax",
- "scad-vm",
+]
+
+[[package]]
+name = "scad-runtime"
+version = "0.1.0"
+dependencies = [
+ "rowan",
+ "scad-bytecode",
 ]
 
 [[package]]
@@ -721,14 +729,6 @@ dependencies = [
  "once_cell",
  "pretty_assertions",
  "rowan",
-]
-
-[[package]]
-name = "scad-vm"
-version = "0.1.0"
-dependencies = [
- "rowan",
- "scad-bytecode",
 ]
 
 [[package]]

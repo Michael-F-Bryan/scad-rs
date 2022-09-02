@@ -3,7 +3,7 @@ use std::{fs::File, path::PathBuf};
 use anyhow::Context;
 use clap::Parser;
 use scad_bytecode::{Disassembler, Program};
-use scad_vm::{Stack, VirtualMachine};
+use scad_runtime::{Callbacks, Stack, VirtualMachine};
 
 #[derive(Debug, Parser)]
 pub struct Run {
@@ -54,7 +54,7 @@ struct DebugCallbacks {
     dis: Disassembler,
 }
 
-impl scad_vm::Callbacks for DebugCallbacks {
+impl Callbacks for DebugCallbacks {
     fn before_execute(
         &mut self,
         current_chunk: &scad_bytecode::Chunk,
@@ -72,4 +72,4 @@ impl scad_vm::Callbacks for DebugCallbacks {
 
 struct ProductionCallbacks;
 
-impl scad_vm::Callbacks for ProductionCallbacks {}
+impl Callbacks for ProductionCallbacks {}
