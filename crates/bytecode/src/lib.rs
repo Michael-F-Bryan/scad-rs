@@ -1,6 +1,13 @@
 //! The bytecode format for a `scad` program.
 
-use std::io::{Read, Write};
+pub mod disassemble;
+
+use std::{
+    fmt::{self, Display, Formatter},
+    io::{Read, Write},
+};
+
+use noisy_float::types::R64;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -28,5 +35,47 @@ impl Program {
         }
 
         bincode::deserialize_from(reader)
+    }
+}
+
+/// A single instruction executed by the virtual machine.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+pub enum Instruction {
+    /// Load a constant.
+    Constant(u8),
+    /// Return from the current function.
+    Return,
+}
+
+impl Display for Instruction {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Instruction::Constant(ix) => write!(f, "constant ${ix}"),
+            Instruction::Return => "ret".fmt(f),
+        }
+    }
+}
+
+/// A set of instructions.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+pub struct Chunk {
+    pub constants: Vec<Constant>,
+    pub instructions: Vec<Instruction>,
+    /// The line number for each instruction in [`Chunk::instructions`].
+    pub line_numbers: Vec<u16>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+pub enum Constant {
+    Number(R64),
+    String(String),
+}
+
+impl Display for Constant {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Constant::Number(n) => n.fmt(f),
+            Constant::String(s) => s.fmt(f),
+        }
     }
 }
