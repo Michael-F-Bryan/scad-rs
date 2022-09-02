@@ -1,5 +1,6 @@
 ---
 source: crates/codegen/src/syntax/ast_nodes.rs
+assertion_line: 563
 expression: "&formatted"
 ---
 Package = Statement*;
@@ -28,7 +29,7 @@ Actions = Action | BracedActions;
 
 Assignments = Assignment (',' Assignment)*;
 
-Action = AssignmentStatement | ModuleInstantiation | IfStatement;
+Action = AssignmentStatement | ModuleInstantiation | IfStatement | ForStatement;
 
 BracedActions = '{' Action* '}';
 

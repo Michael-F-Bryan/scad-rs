@@ -1,0 +1,32 @@
+---
+source: crates/syntax/src/grammar/top_level.rs
+description: "statement(for(i = [0: 1]) cube(i);)"
+---
+Node(
+    FOR_STATEMENT@0..20
+      FOR_KW@0..3 "for"
+      L_PAREN@3..4 "("
+      ASSIGNMENTS@4..11
+        ASSIGNMENT@4..11
+          IDENT@4..5 "i"
+          EQUALS@5..6 "="
+          RANGE_EXPR_FROM_TO@6..11
+            L_BRACKET@6..7 "["
+            INTEGER@7..8
+              INTEGER@7..8 "0"
+            COLON@8..9 ":"
+            INTEGER@9..10
+              INTEGER@9..10 "1"
+            R_BRACKET@10..11 "]"
+      R_PAREN@11..12 ")"
+      MODULE_INSTANTIATION@12..20
+        IDENT@12..16 "cube"
+        L_PAREN@16..17 "("
+        ARGUMENTS@17..18
+          LOOKUP_EXPR@17..18
+            IDENT@17..18 "i"
+        R_PAREN@18..19 ")"
+        SEMICOLON@19..20
+          SEMICOLON@19..20 ";"
+    ,
+)

@@ -45,7 +45,7 @@ impl Package {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "Statement = Include | Use | AssignmentStatement | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation | IfStatement;\n"]
+#[doc = "Statement = Include | Use | AssignmentStatement | NamedFunctionDefinition | NamedModuleDefinition | ModuleInstantiation | IfStatement | ForStatement;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Statement {
@@ -56,6 +56,7 @@ pub enum Statement {
     NamedModuleDefinition(NamedModuleDefinition),
     ModuleInstantiation(ModuleInstantiation),
     IfStatement(IfStatement),
+    ForStatement(ForStatement),
 }
 impl AstNode for Statement {
     type Language = crate::OpenSCAD;
@@ -70,6 +71,7 @@ impl AstNode for Statement {
             || NamedModuleDefinition::can_cast(kind)
             || ModuleInstantiation::can_cast(kind)
             || IfStatement::can_cast(kind)
+            || ForStatement::can_cast(kind)
     }
     fn cast(node: SyntaxNode) -> Option<Self>
     where
@@ -96,6 +98,9 @@ impl AstNode for Statement {
         if let Some(variant) = IfStatement::cast(node.clone()) {
             return Some(Statement::IfStatement(variant));
         }
+        if let Some(variant) = ForStatement::cast(node.clone()) {
+            return Some(Statement::ForStatement(variant));
+        }
         None
     }
     fn syntax(&self) -> &SyntaxNode {
@@ -107,6 +112,7 @@ impl AstNode for Statement {
             Statement::NamedModuleDefinition(node) => node.syntax(),
             Statement::ModuleInstantiation(node) => node.syntax(),
             Statement::IfStatement(node) => node.syntax(),
+            Statement::ForStatement(node) => node.syntax(),
         }
     }
 }
@@ -526,6 +532,65 @@ impl IfStatement {
         self.syntax().text_range()
     }
 }
+#[doc = "A strongly typed wrapper around a [`FOR_STATEMENT`][SyntaxKind::FOR_STATEMENT] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
+#[doc = "```text"]
+#[doc = "ForStatement = 'for' '(' Assignments ')' Actions;\n"]
+#[doc = "```"]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ForStatement(SyntaxNode);
+impl AstNode for ForStatement {
+    type Language = crate::OpenSCAD;
+    fn can_cast(kind: SyntaxKind) -> bool
+    where
+        Self: Sized,
+    {
+        kind == SyntaxKind::FOR_STATEMENT
+    }
+    fn cast(node: SyntaxNode) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        if ForStatement::can_cast(node.kind()) {
+            Some(ForStatement(node))
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.0
+    }
+}
+impl ForStatement {
+    pub fn for_kw_token(&self) -> Option<SyntaxToken> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::FOR_KW)
+    }
+    pub fn l_paren_token(&self) -> Option<SyntaxToken> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::L_PAREN)
+    }
+    pub fn assignments(&self) -> Option<Assignments> {
+        self.0.children().find_map(Assignments::cast)
+    }
+    pub fn r_paren_token(&self) -> Option<SyntaxToken> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .find(|tok| tok.kind() == SyntaxKind::R_PAREN)
+    }
+    pub fn actions(&self) -> Option<Actions> {
+        self.0.children().find_map(Actions::cast)
+    }
+    pub fn span(&self) -> TextRange {
+        self.syntax().text_range()
+    }
+}
 #[doc = "A strongly typed `Expr` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
@@ -639,17 +704,62 @@ impl AstNode for Actions {
         }
     }
 }
+#[doc = "A strongly typed wrapper around a [`ASSIGNMENTS`][SyntaxKind::ASSIGNMENTS] node."]
+#[doc = ""]
+#[doc = "Grammar:"]
+#[doc = "```text"]
+#[doc = "Assignments = Assignment (',' Assignment)*;\n"]
+#[doc = "```"]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Assignments(SyntaxNode);
+impl AstNode for Assignments {
+    type Language = crate::OpenSCAD;
+    fn can_cast(kind: SyntaxKind) -> bool
+    where
+        Self: Sized,
+    {
+        kind == SyntaxKind::ASSIGNMENTS
+    }
+    fn cast(node: SyntaxNode) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        if Assignments::can_cast(node.kind()) {
+            Some(Assignments(node))
+        } else {
+            None
+        }
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        &self.0
+    }
+}
+impl Assignments {
+    pub fn assignments(&self) -> impl Iterator<Item = Assignment> {
+        self.0.children().filter_map(Assignment::cast)
+    }
+    pub fn comma_tokens(&self) -> impl Iterator<Item = SyntaxToken> {
+        self.0
+            .children_with_tokens()
+            .filter_map(|t| t.into_token())
+            .filter(|tok| tok.kind() == SyntaxKind::COMMA)
+    }
+    pub fn span(&self) -> TextRange {
+        self.syntax().text_range()
+    }
+}
 #[doc = "A strongly typed `Action` node."]
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "Action = AssignmentStatement | ModuleInstantiation | IfStatement;\n"]
+#[doc = "Action = AssignmentStatement | ModuleInstantiation | IfStatement | ForStatement;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Action {
     AssignmentStatement(AssignmentStatement),
     ModuleInstantiation(ModuleInstantiation),
     IfStatement(IfStatement),
+    ForStatement(ForStatement),
 }
 impl AstNode for Action {
     type Language = crate::OpenSCAD;
@@ -660,6 +770,7 @@ impl AstNode for Action {
         AssignmentStatement::can_cast(kind)
             || ModuleInstantiation::can_cast(kind)
             || IfStatement::can_cast(kind)
+            || ForStatement::can_cast(kind)
     }
     fn cast(node: SyntaxNode) -> Option<Self>
     where
@@ -674,6 +785,9 @@ impl AstNode for Action {
         if let Some(variant) = IfStatement::cast(node.clone()) {
             return Some(Action::IfStatement(variant));
         }
+        if let Some(variant) = ForStatement::cast(node.clone()) {
+            return Some(Action::ForStatement(variant));
+        }
         None
     }
     fn syntax(&self) -> &SyntaxNode {
@@ -681,6 +795,7 @@ impl AstNode for Action {
             Action::AssignmentStatement(node) => node.syntax(),
             Action::ModuleInstantiation(node) => node.syntax(),
             Action::IfStatement(node) => node.syntax(),
+            Action::ForStatement(node) => node.syntax(),
         }
     }
 }
@@ -1914,50 +2029,6 @@ impl AstNode for AssignmentsOpt {
 impl AssignmentsOpt {
     pub fn assignments_opt(&self) -> Option<Assignments> {
         self.0.children().find_map(Assignments::cast)
-    }
-    pub fn span(&self) -> TextRange {
-        self.syntax().text_range()
-    }
-}
-#[doc = "A strongly typed wrapper around a [`ASSIGNMENTS`][SyntaxKind::ASSIGNMENTS] node."]
-#[doc = ""]
-#[doc = "Grammar:"]
-#[doc = "```text"]
-#[doc = "Assignments = Assignment (',' Assignment)*;\n"]
-#[doc = "```"]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Assignments(SyntaxNode);
-impl AstNode for Assignments {
-    type Language = crate::OpenSCAD;
-    fn can_cast(kind: SyntaxKind) -> bool
-    where
-        Self: Sized,
-    {
-        kind == SyntaxKind::ASSIGNMENTS
-    }
-    fn cast(node: SyntaxNode) -> Option<Self>
-    where
-        Self: Sized,
-    {
-        if Assignments::can_cast(node.kind()) {
-            Some(Assignments(node))
-        } else {
-            None
-        }
-    }
-    fn syntax(&self) -> &SyntaxNode {
-        &self.0
-    }
-}
-impl Assignments {
-    pub fn assignments(&self) -> impl Iterator<Item = Assignment> {
-        self.0.children().filter_map(Assignment::cast)
-    }
-    pub fn comma_tokens(&self) -> impl Iterator<Item = SyntaxToken> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .filter(|tok| tok.kind() == SyntaxKind::COMMA)
     }
     pub fn span(&self) -> TextRange {
         self.syntax().text_range()

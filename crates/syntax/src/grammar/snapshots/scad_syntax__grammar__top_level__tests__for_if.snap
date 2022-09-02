@@ -1,0 +1,38 @@
+---
+source: crates/syntax/src/grammar/top_level.rs
+description: "statement(for(i = [0: 1]) if (true) cube(i);)"
+---
+Node(
+    FOR_STATEMENT@0..28
+      FOR_KW@0..3 "for"
+      L_PAREN@3..4 "("
+      ASSIGNMENTS@4..11
+        ASSIGNMENT@4..11
+          IDENT@4..5 "i"
+          EQUALS@5..6 "="
+          RANGE_EXPR_FROM_TO@6..11
+            L_BRACKET@6..7 "["
+            INTEGER@7..8
+              INTEGER@7..8 "0"
+            COLON@8..9 ":"
+            INTEGER@9..10
+              INTEGER@9..10 "1"
+            R_BRACKET@10..11 "]"
+      R_PAREN@11..12 ")"
+      IF_STATEMENT@12..28
+        IF_KW@12..14 "if"
+        L_PAREN@14..15 "("
+        TRUE_KW@15..19
+          TRUE_KW@15..19 "true"
+        R_PAREN@19..20 ")"
+        MODULE_INSTANTIATION@20..28
+          IDENT@20..24 "cube"
+          L_PAREN@24..25 "("
+          ARGUMENTS@25..26
+            LOOKUP_EXPR@25..26
+              IDENT@25..26 "i"
+          R_PAREN@26..27 ")"
+          SEMICOLON@27..28
+            SEMICOLON@27..28 ";"
+    ,
+)

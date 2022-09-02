@@ -200,7 +200,7 @@ fn list_comprehension_elements_or_expr(p: &mut Parser<'_>) {
     }
 }
 
-fn assignments(p: &mut Parser<'_>) {
+pub(crate) fn assignments(p: &mut Parser<'_>) {
     let m = p.start();
 
     while p.at(IDENT) {
@@ -278,8 +278,6 @@ fn rest_of_range_expr(p: &mut Parser<'_>, m: Mark) {
 }
 
 fn rest_of_list_expr(p: &mut Parser<'_>, m: Mark) {
-    assert!(p.at(T![,]));
-
     while p.eat(T![,]) {
         expr(p);
     }

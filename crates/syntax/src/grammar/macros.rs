@@ -6,6 +6,10 @@ macro_rules! parse_tests {
             $(#[$meta])*
             fn $name() {
                 let src = $src;
+
+                eprintln!("---- SOURCE ----");
+                eprintln!("{src}");
+
                 let mut parser = Parser::new(crate::tokenize(src));
                 let m = parser.start();
                 $func(&mut parser);
@@ -16,8 +20,6 @@ macro_rules! parse_tests {
                 parser.complete(m, $crate::SyntaxKind::EOF);
                 let (node, errors) = parser.finish();
 
-                eprintln!("---- SOURCE ----");
-                eprintln!("{src}");
                 eprintln!("---- NODE ----");
                 eprintln!("{node:#?}");
                 eprintln!("---- ERRORS ----");

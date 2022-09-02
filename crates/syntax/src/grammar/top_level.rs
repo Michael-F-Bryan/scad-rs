@@ -1,8 +1,5 @@
 use crate::{
-    grammar::{
-        expressions::{self},
-        TokenSet,
-    },
+    grammar::{expressions, TokenSet},
     parser::Parser,
     SyntaxKind::*,
 };
@@ -38,11 +35,24 @@ pub(crate) fn statement(p: &mut Parser<'_>) {
         T![if] => {
             if_statement(p);
         }
+        T![for] => {
+            for_statement(p);
+        }
         _ => {
             let m = p.start();
             p.error_recover("Expected a statement", m, CONTINUE);
         }
     }
+}
+
+fn for_statement(p: &mut Parser<'_>) {
+    let m = p.start();
+    p.bump(T![for]);
+    p.expect(T!["("]);
+    expressions::assignments(p);
+    p.expect(T![")"]);
+    actions(p);
+    p.complete(m, FOR_STATEMENT);
 }
 
 fn if_statement(p: &mut Parser<'_>) {
@@ -82,6 +92,7 @@ fn braced_actions(p: &mut Parser<'_>) {
 fn action(p: &mut Parser<'_>) {
     match p.current() {
         T![if] => if_statement(p),
+        T![for] => for_statement(p),
         IDENT if p.nth_at(1, T![=]) => {
             assignment_statement(p);
         }
@@ -281,10 +292,11 @@ mod tests {
                 if (test3) {scope3_1();}
                 else {scope3_2();}"
         ),
-        for_loop_empty: statement("for(i = [0; 1]);"),
-        for_loop_with_module: statement("for(i = [0; 1]) cube(i);"),
+        for_loop_with_module: statement("for(i = [0: 1]) cube(i);"),
+        for_if: statement("for(i = [0: 1]) if (true) cube(i);"),
+        if_for: statement("if (true) for(i = [0: 1]) cube(i);"),
         for_loop_with_children: statement("
-            for(i = [0; 10; 2]) {
+            for(i = [0: 10: 2]) {
                 cube(i);
                 translate(i);
             }"

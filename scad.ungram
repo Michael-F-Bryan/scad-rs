@@ -15,12 +15,14 @@ Statement =
 | NamedModuleDefinition
 | ModuleInstantiation
 | IfStatement
+| ForStatement
 
 Include = 'include' 'file'
 
 Use = 'use' 'file'
 
 IfStatement = 'if' '(' Expr ')' Actions ( 'else' Actions )?
+ForStatement = 'for' '(' Assignments ')' Actions
 
 Actions =
   Action
@@ -32,6 +34,7 @@ Action =
   AssignmentStatement
 | ModuleInstantiation
 | IfStatement
+| ForStatement
 
 AssignmentStatement = Assignment ';'
 
