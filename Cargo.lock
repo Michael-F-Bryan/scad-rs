@@ -695,6 +695,7 @@ name = "scad-compiler"
 version = "0.1.0"
 dependencies = [
  "im",
+ "insta",
  "noisy_float",
  "paste",
  "rowan",

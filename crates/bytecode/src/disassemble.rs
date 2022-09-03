@@ -76,6 +76,12 @@ impl Disassembler {
                 let variable_name = &c.constants[ix as usize];
                 writeln!(self, "lookup {variable_name}");
             }
+            Instruction::Call(1) => {
+                writeln!(self, "call (1 arg)");
+            }
+            Instruction::Call(arg_count) => {
+                writeln!(self, "call ({arg_count} args)");
+            }
         }
     }
 

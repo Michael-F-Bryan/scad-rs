@@ -1,0 +1,15 @@
+---
+source: crates/compiler/src/lowering/bytecode.rs
+description: x = 42; y = x + 2; print(x);
+---
+  0|  load_constant 42
+   |  define_global x
+   |  lookup x
+   |  load_constant 2
+   |  add
+   |  define_global y
+   |  lookup x
+   |  lookup print
+   |  call (1 arg)
+   |  ret
+

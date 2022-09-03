@@ -74,6 +74,8 @@ pub enum Instruction {
     Return,
     /// Remove a value from the top of the stack and forget it.
     Pop,
+    /// Call the function at the top of the stack using.
+    Call(u8),
 }
 
 /// A set of instructions.
@@ -120,6 +122,30 @@ impl Constant {
 
     pub fn string(s: impl Into<Arc<str>>) -> Self {
         Constant::String(s.into())
+    }
+}
+
+impl From<f64> for Constant {
+    fn from(f: f64) -> Self {
+        Constant::number(f)
+    }
+}
+
+impl From<&'_ str> for Constant {
+    fn from(s: &'_ str) -> Self {
+        Constant::string(s)
+    }
+}
+
+impl From<String> for Constant {
+    fn from(s: String) -> Self {
+        Constant::string(s)
+    }
+}
+
+impl From<&'_ String> for Constant {
+    fn from(s: &'_ String) -> Self {
+        Constant::string(s.as_str())
     }
 }
 

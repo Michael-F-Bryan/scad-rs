@@ -128,6 +128,11 @@ fn evaluate(
                 }
             }
         }
+        scad_bytecode::Instruction::Call(num_args) => {
+            let function = stack.pop()?;
+            let args = stack.pop_many(num_args as usize)?;
+            todo!("Call {function:?} with {args:?}");
+        }
     }
 
     Ok(())

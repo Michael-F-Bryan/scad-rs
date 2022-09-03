@@ -11,13 +11,12 @@ mod query {
         #[salsa::input]
         fn src(&self) -> Text;
 
-        /// Parse the program's source code into an AST using the [`scad_syntax`]
+        /// Parse some source code into an AST using the [`scad_syntax`]
         /// crate.
-        fn ast(&self) -> (Package, Diagnostics);
+        fn parse(&self, src: Text) -> (Package, Diagnostics);
     }
 
-    fn ast(parser: &dyn Parsing) -> (Package, Diagnostics) {
-        let src = parser.src();
+    fn parse(_: &dyn Parsing, src: Text) -> (Package, Diagnostics) {
         let tokens = scad_syntax::tokenize(&src);
         let (pkg, errors) = scad_syntax::parse(tokens);
 

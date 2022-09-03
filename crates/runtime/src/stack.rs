@@ -47,4 +47,12 @@ impl Stack {
     pub fn values(&self) -> &[Value] {
         &self.0
     }
+
+    pub fn pop_many(&mut self, num_values: usize) -> Result<Vec<Value>, RuntimeError> {
+        let len = self.0.len();
+        if len < num_values {
+            todo!("Handle popping too many values");
+        }
+        Ok(self.0.drain(len - num_values..).collect())
+    }
 }
