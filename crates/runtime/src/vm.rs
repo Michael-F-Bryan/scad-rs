@@ -6,7 +6,7 @@ use std::{
 
 use scad_bytecode::{Chunk, Constant, Instruction, Program};
 
-use crate::{Callbacks, Geometry, RuntimeError, Stack, Type, Value};
+use crate::{Callbacks, RuntimeError, Stack, Type, Value};
 
 /// The OpenSCAD virtual machine.
 #[derive(Debug)]
@@ -38,7 +38,7 @@ impl VirtualMachine {
             let instruction = current_chunk.instructions[ip];
             cb.before_execute(current_chunk, ip, instruction, stack);
 
-            match evaluate(instruction, current_chunk, stack, globals) {
+            match evaluate(instruction, current_chunk, stack, globals, &mut cb) {
                 Ok(_) => {}
                 Err(Break::Error(e)) => return Err(runtime_error(current_chunk, ip, e)),
                 Err(Break::Return) => break,
@@ -46,6 +46,8 @@ impl VirtualMachine {
 
             ip += 1;
         }
+
+        assert!(stack.values().is_empty(), "Exiting with a non-empty stack: {stack:?}");
 
         if !stack.values().is_empty() {
             tracing::warn!("Exited with a non-empty stack");
@@ -62,15 +64,14 @@ fn runtime_error(current_chunk: &Chunk, ip: usize, cause: RuntimeError) -> Runti
     cause
 }
 
-#[inline(always)]
+#[inline]
 fn evaluate(
     instruction: Instruction,
     current_chunk: &Chunk,
     stack: &mut Stack,
     globals: &mut HashMap<Arc<str>, Value>,
-) -> Result<Vec<Geometry>, Break> {
-    let mut geometry = Vec::new();
-
+    callbacks: &mut impl Callbacks,
+) -> Result<(), Break> {
     match instruction {
         Instruction::Constant(ix) => {
             let constant = &current_chunk.constants[ix as usize];
@@ -174,7 +175,7 @@ fn evaluate(
         Instruction::SaveGeometry => {
             match stack.pop()? {
                 Value::Geometry(g) => {
-                    geometry.push(g);
+                    callbacks.consume_geometry(g);
                 }
                 Value::Undef => {
                     // ignore it
@@ -190,7 +191,7 @@ fn evaluate(
         }
     }
 
-    Ok(geometry)
+    Ok(())
 }
 
 #[derive(Debug)]

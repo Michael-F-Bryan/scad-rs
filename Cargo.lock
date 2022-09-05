@@ -746,7 +746,6 @@ dependencies = [
 name = "scad-runtime"
 version = "0.1.0"
 dependencies = [
- "rowan",
  "scad-bytecode",
  "tracing",
 ]
