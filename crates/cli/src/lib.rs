@@ -1,5 +1,5 @@
+mod compile;
 mod dis;
 mod run;
-mod compile;
 
-pub use crate::{dis::Disassemble, run::Run, compile::Compile};
+pub use crate::{compile::Compile, dis::Disassemble, run::Run};

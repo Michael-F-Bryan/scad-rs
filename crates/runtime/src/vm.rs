@@ -47,7 +47,10 @@ impl VirtualMachine {
             ip += 1;
         }
 
-        assert!(stack.values().is_empty(), "Exiting with a non-empty stack: {stack:?}");
+        assert!(
+            stack.values().is_empty(),
+            "Exiting with a non-empty stack: {stack:?}"
+        );
 
         if !stack.values().is_empty() {
             tracing::warn!("Exited with a non-empty stack");

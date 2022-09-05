@@ -10,7 +10,7 @@ mod vm;
 
 pub use crate::{
     callbacks::Callbacks,
-    errors::{RuntimeError, ConversionError},
+    errors::{ConversionError, RuntimeError},
     geometry::Geometry,
     prelude::prelude,
     stack::Stack,
