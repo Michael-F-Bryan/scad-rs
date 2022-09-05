@@ -1,5 +1,2 @@
 [alias]
 xtask = "run --quiet --package=xtask --"
-
-[net]
-offline = true
