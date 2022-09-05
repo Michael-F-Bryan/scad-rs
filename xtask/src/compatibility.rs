@@ -5,6 +5,7 @@ use std::{
 };
 
 use anyhow::{Context, Error};
+use globset::{Glob, GlobSet, GlobSetBuilder};
 use rayon::prelude::*;
 use scad_syntax::{ast::Package, ParseError};
 
@@ -20,6 +21,8 @@ const SKIP_TOKENIZING: &[&str] = &[
     // Not utf8
     "misc/nbsp-latin1-test.scad",
     "misc/ord-tests.scad",
+    // We don't care about experimental syntax
+    "experimental/*.scad",
 ];
 
 #[derive(Debug, clap::Parser)]
@@ -53,10 +56,7 @@ impl Compatibility {
 
         let project_root = crate::project_root();
 
-        let cb = Callbacks {
-            out_dir: project_root.join("target").join("integration-tests"),
-            skip_tokenizing: SKIP_TOKENIZING,
-        };
+        let cb = Callbacks::new(project_root);
 
         let mut test_files = Vec::new();
 
@@ -94,8 +94,6 @@ impl Compatibility {
                 },
                 |cb, name, (pkg, errors)| cb.on_parse(name, pkg, errors),
             ),
-            type_check: Vec::new(),
-            run: Vec::new(),
         };
 
         // tracing::info!(?report);
@@ -176,23 +174,14 @@ impl Input {
 struct CompatibilityReport {
     tokenize: Vec<Report>,
     parse: Vec<Report>,
-    type_check: Vec<Report>,
-    run: Vec<Report>,
 }
 
 impl CompatibilityReport {
     fn failures(&self) -> impl Iterator<Item = &'_ Report> + '_ {
-        let CompatibilityReport {
-            tokenize,
-            parse,
-            type_check,
-            run,
-        } = self;
+        let CompatibilityReport { tokenize, parse } = self;
         tokenize
             .iter()
             .chain(parse)
-            .chain(type_check)
-            .chain(run)
             .filter(|r| matches!(r.outcome, Outcome::Fail(_)))
     }
 
@@ -210,10 +199,16 @@ struct Report {
 #[derive(Debug, Clone)]
 struct Callbacks {
     out_dir: PathBuf,
-    skip_tokenizing: &'static [&'static str],
+    skip_tokenizing: GlobSet,
 }
 
 impl Callbacks {
+    fn new(project_root: PathBuf) -> Callbacks {
+        Callbacks {
+            out_dir: project_root.join("target").join("integration-tests"),
+            skip_tokenizing: globs(SKIP_TOKENIZING),
+        }
+    }
     fn save(&self, phase: &str, fixture: &str, value: impl Debug) {
         if let Err(e) = self._save(phase, fixture, value) {
             tracing::warn!(phase, fixture, error = &*e, "Save failed");
@@ -234,9 +229,7 @@ impl Callbacks {
     }
 
     fn should_tokenize(&self, path: &Path) -> bool {
-        self.skip_tokenizing
-            .iter()
-            .all(|suffix| !path.ends_with(suffix))
+        !self.skip_tokenizing.is_match(path)
     }
 
     fn on_tokenized(&self, name: &str, tokens: Vec<(scad_syntax::SyntaxKind, &str)>) -> Outcome {
@@ -270,14 +263,16 @@ impl Callbacks {
 
         Outcome::Pass
     }
+}
 
-    fn _should_type_check(&self, path: &Path) -> bool {
-        self.should_parse(path)
+fn globs(patterns: &[&str]) -> GlobSet {
+    let mut builder = GlobSetBuilder::new();
+
+    for pattern in patterns {
+        builder.add(Glob::new(pattern).unwrap());
     }
 
-    fn _should_run(&self, path: &Path) -> bool {
-        self._should_type_check(path)
-    }
+    builder.build().unwrap()
 }
 
 #[derive(Debug)]
