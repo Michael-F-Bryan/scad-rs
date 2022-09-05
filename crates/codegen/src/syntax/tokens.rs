@@ -119,25 +119,25 @@ fn special_tokens() -> Vec<Token> {
             docs: "An integer literal.".to_string(),
             syntax_kind: format_ident!("INTEGER"),
             token: Some("integer".to_string()),
-            kind: TokenKind::Special,
+            kind: TokenKind::Literal,
         },
         Token {
             docs: "A float literal.".to_string(),
             syntax_kind: format_ident!("FLOAT"),
             token: Some("float".to_string()),
-            kind: TokenKind::Special,
+            kind: TokenKind::Literal,
         },
         Token {
             docs: "A string literal.".to_string(),
             syntax_kind: format_ident!("STRING"),
             token: Some("string".to_string()),
-            kind: TokenKind::Special,
+            kind: TokenKind::Literal,
         },
         Token {
             docs: "The path to a file.".to_string(),
             syntax_kind: format_ident!("FILE"),
             token: Some("file".to_string()),
-            kind: TokenKind::Special,
+            kind: TokenKind::Literal,
         },
     ]
 }
@@ -168,4 +168,5 @@ pub enum TokenKind {
     Symbol,
     Keyword,
     Special,
+    Literal,
 }

@@ -145,13 +145,21 @@ fn compile_literal(chunk: &mut Chunk, lit: ast::LiteralExpr) {
         ast::LiteralExpr::TrueKw(_) => chunk.push_instruction(Instruction::True, line_number),
         ast::LiteralExpr::FalseKw(_) => chunk.push_instruction(Instruction::False, line_number),
         ast::LiteralExpr::UndefKw(_) => chunk.push_instruction(Instruction::Undef, line_number),
-        ast::LiteralExpr::Integer(node) | ast::LiteralExpr::Float(node) => {
-            let number: f64 = node.first_token().unwrap().text().parse().unwrap();
+        ast::LiteralExpr::Integer(node) => {
+            let number: f64 = node.token().text().parse().unwrap();
+            let constant = chunk.push_constant(number);
+            chunk.push_instruction(Instruction::Constant(constant), line_number);
+        }
+        ast::LiteralExpr::Float(node) => {
+            let number: f64 = node.token().text().parse().unwrap();
             let constant = chunk.push_constant(number);
             chunk.push_instruction(Instruction::Constant(constant), line_number);
         }
         ast::LiteralExpr::String(node) => {
-            let constant = chunk.push_constant(node.first_token().unwrap().text());
+            let token = node.token();
+            let text = token.text();
+            let without_quotes = &text[1..text.len() - 1];
+            let constant = chunk.push_constant(without_quotes);
             chunk.push_instruction(Instruction::Constant(constant), line_number);
         }
     }
@@ -217,7 +225,7 @@ fn compile_function_call(chunk: &mut Chunk, f: ast::FunctionCall) {
 
 #[cfg(test)]
 mod tests {
-    use scad_bytecode::Disassembler;
+    use scad_bytecode::{Constant, Disassembler};
 
     use crate::{db::Database, parsing::Parsing};
 
@@ -273,4 +281,17 @@ mod tests {
         norm_tests,
         "u=undef; echo(norm([])); echo(norm([1, 2, [1, 3]]));"
     );
+
+    #[test]
+    fn lowering_string_constants_should_strip_quotes() {
+        let mut db = Database::default();
+        db.set_src("print(\"Hello, World!\");".into());
+
+        let (program, _) = db.compile();
+
+        let constants = &program.chunk.constants;
+        assert_eq!(constants.len(), 2);
+        let hello_world = &constants[0];
+        assert_eq!(hello_world, &Constant::string("Hello, World!"));
+    }
 }
