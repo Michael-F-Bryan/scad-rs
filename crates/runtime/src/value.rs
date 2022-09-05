@@ -252,12 +252,43 @@ impl BuiltinFunction {
 
 impl PartialEq for BuiltinFunction {
     fn eq(&self, other: &Self) -> bool {
-        Arc::ptr_eq(&self.func, &other.func)
+        // Note: There isn't a well-defined way to check whether two functions
+        // are the "equal", so we just do an identity check using the function
+        // object.
+        let lhs =
+            &*self.func as *const dyn Fn(Vec<Value>) -> Result<Value, RuntimeError> as *const u8;
+        let rhs =
+            &*other.func as *const dyn Fn(Vec<Value>) -> Result<Value, RuntimeError> as *const u8;
+
+        std::ptr::eq(lhs, rhs)
     }
 }
 
 impl Debug for BuiltinFunction {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("BuiltinFunction").finish_non_exhaustive()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn builting_function_partialeq_only_works_on_identity() {
+        fn some_func(_: Vec<Value>) -> Result<Value, RuntimeError> {
+            unreachable!();
+        }
+
+        let a = BuiltinFunction::new(some_func);
+        let b = a.clone();
+
+        // Both a and b point to the same Arc<dyn Fn(..)> so they are the same
+        assert_eq!(a, b);
+
+        // but a separate builtin function will always be different, even if
+        // it points to the same function under the hood.
+        let c = BuiltinFunction::new(some_func);
+        assert_ne!(a, c);
     }
 }
