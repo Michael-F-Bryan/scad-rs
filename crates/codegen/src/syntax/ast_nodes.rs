@@ -19,7 +19,16 @@ pub fn ast_nodes(grammar: &Grammar, syntax_kind: &SyntaxKind) -> impl ToTokens {
         });
     }
 
-    AstNodes { nodes }
+    let tokens = syntax_kind
+        .tokens
+        .iter()
+        .map(|t| TokenNode {
+            syntax_kind: t.syntax_kind.clone(),
+            token: t.token.clone(),
+        })
+        .collect();
+
+    AstNodes { nodes, tokens }
 }
 
 fn deduplicate_fields(mut kind: AstNodeKind) -> AstNodeKind {
@@ -159,19 +168,85 @@ fn node_field(grammar: &Grammar, node: Node) -> Field {
 #[derive(Debug, Clone)]
 pub struct AstNodes {
     nodes: Vec<AstNode>,
+    tokens: Vec<TokenNode>,
 }
 
 impl ToTokens for AstNodes {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.extend(quote! {
             //! Automatically generated, strongly-typed [`AstNode`]s.
+            #![allow(clippy::redundant_clone, unreachable_patterns)]
             use rowan::{ast::AstNode, TextRange};
             use crate::{SyntaxKind, SyntaxNode, SyntaxToken};
         });
 
         for node in &self.nodes {
-            node.to_tokens(tokens)
+            node.to_tokens(tokens);
         }
+
+        for node in &self.tokens {
+            node.to_tokens(tokens);
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct TokenNode {
+    syntax_kind: Ident,
+    token: Option<String>,
+}
+
+impl ToTokens for TokenNode {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        let TokenNode { syntax_kind, token } = self;
+
+        let type_name = format_ident!("{}Token", syntax_kind.to_string().to_pascal_case());
+        let docs = match token {
+            Some(symbol) => format!("The [`SyntaxKind::{syntax_kind}`] token (`{symbol}`)."),
+            None => format!("The [`SyntaxKind::{syntax_kind}`] token."),
+        };
+
+        tokens.extend(quote! {
+            #[doc = #docs]
+            #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+            pub struct #type_name(SyntaxNode);
+
+            impl #type_name {
+                /// Get the underlying [`SyntaxToken`].
+                pub fn token(&self) -> SyntaxToken {
+                    self.0.children_with_tokens()
+                        .filter_map(|element| element.into_token())
+                        .find(|token| token.kind() == SyntaxKind::#syntax_kind)
+                        .unwrap()
+                }
+            }
+
+            impl AstNode for #type_name {
+                type Language = crate::OpenSCAD;
+
+                fn can_cast(kind: SyntaxKind) -> bool
+                where
+                    Self: Sized
+                {
+                    kind == SyntaxKind::#syntax_kind
+                }
+
+                fn cast(node: SyntaxNode) -> Option<Self>
+                where
+                    Self: Sized
+                {
+                    if #type_name::can_cast(node.kind()) {
+                        Some(#type_name(node))
+                    } else {
+                        None
+                    }
+                }
+
+                fn syntax(&self) -> &SyntaxNode {
+                    &self.0
+                }
+            }
+        });
     }
 }
 
@@ -212,8 +287,8 @@ impl AstNode {
             AstNodeKind::EnumNode { variants } => {
                 let variants = variants.iter().map(|Field { name, kind, .. }| {
                     let ty = match kind {
-                        VariantKind::AstNode(n) => n.to_token_stream(),
-                        VariantKind::Token => quote!(SyntaxNode),
+                        VariantKind::AstNode(n) => n.clone(),
+                        VariantKind::Token => format_ident!("{name}Token"),
                     };
 
                     quote!(#name(#ty))
@@ -288,19 +363,18 @@ impl AstNode {
                             }
                         }
                         VariantKind::Token => {
-                            let syntax_kind = &v.syntax_kind;
+                            let token_type = format_ident!("{name}Token");
                             quote! {
-                                if node.kind() == SyntaxKind::#syntax_kind {
-                                    return Some(#type_name::#name(node));
+                                if let Some(token) = #token_type::cast(node.clone()) {
+                                    return Some(#type_name::#name(token));
                                 }
                             }
                         }
                     }
                 });
-                let syntax = variants.iter().map(|Field { name, kind, .. }| match kind {
-                    VariantKind::AstNode(_) => quote!(#type_name::#name(node) => node.syntax()),
-                    VariantKind::Token => quote!(#type_name::#name(node) => node),
-                });
+                let syntax = variants
+                    .iter()
+                    .map(|Field { name, .. }| quote!(#type_name::#name(node) => node.syntax()));
 
                 quote! {
                     impl AstNode for #type_name {

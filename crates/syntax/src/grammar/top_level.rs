@@ -196,6 +196,9 @@ fn child(p: &mut Parser<'_>) {
         IDENT => {
             module_instantiation(p);
         }
+        EOF => {
+            p.error("Module instantiation doesn't contain any children. Did you forget a ';'?");
+        }
         other => unreachable!("Not handled: {other:?}",),
     }
 }

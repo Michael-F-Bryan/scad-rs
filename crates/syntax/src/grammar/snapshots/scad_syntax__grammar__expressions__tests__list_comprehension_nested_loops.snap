@@ -3,43 +3,51 @@ source: crates/syntax/src/grammar/expressions.rs
 description: "expr([ for (a = [0,2], b = [0,2]) a+b])"
 ---
 Node(
-    LIST_COMPREHENSION_EXPR@0..25
+    LIST_COMPREHENSION_EXPR@0..33
       L_BRACKET@0..1 "["
-      FOR_CLAUSE@1..24
-        FOR_KW@1..4 "for"
-        L_PAREN@4..5 "("
-        ASSIGNMENTS@5..20
-          ASSIGNMENT@5..12
-            IDENT@5..6 "a"
-            EQUALS@6..7 "="
-            LIST_EXPR@7..12
-              L_BRACKET@7..8 "["
-              INTEGER@8..9
-                INTEGER@8..9 "0"
-              COMMA@9..10 ","
-              INTEGER@10..11
-                INTEGER@10..11 "2"
-              R_BRACKET@11..12 "]"
-          COMMA@12..13 ","
-          ASSIGNMENT@13..20
-            IDENT@13..14 "b"
-            EQUALS@14..15 "="
-            LIST_EXPR@15..20
-              L_BRACKET@15..16 "["
-              INTEGER@16..17
-                INTEGER@16..17 "0"
-              COMMA@17..18 ","
-              INTEGER@18..19
-                INTEGER@18..19 "2"
-              R_BRACKET@19..20 "]"
-        R_PAREN@20..21 ")"
-        BIN_EXPR@21..24
-          LOOKUP_EXPR@21..22
-            IDENT@21..22 "a"
-          PLUS@22..23
-            PLUS@22..23 "+"
-          LOOKUP_EXPR@23..24
-            IDENT@23..24 "b"
-      R_BRACKET@24..25 "]"
+      FOR_CLAUSE@1..32
+        WHITESPACE@1..2 " "
+        FOR_KW@2..5 "for"
+        WHITESPACE@5..6 " "
+        L_PAREN@6..7 "("
+        ASSIGNMENTS@7..27
+          ASSIGNMENT@7..16
+            IDENT@7..8 "a"
+            WHITESPACE@8..9 " "
+            EQUALS@9..10 "="
+            LIST_EXPR@10..16
+              WHITESPACE@10..11 " "
+              L_BRACKET@11..12 "["
+              INTEGER@12..13
+                INTEGER@12..13 "0"
+              COMMA@13..14 ","
+              INTEGER@14..15
+                INTEGER@14..15 "2"
+              R_BRACKET@15..16 "]"
+          COMMA@16..17 ","
+          ASSIGNMENT@17..27
+            WHITESPACE@17..18 " "
+            IDENT@18..19 "b"
+            WHITESPACE@19..20 " "
+            EQUALS@20..21 "="
+            LIST_EXPR@21..27
+              WHITESPACE@21..22 " "
+              L_BRACKET@22..23 "["
+              INTEGER@23..24
+                INTEGER@23..24 "0"
+              COMMA@24..25 ","
+              INTEGER@25..26
+                INTEGER@25..26 "2"
+              R_BRACKET@26..27 "]"
+        R_PAREN@27..28 ")"
+        BIN_EXPR@28..32
+          LOOKUP_EXPR@28..30
+            WHITESPACE@28..29 " "
+            IDENT@29..30 "a"
+          PLUS@30..31
+            PLUS@30..31 "+"
+          LOOKUP_EXPR@31..32
+            IDENT@31..32 "b"
+      R_BRACKET@32..33 "]"
     ,
 )

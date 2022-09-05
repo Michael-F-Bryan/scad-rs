@@ -3,8 +3,9 @@ source: crates/syntax/src/grammar/top_level.rs
 description: statement(use <./foo/bar>)
 ---
 Node(
-    USE@0..14
+    USE@0..15
       USE_KW@0..3 "use"
-      FILE@3..14 "<./foo/bar>"
+      WHITESPACE@3..4 " "
+      FILE@4..15 "<./foo/bar>"
     ,
 )

@@ -1,68 +1,89 @@
 ---
 source: crates/syntax/src/grammar/top_level.rs
-description: "statement(\n            if (test1)\n                if (test2) {scope2_1();}\n                else {scope2_2();}\n            else\n                if (test3) {scope3_1();}\n                else {scope3_2();})"
+description: "statement(\n            if (test1)\n                if (test2) {\n                    scope2_1();\n                } else {\n                    scope2_2();\n                }\n            else\n                if (test3) {\n                    scope3_1();\n                } else {\n                    scope3_2();\n                })"
 ---
 Node(
-    IF_STATEMENT@0..91
-      IF_KW@0..2 "if"
-      L_PAREN@2..3 "("
-      LOOKUP_EXPR@3..8
-        IDENT@3..8 "test1"
-      R_PAREN@8..9 ")"
-      IF_STATEMENT@9..48
-        IF_KW@9..11 "if"
-        L_PAREN@11..12 "("
-        LOOKUP_EXPR@12..17
-          IDENT@12..17 "test2"
-        R_PAREN@17..18 ")"
-        BRACED_ACTIONS@18..31
-          L_CURLY@18..19 "{"
-          MODULE_INSTANTIATION@19..30
-            IDENT@19..27 "scope2_1"
-            L_PAREN@27..28 "("
-            ARGUMENTS@28..28
-            R_PAREN@28..29 ")"
-            SEMICOLON@29..30
-              SEMICOLON@29..30 ";"
-          R_CURLY@30..31 "}"
-        ELSE_KW@31..35 "else"
-        BRACED_ACTIONS@35..48
-          L_CURLY@35..36 "{"
-          MODULE_INSTANTIATION@36..47
-            IDENT@36..44 "scope2_2"
-            L_PAREN@44..45 "("
-            ARGUMENTS@45..45
-            R_PAREN@45..46 ")"
-            SEMICOLON@46..47
-              SEMICOLON@46..47 ";"
-          R_CURLY@47..48 "}"
-      ELSE_KW@48..52 "else"
-      IF_STATEMENT@52..91
-        IF_KW@52..54 "if"
-        L_PAREN@54..55 "("
-        LOOKUP_EXPR@55..60
-          IDENT@55..60 "test3"
-        R_PAREN@60..61 ")"
-        BRACED_ACTIONS@61..74
-          L_CURLY@61..62 "{"
-          MODULE_INSTANTIATION@62..73
-            IDENT@62..70 "scope3_1"
-            L_PAREN@70..71 "("
-            ARGUMENTS@71..71
-            R_PAREN@71..72 ")"
-            SEMICOLON@72..73
-              SEMICOLON@72..73 ";"
-          R_CURLY@73..74 "}"
-        ELSE_KW@74..78 "else"
-        BRACED_ACTIONS@78..91
-          L_CURLY@78..79 "{"
-          MODULE_INSTANTIATION@79..90
-            IDENT@79..87 "scope3_2"
-            L_PAREN@87..88 "("
-            ARGUMENTS@88..88
-            R_PAREN@88..89 ")"
-            SEMICOLON@89..90
-              SEMICOLON@89..90 ";"
-          R_CURLY@90..91 "}"
+    IF_STATEMENT@0..312
+      WHITESPACE@0..13 "\n            "
+      IF_KW@13..15 "if"
+      WHITESPACE@15..16 " "
+      L_PAREN@16..17 "("
+      LOOKUP_EXPR@17..22
+        IDENT@17..22 "test1"
+      R_PAREN@22..23 ")"
+      IF_STATEMENT@23..159
+        WHITESPACE@23..40 "\n                "
+        IF_KW@40..42 "if"
+        WHITESPACE@42..43 " "
+        L_PAREN@43..44 "("
+        LOOKUP_EXPR@44..49
+          IDENT@44..49 "test2"
+        R_PAREN@49..50 ")"
+        BRACED_ACTIONS@50..102
+          WHITESPACE@50..51 " "
+          L_CURLY@51..52 "{"
+          MODULE_INSTANTIATION@52..84
+            WHITESPACE@52..73 "\n                    "
+            IDENT@73..81 "scope2_1"
+            L_PAREN@81..82 "("
+            ARGUMENTS@82..82
+            R_PAREN@82..83 ")"
+            SEMICOLON@83..84
+              SEMICOLON@83..84 ";"
+          WHITESPACE@84..101 "\n                "
+          R_CURLY@101..102 "}"
+        WHITESPACE@102..103 " "
+        ELSE_KW@103..107 "else"
+        BRACED_ACTIONS@107..159
+          WHITESPACE@107..108 " "
+          L_CURLY@108..109 "{"
+          MODULE_INSTANTIATION@109..141
+            WHITESPACE@109..130 "\n                    "
+            IDENT@130..138 "scope2_2"
+            L_PAREN@138..139 "("
+            ARGUMENTS@139..139
+            R_PAREN@139..140 ")"
+            SEMICOLON@140..141
+              SEMICOLON@140..141 ";"
+          WHITESPACE@141..158 "\n                "
+          R_CURLY@158..159 "}"
+      WHITESPACE@159..172 "\n            "
+      ELSE_KW@172..176 "else"
+      IF_STATEMENT@176..312
+        WHITESPACE@176..193 "\n                "
+        IF_KW@193..195 "if"
+        WHITESPACE@195..196 " "
+        L_PAREN@196..197 "("
+        LOOKUP_EXPR@197..202
+          IDENT@197..202 "test3"
+        R_PAREN@202..203 ")"
+        BRACED_ACTIONS@203..255
+          WHITESPACE@203..204 " "
+          L_CURLY@204..205 "{"
+          MODULE_INSTANTIATION@205..237
+            WHITESPACE@205..226 "\n                    "
+            IDENT@226..234 "scope3_1"
+            L_PAREN@234..235 "("
+            ARGUMENTS@235..235
+            R_PAREN@235..236 ")"
+            SEMICOLON@236..237
+              SEMICOLON@236..237 ";"
+          WHITESPACE@237..254 "\n                "
+          R_CURLY@254..255 "}"
+        WHITESPACE@255..256 " "
+        ELSE_KW@256..260 "else"
+        BRACED_ACTIONS@260..312
+          WHITESPACE@260..261 " "
+          L_CURLY@261..262 "{"
+          MODULE_INSTANTIATION@262..294
+            WHITESPACE@262..283 "\n                    "
+            IDENT@283..291 "scope3_2"
+            L_PAREN@291..292 "("
+            ARGUMENTS@292..292
+            R_PAREN@292..293 ")"
+            SEMICOLON@293..294
+              SEMICOLON@293..294 ";"
+          WHITESPACE@294..311 "\n                "
+          R_CURLY@311..312 "}"
     ,
 )

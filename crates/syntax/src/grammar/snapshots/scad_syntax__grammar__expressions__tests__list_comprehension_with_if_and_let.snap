@@ -3,53 +3,69 @@ source: crates/syntax/src/grammar/expressions.rs
 description: "expr(\n            [\n                for (a = [steps, -1, 0]) if (b) let (c = d) [a, f]\n            ]\n        )"
 ---
 Node(
-    LIST_COMPREHENSION_EXPR@0..39
-      L_BRACKET@0..1 "["
-      FOR_CLAUSE@1..38
-        FOR_KW@1..4 "for"
-        L_PAREN@4..5 "("
-        ASSIGNMENTS@5..19
-          ASSIGNMENT@5..19
-            IDENT@5..6 "a"
-            EQUALS@6..7 "="
-            LIST_EXPR@7..19
-              L_BRACKET@7..8 "["
-              LOOKUP_EXPR@8..13
-                IDENT@8..13 "steps"
-              COMMA@13..14 ","
-              UNARY_EXPR@14..16
-                MINUS@14..15 "-"
-                INTEGER@15..16
-                  INTEGER@15..16 "1"
-              COMMA@16..17 ","
-              INTEGER@17..18
-                INTEGER@17..18 "0"
-              R_BRACKET@18..19 "]"
-        R_PAREN@19..20 ")"
-        IF_CLAUSE@20..38
-          IF_KW@20..22 "if"
-          L_PAREN@22..23 "("
-          LOOKUP_EXPR@23..24
-            IDENT@23..24 "b"
-          R_PAREN@24..25 ")"
-          LET_CLAUSE@25..38
-            LET_KW@25..28 "let"
-            L_PAREN@28..29 "("
-            ASSIGNMENTS@29..32
-              ASSIGNMENT@29..32
-                IDENT@29..30 "c"
-                EQUALS@30..31 "="
-                LOOKUP_EXPR@31..32
-                  IDENT@31..32 "d"
-            R_PAREN@32..33 ")"
-            LIST_EXPR@33..38
-              L_BRACKET@33..34 "["
-              LOOKUP_EXPR@34..35
-                IDENT@34..35 "a"
-              COMMA@35..36 ","
-              LOOKUP_EXPR@36..37
-                IDENT@36..37 "f"
-              R_BRACKET@37..38 "]"
-      R_BRACKET@38..39 "]"
+    LIST_COMPREHENSION_EXPR@0..95
+      WHITESPACE@0..13 "\n            "
+      L_BRACKET@13..14 "["
+      FOR_CLAUSE@14..81
+        WHITESPACE@14..31 "\n                "
+        FOR_KW@31..34 "for"
+        WHITESPACE@34..35 " "
+        L_PAREN@35..36 "("
+        ASSIGNMENTS@36..54
+          ASSIGNMENT@36..54
+            IDENT@36..37 "a"
+            WHITESPACE@37..38 " "
+            EQUALS@38..39 "="
+            LIST_EXPR@39..54
+              WHITESPACE@39..40 " "
+              L_BRACKET@40..41 "["
+              LOOKUP_EXPR@41..46
+                IDENT@41..46 "steps"
+              COMMA@46..47 ","
+              UNARY_EXPR@47..50
+                WHITESPACE@47..48 " "
+                MINUS@48..49 "-"
+                INTEGER@49..50
+                  INTEGER@49..50 "1"
+              COMMA@50..51 ","
+              INTEGER@51..53
+                WHITESPACE@51..52 " "
+                INTEGER@52..53 "0"
+              R_BRACKET@53..54 "]"
+        R_PAREN@54..55 ")"
+        IF_CLAUSE@55..81
+          WHITESPACE@55..56 " "
+          IF_KW@56..58 "if"
+          WHITESPACE@58..59 " "
+          L_PAREN@59..60 "("
+          LOOKUP_EXPR@60..61
+            IDENT@60..61 "b"
+          R_PAREN@61..62 ")"
+          LET_CLAUSE@62..81
+            WHITESPACE@62..63 " "
+            LET_KW@63..66 "let"
+            WHITESPACE@66..67 " "
+            L_PAREN@67..68 "("
+            ASSIGNMENTS@68..73
+              ASSIGNMENT@68..73
+                IDENT@68..69 "c"
+                WHITESPACE@69..70 " "
+                EQUALS@70..71 "="
+                LOOKUP_EXPR@71..73
+                  WHITESPACE@71..72 " "
+                  IDENT@72..73 "d"
+            R_PAREN@73..74 ")"
+            LIST_EXPR@74..81
+              WHITESPACE@74..75 " "
+              L_BRACKET@75..76 "["
+              LOOKUP_EXPR@76..77
+                IDENT@76..77 "a"
+              COMMA@77..78 ","
+              LOOKUP_EXPR@78..80
+                WHITESPACE@78..79 " "
+                IDENT@79..80 "f"
+              R_BRACKET@80..81 "]"
+      WHITESPACE@81..94 "\n            "
+      R_BRACKET@94..95 "]"
     ,
 )

@@ -49,10 +49,10 @@ impl Disassembler {
         }
         write!(self, "  ");
         match inst {
-            Instruction::Constant(ix) => {
-                let constant = &c.constants[ix as usize];
-                writeln!(self, "load_constant {constant}");
-            }
+            Instruction::Constant(ix) => match &c.constants[ix as usize] {
+                crate::Constant::Number(n) => writeln!(self, "load_constant {n}"),
+                crate::Constant::String(s) => writeln!(self, "load_constant {s:?}"),
+            },
             Instruction::Negate => {
                 writeln!(self, "negate");
             }
@@ -128,7 +128,7 @@ mod tests {
         };
         let mut dis = Disassembler::default();
         let expected =
-            "  0|  load_constant Hello, World!\n  1|  load_constant 42\n  2|  negate\n   |  ret\n";
+            "  0|  load_constant \"Hello, World!\"\n  1|  load_constant 42\n  2|  negate\n   |  ret\n";
 
         dis.chunk(&c);
 

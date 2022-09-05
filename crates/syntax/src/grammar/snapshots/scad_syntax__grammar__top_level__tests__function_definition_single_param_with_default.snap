@@ -3,25 +3,30 @@ source: crates/syntax/src/grammar/top_level.rs
 description: statement(function x(y=2) = y + 2;)
 ---
 Node(
-    NAMED_FUNCTION_DEFINITION@0..19
+    NAMED_FUNCTION_DEFINITION@0..24
       FUNCTION_KW@0..8 "function"
-      IDENT@8..9 "x"
-      L_PAREN@9..10 "("
-      PARAMETERS@10..13
-        ASSIGNMENT@10..13
-          IDENT@10..11 "y"
-          EQUALS@11..12 "="
-          INTEGER@12..13
-            INTEGER@12..13 "2"
-      R_PAREN@13..14 ")"
-      EQUALS@14..15 "="
-      BIN_EXPR@15..18
-        LOOKUP_EXPR@15..16
-          IDENT@15..16 "y"
-        PLUS@16..17
-          PLUS@16..17 "+"
-        INTEGER@17..18
-          INTEGER@17..18 "2"
-      SEMICOLON@18..19 ";"
+      WHITESPACE@8..9 " "
+      IDENT@9..10 "x"
+      L_PAREN@10..11 "("
+      PARAMETERS@11..14
+        ASSIGNMENT@11..14
+          IDENT@11..12 "y"
+          EQUALS@12..13 "="
+          INTEGER@13..14
+            INTEGER@13..14 "2"
+      R_PAREN@14..15 ")"
+      WHITESPACE@15..16 " "
+      EQUALS@16..17 "="
+      BIN_EXPR@17..23
+        LOOKUP_EXPR@17..19
+          WHITESPACE@17..18 " "
+          IDENT@18..19 "y"
+        PLUS@19..21
+          WHITESPACE@19..20 " "
+          PLUS@20..21 "+"
+        INTEGER@21..23
+          WHITESPACE@21..22 " "
+          INTEGER@22..23 "2"
+      SEMICOLON@23..24 ";"
     ,
 )

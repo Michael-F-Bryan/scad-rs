@@ -475,6 +475,12 @@ macro_rules! T {
     (false) => {
         $crate::SyntaxKind::FALSE_KW
     };
+    (file) => {
+        $crate::SyntaxKind::FILE
+    };
+    (float) => {
+        $crate::SyntaxKind::FLOAT
+    };
     (for) => {
         $crate::SyntaxKind::FOR_KW
     };
@@ -495,6 +501,9 @@ macro_rules! T {
     };
     (include) => {
         $crate::SyntaxKind::INCLUDE_KW
+    };
+    (integer) => {
+        $crate::SyntaxKind::INTEGER
     };
     (<) => {
         $crate::SyntaxKind::LESS_THAN
@@ -552,6 +561,9 @@ macro_rules! T {
     };
     (*) => {
         $crate::SyntaxKind::STAR
+    };
+    (string) => {
+        $crate::SyntaxKind::STRING
     };
     (true) => {
         $crate::SyntaxKind::TRUE_KW

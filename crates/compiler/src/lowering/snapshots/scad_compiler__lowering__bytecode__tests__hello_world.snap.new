@@ -1,0 +1,12 @@
+---
+source: crates/compiler/src/lowering/bytecode.rs
+assertion_line: 276
+description: "print(\"Hello, World!\");"
+---
+  0|  load_constant "Hello, World!"
+   |  lookup print
+   |  call (1 arg)
+   |  save_geometry
+   |  undef
+   |  ret
+

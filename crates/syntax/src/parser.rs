@@ -37,14 +37,14 @@ impl<'a> Parser<'a> {
     }
 
     /// Returns the kind of the current token.
-    /// If parser has already reached the end of input,
-    /// the special [`SyntaxKind::EOF`] kind is returned.
+    ///
+    /// If parser has already reached the end of input, [`SyntaxKind::EOF`]
+    /// is returned.
     pub(crate) fn current(&self) -> SyntaxKind {
         self.nth(0)
     }
 
-    /// Lookahead operation: returns the kind of the next nth
-    /// token.
+    /// Lookahead operation: returns the kind of the next nth token.
     pub(crate) fn nth(&self, n: usize) -> SyntaxKind {
         assert!(
             n <= 1,
@@ -100,8 +100,15 @@ impl<'a> Parser<'a> {
     /// Unconditionally consume a specified number of tokens.
     pub(crate) fn do_bump(&mut self, tokens: usize) {
         for _ in 0..tokens {
-            let (kind, text) = self.input.at(self.position);
-            self.builder.token(kind.into(), text);
+            let group = self
+                .input
+                .at(self.position)
+                .expect("Can't read past the end of input");
+
+            for (kind, text) in group.leading_trivia.iter().copied() {
+                self.builder.token(kind.into(), text);
+            }
+            self.builder.token(group.kind.into(), group.text);
             self.position += 1;
         }
     }
@@ -161,39 +168,62 @@ impl<'a> Parser<'a> {
 /// A wrapper around a list of `(`[`SyntaxKind`]`, &str)` pairs which gives
 /// us some useful methods.
 #[derive(Debug)]
-struct Input<'a>(Vec<(SyntaxKind, &'a str)>);
+struct Input<'a>(Vec<TokenGroup<'a>>);
 
 impl<'a> Input<'a> {
     fn new(tokens: impl IntoIterator<Item = (SyntaxKind, &'a str)>) -> Self {
-        // FIXME: Blindly skipping whitespace and comments like this means
-        // Rowan will never see them, so all our token spans will be wrong.
-        let tokens = tokens
-            .into_iter()
-            .filter(|(k, _)| *k != SyntaxKind::WHITESPACE && *k != SyntaxKind::COMMENT)
-            .collect();
+        let mut trivia = Vec::new();
+        let mut groups: Vec<TokenGroup<'_>> = Vec::new();
+        let mut length_so_far = TextSize::default();
 
-        Input(tokens)
+        for (kind, text) in tokens {
+            length_so_far += TextSize::of(text);
+
+            match kind {
+                SyntaxKind::COMMENT | SyntaxKind::WHITESPACE => {
+                    trivia.push((kind, text));
+                }
+                _ => {
+                    let start = groups.last().map(|t| t.location.end()).unwrap_or_default();
+                    groups.push(TokenGroup {
+                        kind,
+                        text,
+                        leading_trivia: std::mem::take(&mut trivia),
+                        location: TextRange::new(start, length_so_far),
+                    });
+                }
+            }
+        }
+
+        // Note: We deliberately ignore any trivia left at the end of the file.
+        // Technically it means our trees won't contain trailing comments or
+        // whitespace, but we aren't implementing an IDE so it should be fine.
+        //
+        // The compiler won't care.
+
+        Input(groups)
     }
 
-    fn at(&self, index: usize) -> (SyntaxKind, &'a str) {
-        self.0.get(index).copied().unwrap_or((SyntaxKind::EOF, ""))
+    fn at(&self, index: usize) -> Option<&TokenGroup<'a>> {
+        self.0.get(index)
     }
 
     fn kind(&self, index: usize) -> SyntaxKind {
-        let (kind, _) = self.at(index);
-        kind
+        self.at(index).map(|g| g.kind).unwrap_or(SyntaxKind::EOF)
     }
 
     /// Get the [`TextRange`] which specifies the item at a particular location.
     fn span(&self, index: usize) -> Option<TextRange> {
-        let previous = self.0.get(..index)?;
-        let start_index = previous.iter().copied().map(|(_, t)| TextSize::of(t)).sum();
-
-        let (_, target) = self.0.get(index)?;
-        let end_index = start_index + TextSize::of(*target);
-
-        Some(TextRange::new(start_index, end_index))
+        self.0.get(index).map(|g| g.location)
     }
+}
+
+#[derive(Debug)]
+struct TokenGroup<'a> {
+    kind: SyntaxKind,
+    text: &'a str,
+    leading_trivia: Vec<(SyntaxKind, &'a str)>,
+    location: TextRange,
 }
 
 /// An opaque indicator for a particular place in the token stream.

@@ -3,12 +3,13 @@ source: crates/syntax/src/grammar/expressions.rs
 description: expr(1+ 1)
 ---
 Node(
-    BIN_EXPR@0..3
+    BIN_EXPR@0..4
       INTEGER@0..1
         INTEGER@0..1 "1"
       PLUS@1..2
         PLUS@1..2 "+"
-      INTEGER@2..3
-        INTEGER@2..3 "1"
+      INTEGER@2..4
+        WHITESPACE@2..3 " "
+        INTEGER@3..4 "1"
     ,
 )

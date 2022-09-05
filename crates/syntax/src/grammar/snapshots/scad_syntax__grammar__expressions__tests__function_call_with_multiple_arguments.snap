@@ -3,15 +3,16 @@ source: crates/syntax/src/grammar/expressions.rs
 description: "expr(foo(42, a))"
 ---
 Node(
-    FUNCTION_CALL@0..9
+    FUNCTION_CALL@0..10
       IDENT@0..3 "foo"
       L_PAREN@3..4 "("
-      ARGUMENTS@4..8
+      ARGUMENTS@4..9
         INTEGER@4..6
           INTEGER@4..6 "42"
         COMMA@6..7 ","
-        LOOKUP_EXPR@7..8
-          IDENT@7..8 "a"
-      R_PAREN@8..9 ")"
+        LOOKUP_EXPR@7..9
+          WHITESPACE@7..8 " "
+          IDENT@8..9 "a"
+      R_PAREN@9..10 ")"
     ,
 )

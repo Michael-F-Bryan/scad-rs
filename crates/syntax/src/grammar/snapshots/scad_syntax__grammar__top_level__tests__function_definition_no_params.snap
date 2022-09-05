@@ -3,15 +3,18 @@ source: crates/syntax/src/grammar/top_level.rs
 description: statement(function x() = 5;)
 ---
 Node(
-    NAMED_FUNCTION_DEFINITION@0..14
+    NAMED_FUNCTION_DEFINITION@0..17
       FUNCTION_KW@0..8 "function"
-      IDENT@8..9 "x"
-      L_PAREN@9..10 "("
-      PARAMETERS@10..10
-      R_PAREN@10..11 ")"
-      EQUALS@11..12 "="
-      INTEGER@12..13
-        INTEGER@12..13 "5"
-      SEMICOLON@13..14 ";"
+      WHITESPACE@8..9 " "
+      IDENT@9..10 "x"
+      L_PAREN@10..11 "("
+      PARAMETERS@11..11
+      R_PAREN@11..12 ")"
+      WHITESPACE@12..13 " "
+      EQUALS@13..14 "="
+      INTEGER@14..16
+        WHITESPACE@14..15 " "
+        INTEGER@15..16 "5"
+      SEMICOLON@16..17 ";"
     ,
 )

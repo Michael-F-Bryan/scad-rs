@@ -3,26 +3,30 @@ source: crates/syntax/src/grammar/top_level.rs
 description: statement(if (test) truthy(); else falsy();)
 ---
 Node(
-    IF_STATEMENT@0..29
+    IF_STATEMENT@0..33
       IF_KW@0..2 "if"
-      L_PAREN@2..3 "("
-      LOOKUP_EXPR@3..7
-        IDENT@3..7 "test"
-      R_PAREN@7..8 ")"
-      MODULE_INSTANTIATION@8..17
-        IDENT@8..14 "truthy"
-        L_PAREN@14..15 "("
-        ARGUMENTS@15..15
-        R_PAREN@15..16 ")"
-        SEMICOLON@16..17
-          SEMICOLON@16..17 ";"
-      ELSE_KW@17..21 "else"
-      MODULE_INSTANTIATION@21..29
-        IDENT@21..26 "falsy"
-        L_PAREN@26..27 "("
-        ARGUMENTS@27..27
-        R_PAREN@27..28 ")"
-        SEMICOLON@28..29
-          SEMICOLON@28..29 ";"
+      WHITESPACE@2..3 " "
+      L_PAREN@3..4 "("
+      LOOKUP_EXPR@4..8
+        IDENT@4..8 "test"
+      R_PAREN@8..9 ")"
+      MODULE_INSTANTIATION@9..19
+        WHITESPACE@9..10 " "
+        IDENT@10..16 "truthy"
+        L_PAREN@16..17 "("
+        ARGUMENTS@17..17
+        R_PAREN@17..18 ")"
+        SEMICOLON@18..19
+          SEMICOLON@18..19 ";"
+      WHITESPACE@19..20 " "
+      ELSE_KW@20..24 "else"
+      MODULE_INSTANTIATION@24..33
+        WHITESPACE@24..25 " "
+        IDENT@25..30 "falsy"
+        L_PAREN@30..31 "("
+        ARGUMENTS@31..31
+        R_PAREN@31..32 ")"
+        SEMICOLON@32..33
+          SEMICOLON@32..33 ";"
     ,
 )
