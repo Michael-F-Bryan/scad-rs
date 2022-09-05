@@ -3,12 +3,14 @@ source: crates/syntax/src/grammar/top_level.rs
 description: statement(x = 42;)
 ---
 Node(
-    ASSIGNMENT_STATEMENT@0..5
-      ASSIGNMENT@0..4
+    ASSIGNMENT_STATEMENT@0..7
+      ASSIGNMENT@0..6
         IDENT@0..1 "x"
-        EQUALS@1..2 "="
-        INTEGER@2..4
-          INTEGER@2..4 "42"
-      SEMICOLON@4..5 ";"
+        WHITESPACE@1..2 " "
+        EQUALS@2..3 "="
+        INTEGER@3..6
+          WHITESPACE@3..4 " "
+          INTEGER@4..6 "42"
+      SEMICOLON@6..7 ";"
     ,
 )

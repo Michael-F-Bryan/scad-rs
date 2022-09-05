@@ -3,43 +3,50 @@ source: crates/syntax/src/grammar/top_level.rs
 description: "statement(\n            translate([a, b, c]) {\n                cube(10);\n                cube(20);\n            })"
 ---
 Node(
-    MODULE_INSTANTIATION@0..38
-      IDENT@0..9 "translate"
-      L_PAREN@9..10 "("
-      ARGUMENTS@10..17
-        LIST_EXPR@10..17
-          L_BRACKET@10..11 "["
-          LOOKUP_EXPR@11..12
-            IDENT@11..12 "a"
-          COMMA@12..13 ","
-          LOOKUP_EXPR@13..14
-            IDENT@13..14 "b"
-          COMMA@14..15 ","
-          LOOKUP_EXPR@15..16
-            IDENT@15..16 "c"
-          R_BRACKET@16..17 "]"
-      R_PAREN@17..18 ")"
-      BRACED_CHILDREN@18..38
-        L_CURLY@18..19 "{"
-        CHILDREN@19..37
-          MODULE_INSTANTIATION@19..28
-            IDENT@19..23 "cube"
-            L_PAREN@23..24 "("
-            ARGUMENTS@24..26
-              INTEGER@24..26
-                INTEGER@24..26 "10"
-            R_PAREN@26..27 ")"
-            SEMICOLON@27..28
-              SEMICOLON@27..28 ";"
-          MODULE_INSTANTIATION@28..37
-            IDENT@28..32 "cube"
-            L_PAREN@32..33 "("
-            ARGUMENTS@33..35
-              INTEGER@33..35
-                INTEGER@33..35 "20"
-            R_PAREN@35..36 ")"
-            SEMICOLON@36..37
-              SEMICOLON@36..37 ";"
-        R_CURLY@37..38 "}"
+    MODULE_INSTANTIATION@0..101
+      WHITESPACE@0..13 "\n            "
+      IDENT@13..22 "translate"
+      L_PAREN@22..23 "("
+      ARGUMENTS@23..32
+        LIST_EXPR@23..32
+          L_BRACKET@23..24 "["
+          LOOKUP_EXPR@24..25
+            IDENT@24..25 "a"
+          COMMA@25..26 ","
+          LOOKUP_EXPR@26..28
+            WHITESPACE@26..27 " "
+            IDENT@27..28 "b"
+          COMMA@28..29 ","
+          LOOKUP_EXPR@29..31
+            WHITESPACE@29..30 " "
+            IDENT@30..31 "c"
+          R_BRACKET@31..32 "]"
+      R_PAREN@32..33 ")"
+      BRACED_CHILDREN@33..101
+        WHITESPACE@33..34 " "
+        L_CURLY@34..35 "{"
+        CHILDREN@35..87
+          MODULE_INSTANTIATION@35..61
+            WHITESPACE@35..52 "\n                "
+            IDENT@52..56 "cube"
+            L_PAREN@56..57 "("
+            ARGUMENTS@57..59
+              INTEGER@57..59
+                INTEGER@57..59 "10"
+            R_PAREN@59..60 ")"
+            SEMICOLON@60..61
+              SEMICOLON@60..61 ";"
+          MODULE_INSTANTIATION@61..87
+            WHITESPACE@61..78 "\n                "
+            IDENT@78..82 "cube"
+            L_PAREN@82..83 "("
+            ARGUMENTS@83..85
+              INTEGER@83..85
+                INTEGER@83..85 "20"
+            R_PAREN@85..86 ")"
+            SEMICOLON@86..87
+              SEMICOLON@86..87 ";"
+        WHITESPACE@87..100 "\n            "
+        R_CURLY@100..101 "}"
     ,
 )

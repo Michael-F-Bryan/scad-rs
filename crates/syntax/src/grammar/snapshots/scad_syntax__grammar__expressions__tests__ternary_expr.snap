@@ -3,14 +3,18 @@ source: crates/syntax/src/grammar/expressions.rs
 description: "expr(condition ? truthy : falsy)"
 ---
 Node(
-    TERNARY_EXPR@0..22
+    TERNARY_EXPR@0..26
       LOOKUP_EXPR@0..9
         IDENT@0..9 "condition"
-      QUESTION_MARK@9..10 "?"
-      LOOKUP_EXPR@10..16
-        IDENT@10..16 "truthy"
-      COLON@16..17 ":"
-      LOOKUP_EXPR@17..22
-        IDENT@17..22 "falsy"
+      WHITESPACE@9..10 " "
+      QUESTION_MARK@10..11 "?"
+      LOOKUP_EXPR@11..18
+        WHITESPACE@11..12 " "
+        IDENT@12..18 "truthy"
+      WHITESPACE@18..19 " "
+      COLON@19..20 ":"
+      LOOKUP_EXPR@20..26
+        WHITESPACE@20..21 " "
+        IDENT@21..26 "falsy"
     ,
 )

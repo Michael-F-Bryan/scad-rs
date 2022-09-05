@@ -3,39 +3,49 @@ source: crates/syntax/src/grammar/top_level.rs
 description: "statement(\n            if (test) {\n                truthy_1();\n                truthy_2();\n            } else {\n                falsy();\n            })"
 ---
 Node(
-    IF_STATEMENT@0..46
-      IF_KW@0..2 "if"
-      L_PAREN@2..3 "("
-      LOOKUP_EXPR@3..7
-        IDENT@3..7 "test"
-      R_PAREN@7..8 ")"
-      BRACED_ACTIONS@8..32
-        L_CURLY@8..9 "{"
-        MODULE_INSTANTIATION@9..20
-          IDENT@9..17 "truthy_1"
-          L_PAREN@17..18 "("
-          ARGUMENTS@18..18
-          R_PAREN@18..19 ")"
-          SEMICOLON@19..20
-            SEMICOLON@19..20 ";"
-        MODULE_INSTANTIATION@20..31
-          IDENT@20..28 "truthy_2"
-          L_PAREN@28..29 "("
-          ARGUMENTS@29..29
-          R_PAREN@29..30 ")"
-          SEMICOLON@30..31
-            SEMICOLON@30..31 ";"
-        R_CURLY@31..32 "}"
-      ELSE_KW@32..36 "else"
-      BRACED_ACTIONS@36..46
-        L_CURLY@36..37 "{"
-        MODULE_INSTANTIATION@37..45
-          IDENT@37..42 "falsy"
-          L_PAREN@42..43 "("
-          ARGUMENTS@43..43
-          R_PAREN@43..44 ")"
-          SEMICOLON@44..45
-            SEMICOLON@44..45 ";"
-        R_CURLY@45..46 "}"
+    IF_STATEMENT@0..140
+      WHITESPACE@0..13 "\n            "
+      IF_KW@13..15 "if"
+      WHITESPACE@15..16 " "
+      L_PAREN@16..17 "("
+      LOOKUP_EXPR@17..21
+        IDENT@17..21 "test"
+      R_PAREN@21..22 ")"
+      BRACED_ACTIONS@22..94
+        WHITESPACE@22..23 " "
+        L_CURLY@23..24 "{"
+        MODULE_INSTANTIATION@24..52
+          WHITESPACE@24..41 "\n                "
+          IDENT@41..49 "truthy_1"
+          L_PAREN@49..50 "("
+          ARGUMENTS@50..50
+          R_PAREN@50..51 ")"
+          SEMICOLON@51..52
+            SEMICOLON@51..52 ";"
+        MODULE_INSTANTIATION@52..80
+          WHITESPACE@52..69 "\n                "
+          IDENT@69..77 "truthy_2"
+          L_PAREN@77..78 "("
+          ARGUMENTS@78..78
+          R_PAREN@78..79 ")"
+          SEMICOLON@79..80
+            SEMICOLON@79..80 ";"
+        WHITESPACE@80..93 "\n            "
+        R_CURLY@93..94 "}"
+      WHITESPACE@94..95 " "
+      ELSE_KW@95..99 "else"
+      BRACED_ACTIONS@99..140
+        WHITESPACE@99..100 " "
+        L_CURLY@100..101 "{"
+        MODULE_INSTANTIATION@101..126
+          WHITESPACE@101..118 "\n                "
+          IDENT@118..123 "falsy"
+          L_PAREN@123..124 "("
+          ARGUMENTS@124..124
+          R_PAREN@124..125 ")"
+          SEMICOLON@125..126
+            SEMICOLON@125..126 ";"
+        WHITESPACE@126..139 "\n            "
+        R_CURLY@139..140 "}"
     ,
 )

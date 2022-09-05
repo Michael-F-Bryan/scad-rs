@@ -3,20 +3,23 @@ source: crates/syntax/src/grammar/expressions.rs
 description: "expr([for(i = vector) i])"
 ---
 Node(
-    LIST_COMPREHENSION_EXPR@0..16
+    LIST_COMPREHENSION_EXPR@0..19
       L_BRACKET@0..1 "["
-      FOR_CLAUSE@1..15
+      FOR_CLAUSE@1..18
         FOR_KW@1..4 "for"
         L_PAREN@4..5 "("
-        ASSIGNMENTS@5..13
-          ASSIGNMENT@5..13
+        ASSIGNMENTS@5..15
+          ASSIGNMENT@5..15
             IDENT@5..6 "i"
-            EQUALS@6..7 "="
-            LOOKUP_EXPR@7..13
-              IDENT@7..13 "vector"
-        R_PAREN@13..14 ")"
-        LOOKUP_EXPR@14..15
-          IDENT@14..15 "i"
-      R_BRACKET@15..16 "]"
+            WHITESPACE@6..7 " "
+            EQUALS@7..8 "="
+            LOOKUP_EXPR@8..15
+              WHITESPACE@8..9 " "
+              IDENT@9..15 "vector"
+        R_PAREN@15..16 ")"
+        LOOKUP_EXPR@16..18
+          WHITESPACE@16..17 " "
+          IDENT@17..18 "i"
+      R_BRACKET@18..19 "]"
     ,
 )

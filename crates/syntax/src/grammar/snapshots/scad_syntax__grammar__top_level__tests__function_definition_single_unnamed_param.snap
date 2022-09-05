@@ -3,22 +3,27 @@ source: crates/syntax/src/grammar/top_level.rs
 description: statement(function x(y) = y + 2;)
 ---
 Node(
-    NAMED_FUNCTION_DEFINITION@0..17
+    NAMED_FUNCTION_DEFINITION@0..22
       FUNCTION_KW@0..8 "function"
-      IDENT@8..9 "x"
-      L_PAREN@9..10 "("
-      PARAMETERS@10..11
-        IDENT@10..11
-          IDENT@10..11 "y"
-      R_PAREN@11..12 ")"
-      EQUALS@12..13 "="
-      BIN_EXPR@13..16
-        LOOKUP_EXPR@13..14
-          IDENT@13..14 "y"
-        PLUS@14..15
-          PLUS@14..15 "+"
-        INTEGER@15..16
-          INTEGER@15..16 "2"
-      SEMICOLON@16..17 ";"
+      WHITESPACE@8..9 " "
+      IDENT@9..10 "x"
+      L_PAREN@10..11 "("
+      PARAMETERS@11..12
+        IDENT@11..12
+          IDENT@11..12 "y"
+      R_PAREN@12..13 ")"
+      WHITESPACE@13..14 " "
+      EQUALS@14..15 "="
+      BIN_EXPR@15..21
+        LOOKUP_EXPR@15..17
+          WHITESPACE@15..16 " "
+          IDENT@16..17 "y"
+        PLUS@17..19
+          WHITESPACE@17..18 " "
+          PLUS@18..19 "+"
+        INTEGER@19..21
+          WHITESPACE@19..20 " "
+          INTEGER@20..21 "2"
+      SEMICOLON@21..22 ";"
     ,
 )

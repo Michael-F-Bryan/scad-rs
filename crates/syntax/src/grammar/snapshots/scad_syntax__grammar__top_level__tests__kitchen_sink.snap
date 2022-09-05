@@ -3,48 +3,66 @@ source: crates/syntax/src/grammar/top_level.rs
 description: "package(\n            include <foo/bar.scad>\n            use <baz.scad>\n            a = 42;\n            b = (42);\n            c = 1 + 1;\n            d = \"Hello, World!\";\n        )"
 ---
 Node(
-    PACKAGE@0..70
-      INCLUDE@0..21
-        INCLUDE_KW@0..7 "include"
-        FILE@7..21 "<foo/bar.scad>"
-      USE@21..34
-        USE_KW@21..24 "use"
-        FILE@24..34 "<baz.scad>"
-      ASSIGNMENT_STATEMENT@34..39
-        ASSIGNMENT@34..38
-          IDENT@34..35 "a"
-          EQUALS@35..36 "="
-          INTEGER@36..38
-            INTEGER@36..38 "42"
-        SEMICOLON@38..39 ";"
-      ASSIGNMENT_STATEMENT@39..46
-        ASSIGNMENT@39..45
-          IDENT@39..40 "b"
-          EQUALS@40..41 "="
-          PAREN_EXPR@41..45
-            L_PAREN@41..42 "("
-            INTEGER@42..44
-              INTEGER@42..44 "42"
-            R_PAREN@44..45 ")"
-        SEMICOLON@45..46 ";"
-      ASSIGNMENT_STATEMENT@46..52
-        ASSIGNMENT@46..51
-          IDENT@46..47 "c"
-          EQUALS@47..48 "="
-          BIN_EXPR@48..51
-            INTEGER@48..49
-              INTEGER@48..49 "1"
-            PLUS@49..50
-              PLUS@49..50 "+"
-            INTEGER@50..51
-              INTEGER@50..51 "1"
-        SEMICOLON@51..52 ";"
-      ASSIGNMENT_STATEMENT@52..70
-        ASSIGNMENT@52..69
-          IDENT@52..53 "d"
-          EQUALS@53..54 "="
-          STRING@54..69
-            STRING@54..69 "\"Hello, World!\""
-        SEMICOLON@69..70 ";"
+    PACKAGE@0..160
+      INCLUDE@0..35
+        WHITESPACE@0..13 "\n            "
+        INCLUDE_KW@13..20 "include"
+        WHITESPACE@20..21 " "
+        FILE@21..35 "<foo/bar.scad>"
+      USE@35..62
+        WHITESPACE@35..48 "\n            "
+        USE_KW@48..51 "use"
+        WHITESPACE@51..52 " "
+        FILE@52..62 "<baz.scad>"
+      ASSIGNMENT_STATEMENT@62..82
+        ASSIGNMENT@62..81
+          WHITESPACE@62..75 "\n            "
+          IDENT@75..76 "a"
+          WHITESPACE@76..77 " "
+          EQUALS@77..78 "="
+          INTEGER@78..81
+            WHITESPACE@78..79 " "
+            INTEGER@79..81 "42"
+        SEMICOLON@81..82 ";"
+      ASSIGNMENT_STATEMENT@82..104
+        ASSIGNMENT@82..103
+          WHITESPACE@82..95 "\n            "
+          IDENT@95..96 "b"
+          WHITESPACE@96..97 " "
+          EQUALS@97..98 "="
+          PAREN_EXPR@98..103
+            WHITESPACE@98..99 " "
+            L_PAREN@99..100 "("
+            INTEGER@100..102
+              INTEGER@100..102 "42"
+            R_PAREN@102..103 ")"
+        SEMICOLON@103..104 ";"
+      ASSIGNMENT_STATEMENT@104..127
+        ASSIGNMENT@104..126
+          WHITESPACE@104..117 "\n            "
+          IDENT@117..118 "c"
+          WHITESPACE@118..119 " "
+          EQUALS@119..120 "="
+          BIN_EXPR@120..126
+            INTEGER@120..122
+              WHITESPACE@120..121 " "
+              INTEGER@121..122 "1"
+            PLUS@122..124
+              WHITESPACE@122..123 " "
+              PLUS@123..124 "+"
+            INTEGER@124..126
+              WHITESPACE@124..125 " "
+              INTEGER@125..126 "1"
+        SEMICOLON@126..127 ";"
+      ASSIGNMENT_STATEMENT@127..160
+        ASSIGNMENT@127..159
+          WHITESPACE@127..140 "\n            "
+          IDENT@140..141 "d"
+          WHITESPACE@141..142 " "
+          EQUALS@142..143 "="
+          STRING@143..159
+            WHITESPACE@143..144 " "
+            STRING@144..159 "\"Hello, World!\""
+        SEMICOLON@159..160 ";"
     ,
 )
