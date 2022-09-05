@@ -1,4 +1,5 @@
 use std::{
+    fmt::Debug,
     ops::{Add, Div, Mul, Neg, Not, Sub},
     sync::Arc,
 };
@@ -7,12 +8,14 @@ use scad_bytecode::Constant;
 
 use crate::RuntimeError;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     Undef,
     Number(f64),
     Boolean(bool),
     String(Arc<str>),
+    List(Vec<Value>),
+    BuiltinFunction(BuiltinFunction),
 }
 
 impl Value {
@@ -23,6 +26,8 @@ impl Value {
             Value::Number(_) => "number",
             Value::Boolean(_) => "bool",
             Value::String(_) => "string",
+            Value::List(_) => "list",
+            Value::BuiltinFunction(_) => "builtin",
         }
     }
 }
@@ -126,8 +131,63 @@ impl Div for Value {
 impl From<&'_ Constant> for Value {
     fn from(c: &'_ Constant) -> Self {
         match c {
-            Constant::Number(n) => Value::Number(n.raw()),
-            Constant::String(s) => Value::String(Arc::clone(s)),
+            Constant::Number(n) => n.raw().into(),
+            Constant::String(s) => Arc::clone(s).into(),
         }
+    }
+}
+
+impl From<BuiltinFunction> for Value {
+    fn from(b: BuiltinFunction) -> Self {
+        Value::BuiltinFunction(b)
+    }
+}
+
+impl From<Arc<str>> for Value {
+    fn from(s: Arc<str>) -> Self {
+        Value::String(s)
+    }
+}
+
+impl From<f64> for Value {
+    fn from(f: f64) -> Self {
+        Value::Number(f)
+    }
+}
+
+impl From<bool> for Value {
+    fn from(b: bool) -> Self {
+        Value::Boolean(b)
+    }
+}
+
+#[derive(Clone)]
+pub struct BuiltinFunction {
+    func: Arc<dyn Fn(Vec<Value>) -> Result<Value, RuntimeError> + Send + Sync>,
+}
+
+impl BuiltinFunction {
+    pub fn new(
+        func: impl Fn(Vec<Value>) -> Result<Value, RuntimeError> + Send + Sync + 'static,
+    ) -> Self {
+        BuiltinFunction {
+            func: Arc::new(func),
+        }
+    }
+
+    pub fn call(&self, args: Vec<Value>) -> Result<Value, RuntimeError> {
+        (self.func)(args)
+    }
+}
+
+impl PartialEq for BuiltinFunction {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.func, &other.func)
+    }
+}
+
+impl Debug for BuiltinFunction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BuiltinFunction").finish_non_exhaustive()
     }
 }

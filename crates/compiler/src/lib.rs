@@ -3,11 +3,12 @@
 mod db;
 mod diagnostics;
 pub mod lowering;
-mod parsing;
+pub mod parsing;
 mod spans;
 mod text;
 
 pub use crate::{
+    db::Database,
     diagnostics::{Diagnostic, Diagnostics, IntoDiagnostic, Severity},
     spans::{Location, Spanned},
     text::Text,

@@ -21,7 +21,7 @@ impl VirtualMachine {
         VirtualMachine {
             program,
             stack: Stack::default(),
-            globals: HashMap::new(),
+            globals: crate::prelude(),
         }
     }
 
@@ -41,11 +41,17 @@ impl VirtualMachine {
             match evaluate(instruction, current_chunk, stack, globals) {
                 Ok(_) => {}
                 Err(Break::Error(e)) => return Err(runtime_error(current_chunk, ip, e)),
-                Err(Break::Return) => return Ok(()),
+                Err(Break::Return) => break,
             }
 
             ip += 1;
         }
+
+        if !stack.values().is_empty() {
+            tracing::warn!("Exited with a non-empty stack");
+        }
+
+        Ok(())
     }
 }
 
@@ -131,7 +137,37 @@ fn evaluate(
         scad_bytecode::Instruction::Call(num_args) => {
             let function = stack.pop()?;
             let args = stack.pop_many(num_args as usize)?;
-            todo!("Call {function:?} with {args:?}");
+
+            let result = match function {
+                Value::BuiltinFunction(f) => f.call(args)?,
+                other => {
+                    return Err(RuntimeError::NotCallable {
+                        type_name: other.type_name(),
+                    }
+                    .into())
+                }
+            };
+
+            stack.push(result);
+        }
+        scad_bytecode::Instruction::CreateList => {
+            stack.push(Value::List(Vec::new()));
+        }
+        scad_bytecode::Instruction::AddToList => {
+            let (list, item) = stack.pop2()?;
+            match list {
+                Value::List(mut list) => {
+                    list.push(item);
+                    stack.push(Value::List(list));
+                }
+                other => {
+                    return Err(RuntimeError::IncorrectType {
+                        expected: "list",
+                        actual: other.type_name(),
+                    }
+                    .into());
+                }
+            }
         }
     }
 

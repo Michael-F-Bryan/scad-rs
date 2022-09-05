@@ -248,6 +248,12 @@ fn list_or_range_expr(p: &mut Parser<'_>) {
     let m = p.start();
     p.bump(T!["["]);
 
+    if p.eat(T!["]"]) {
+        // it's an empty list
+        p.complete(m, LIST_EXPR);
+        return;
+    }
+
     expr(p);
 
     if p.at(T![:]) {

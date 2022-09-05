@@ -76,6 +76,10 @@ pub enum Instruction {
     Pop,
     /// Call the function at the top of the stack using.
     Call(u8),
+    /// Push an empty list onto the stack.
+    CreateList,
+    /// Add the item on the top of the stack onto the list beneath it.
+    AddToList,
 }
 
 /// A set of instructions.

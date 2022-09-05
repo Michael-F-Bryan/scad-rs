@@ -82,6 +82,8 @@ impl Disassembler {
             Instruction::Call(arg_count) => {
                 writeln!(self, "call ({arg_count} args)");
             }
+            Instruction::CreateList => writeln!(self, "create_list"),
+            Instruction::AddToList => writeln!(self, "add_to_list"),
         }
     }
 

@@ -1,6 +1,6 @@
-use rowan::{ast::AstNode, SyntaxNode};
+use rowan::ast::AstNode;
 use scad_bytecode::{Chunk, Instruction, Program};
-use scad_syntax::{ast, OpenSCAD, SyntaxKind};
+use scad_syntax::{ast, SyntaxKind, SyntaxNode, SyntaxToken};
 
 use crate::{lowering::Lowering, Diagnostics};
 
@@ -67,16 +67,28 @@ fn compile_assignment(chunk: &mut Chunk, a: ast::AssignmentStatement) {
 fn compile_expr(chunk: &mut Chunk, expr: ast::Expr) {
     match expr {
         ast::Expr::Atom(ast::Atom::LiteralExpr(lit)) => compile_literal(chunk, lit),
-        ast::Expr::Atom(ast::Atom::FunctionCall(_)) => todo!(),
+        ast::Expr::Atom(ast::Atom::FunctionCall(call)) => compile_function_call(chunk, call),
         ast::Expr::Atom(ast::Atom::IndexExpr(_)) => todo!(),
         ast::Expr::Atom(ast::Atom::LookupExpr(lookup)) => compile_lookup(chunk, lookup),
-        ast::Expr::ListExpr(_) => todo!(),
+        ast::Expr::ListExpr(list) => compile_list(chunk, list),
         ast::Expr::RangeExpr(_) => todo!(),
         ast::Expr::UnaryExpr(_) => todo!(),
         ast::Expr::TernaryExpr(_) => todo!(),
         ast::Expr::ParenExpr(_) => todo!(),
         ast::Expr::ListComprehensionExpr(_) => todo!(),
         ast::Expr::BinExpr(bin) => compile_bin_expr(chunk, bin),
+    }
+}
+
+fn compile_list(chunk: &mut Chunk, list: ast::ListExpr) {
+    // First we add an empty list to the stack
+    chunk.push_instruction(Instruction::CreateList, line_number(list.syntax()));
+
+    for expr in list.exprs() {
+        // Then execute each expression
+        compile_expr(chunk, expr.clone());
+        // and append it to the list
+        chunk.push_instruction(Instruction::AddToList, line_number(expr.syntax()));
     }
 }
 
@@ -144,19 +156,20 @@ fn compile_literal(chunk: &mut Chunk, lit: ast::LiteralExpr) {
     }
 }
 
-fn line_number(_node: &SyntaxNode<OpenSCAD>) -> u16 {
+fn line_number(_node: &SyntaxNode) -> u16 {
     // TODO: Actually calculate the line number (probably via Salsa so we get
     // caching)
     0
 }
 
-fn compile_module_instantiation(chunk: &mut Chunk, m: ast::ModuleInstantiation) {
+fn compile_call(
+    chunk: &mut Chunk,
+    ident: SyntaxToken,
+    args: Option<ast::Arguments>,
+    node: &SyntaxNode,
+) {
     // When you execute a function/module, first you evaluate its arguments...
-    let args: Vec<_> = m
-        .arguments_opt()
-        .into_iter()
-        .flat_map(|a| a.arguments())
-        .collect();
+    let args: Vec<_> = args.into_iter().flat_map(|a| a.arguments()).collect();
     let arg_count = args.len();
 
     for arg in args {
@@ -167,8 +180,7 @@ fn compile_module_instantiation(chunk: &mut Chunk, m: ast::ModuleInstantiation) 
     }
 
     // ... then you push the function object onto the stack
-    let ident = m.ident_token().unwrap();
-    let line_number = line_number(m.syntax());
+    let line_number = line_number(node);
     let constant = chunk.push_constant(ident.text());
     chunk.push_instruction(Instruction::LookupVariable(constant), line_number);
 
@@ -181,6 +193,24 @@ fn compile_module_instantiation(chunk: &mut Chunk, m: ast::ModuleInstantiation) 
         ),
         line_number,
     );
+}
+
+fn compile_module_instantiation(chunk: &mut Chunk, m: ast::ModuleInstantiation) {
+    compile_call(
+        chunk,
+        m.ident_token().unwrap(),
+        m.arguments_opt(),
+        m.syntax(),
+    )
+}
+
+fn compile_function_call(chunk: &mut Chunk, f: ast::FunctionCall) {
+    compile_call(
+        chunk,
+        f.ident_token().unwrap(),
+        f.arguments_opt(),
+        f.syntax(),
+    )
 }
 
 #[cfg(test)]
@@ -201,14 +231,20 @@ mod tests {
                 eprintln!("---- Source ----");
                 eprintln!("{src}");
 
-                let (program, diags) = db.compile();
+                eprintln!("---- AST ----");
+                let (ast, _) = db.parse(src.into());
+                eprintln!("{ast:?}");
+
                 eprintln!("---- Program ----");
+                let (program, diags) = db.compile();
                 eprintln!("{program:#?}");
+
                 eprintln!("---- Disassembly ----");
                 let mut dis = Disassembler::default();
                 dis.program(&program);
                 let disassembly = dis.finish();
                 eprintln!("{disassembly}");
+
                 eprintln!("---- Errors ----");
                 eprintln!("{diags:#?}");
 
@@ -230,5 +266,9 @@ mod tests {
     bytecode_test!(
         print_addition_with_variables,
         "x = 42; y = x + 2; print(x);"
+    );
+    bytecode_test!(
+        norm_tests,
+        "u=undef; echo(norm([])); echo(norm([1, 2, [1, 3]]));"
     );
 }

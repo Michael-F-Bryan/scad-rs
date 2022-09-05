@@ -1,9 +1,9 @@
 pub use self::query::{Parsing, ParsingStorage};
 
 mod query {
-    use scad_syntax::ast::Package;
+    use scad_syntax::{ast::Package, ParseError};
 
-    use crate::{Diagnostics, Text};
+    use crate::{Diagnostic, Diagnostics, Location, Severity, Text};
 
     #[salsa::query_group(ParsingStorage)]
     pub trait Parsing {
@@ -19,11 +19,19 @@ mod query {
     fn parse(_: &dyn Parsing, src: Text) -> (Package, Diagnostics) {
         let tokens = scad_syntax::tokenize(&src);
         let (pkg, errors) = scad_syntax::parse(tokens);
+        let mut diags = Diagnostics::empty();
 
-        if !errors.is_empty() {
-            todo!("Turn errors into diagnostics");
+        for ParseError { location, msg } in errors {
+            let diag = Diagnostic {
+                severity: Severity::Error,
+                message: msg.into(),
+                location: Location {
+                    text_range: location,
+                },
+            };
+            diags.push(diag);
         }
 
-        (pkg, Diagnostics::empty())
+        (pkg, diags)
     }
 }

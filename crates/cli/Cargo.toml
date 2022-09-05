@@ -8,6 +8,7 @@ default-run = "scad"
 
 [dependencies]
 anyhow = "1.0.61"
-clap = { version = "3.2.17", features = ["env"] }
+clap = { version = "3.2.17", features = ["env", "derive"] }
 scad-bytecode = { version = "0.1.0", path = "../bytecode" }
+scad-compiler = { version = "0.1.0", path = "../compiler" }
 scad-runtime = { version = "0.1.0", path = "../runtime" }

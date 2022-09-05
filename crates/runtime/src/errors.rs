@@ -18,6 +18,13 @@ pub enum RuntimeError {
     UnknownVariable {
         name: Arc<str>,
     },
+    IncorrectType {
+        expected: &'static str,
+        actual: &'static str,
+    },
+    NotCallable {
+        type_name: &'static str,
+    },
 }
 
 impl Display for RuntimeError {
@@ -35,6 +42,12 @@ impl Display for RuntimeError {
             } => write!(f, "Unable to {operation} a {lhs} and a {rhs}"),
             RuntimeError::UnknownVariable { name } => {
                 write!(f, "\"{name}\" is not defined in this scope")
+            }
+            RuntimeError::IncorrectType { expected, actual } => {
+                write!(f, "Expected a {expected}, but found a {actual}")
+            }
+            RuntimeError::NotCallable { type_name } => {
+                write!(f, "A {type_name} is not callable")
             }
         }
     }

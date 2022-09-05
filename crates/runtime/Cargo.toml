@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 rowan = "0.15.8"
 scad-bytecode = { version = "0.1.0", path = "../bytecode" }
+tracing = "0.1.36"

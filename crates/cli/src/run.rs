@@ -42,7 +42,8 @@ impl Run {
         };
 
         if let Err(e) = result {
-            todo!("Print a backtrace for {e}");
+            // TODO: print a backtrace pointing to the invalid line.
+            return Err(e.into());
         }
 
         Ok(())
