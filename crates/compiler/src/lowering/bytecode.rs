@@ -49,6 +49,7 @@ pub(crate) fn compile_package(_: &dyn Lowering, ast: ast::Package) -> (Chunk, Di
         Some(last_child) => line_number(&last_child),
         None => 0,
     };
+    chunk.push_instruction(Instruction::Undef, line_number);
     chunk.push_instruction(Instruction::Return, line_number);
 
     (chunk, diags)

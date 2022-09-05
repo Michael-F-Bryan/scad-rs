@@ -12,5 +12,6 @@ description: x = 42; y = x + 2; print(x);
    |  lookup print
    |  call (1 arg)
    |  save_geometry
+   |  undef
    |  ret
 
