@@ -175,6 +175,7 @@ impl ToTokens for AstNodes {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.extend(quote! {
             //! Automatically generated, strongly-typed [`AstNode`]s.
+            #![allow(clippy::redundant_clone, unreachable_patterns)]
             use rowan::{ast::AstNode, TextRange};
             use crate::{SyntaxKind, SyntaxNode, SyntaxToken};
         });

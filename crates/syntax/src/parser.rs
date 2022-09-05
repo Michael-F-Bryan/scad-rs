@@ -185,12 +185,11 @@ impl<'a> Input<'a> {
                 }
                 _ => {
                     let start = groups.last().map(|t| t.location.end()).unwrap_or_default();
-                    let end = TextSize::from(length_so_far);
                     groups.push(TokenGroup {
                         kind,
                         text,
                         leading_trivia: std::mem::take(&mut trivia),
-                        location: TextRange::new(start, end),
+                        location: TextRange::new(start, length_so_far),
                     });
                 }
             }
