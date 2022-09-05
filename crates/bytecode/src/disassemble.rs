@@ -84,6 +84,7 @@ impl Disassembler {
             }
             Instruction::CreateList => writeln!(self, "create_list"),
             Instruction::AddToList => writeln!(self, "add_to_list"),
+            Instruction::SaveGeometry => writeln!(self, "save_geometry"),
         }
     }
 

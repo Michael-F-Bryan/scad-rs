@@ -3,28 +3,31 @@ use std::{
     sync::Arc,
 };
 
+use crate::Type;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RuntimeError {
     StackUnderflow,
     InvalidUnaryOperation {
         operation: &'static str,
-        type_name: &'static str,
+        type_name: Type,
     },
     InvalidBinaryOperation {
         operation: &'static str,
-        lhs: &'static str,
-        rhs: &'static str,
+        lhs: Type,
+        rhs: Type,
     },
     UnknownVariable {
         name: Arc<str>,
     },
     IncorrectType {
-        expected: &'static str,
-        actual: &'static str,
+        expected: Type,
+        actual: Type,
     },
     NotCallable {
-        type_name: &'static str,
+        type_name: Type,
     },
+    ConversionError(ConversionError),
 }
 
 impl Display for RuntimeError {
@@ -49,8 +52,31 @@ impl Display for RuntimeError {
             RuntimeError::NotCallable { type_name } => {
                 write!(f, "A {type_name} is not callable")
             }
+            RuntimeError::ConversionError(_) => write!(f, "Conversion failed"),
         }
     }
 }
 
-impl std::error::Error for RuntimeError {}
+impl std::error::Error for RuntimeError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            RuntimeError::ConversionError(c) => Some(c),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub struct ConversionError {
+    pub from: Type,
+    pub to: Type,
+}
+
+impl Display for ConversionError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let ConversionError { from, to } = self;
+        write!(f, "Unable to convert {from} to a {to}")
+    }
+}
+
+impl std::error::Error for ConversionError {}

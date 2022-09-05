@@ -80,6 +80,8 @@ pub enum Instruction {
     CreateList,
     /// Add the item on the top of the stack onto the list beneath it.
     AddToList,
+    /// Pop a geometry object from the stack and send it to the output.
+    SaveGeometry,
 }
 
 /// A set of instructions.

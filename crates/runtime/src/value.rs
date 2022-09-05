@@ -1,12 +1,38 @@
 use std::{
-    fmt::Debug,
+    convert::TryFrom,
+    fmt::{self, Debug, Display, Formatter},
     ops::{Add, Div, Mul, Neg, Not, Sub},
     sync::Arc,
 };
 
 use scad_bytecode::Constant;
 
-use crate::RuntimeError;
+use crate::{ConversionError, Geometry, RuntimeError};
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum Type {
+    Undef,
+    Number,
+    Boolean,
+    String,
+    List,
+    BuiltinFunction,
+    Geometry,
+}
+
+impl Display for Type {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Type::Undef => write!(f, "undef"),
+            Type::Number => write!(f, "number"),
+            Type::Boolean => write!(f, "boolean"),
+            Type::String => write!(f, "string"),
+            Type::List => write!(f, "list"),
+            Type::BuiltinFunction => write!(f, "builtin"),
+            Type::Geometry => write!(f, "geometry"),
+        }
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value {
@@ -16,18 +42,20 @@ pub enum Value {
     String(Arc<str>),
     List(Vec<Value>),
     BuiltinFunction(BuiltinFunction),
+    Geometry(Geometry),
 }
 
 impl Value {
     #[inline]
-    pub const fn type_name(&self) -> &'static str {
+    pub const fn type_name(&self) -> Type {
         match self {
-            Value::Undef => "undef",
-            Value::Number(_) => "number",
-            Value::Boolean(_) => "bool",
-            Value::String(_) => "string",
-            Value::List(_) => "list",
-            Value::BuiltinFunction(_) => "builtin",
+            Value::Undef => Type::Undef,
+            Value::Number(_) => Type::Number,
+            Value::Boolean(_) => Type::Boolean,
+            Value::String(_) => Type::String,
+            Value::List(_) => Type::List,
+            Value::BuiltinFunction(_) => Type::BuiltinFunction,
+            Value::Geometry(_) => Type::Geometry,
         }
     }
 }
@@ -161,6 +189,48 @@ impl From<bool> for Value {
     }
 }
 
+impl TryFrom<Value> for bool {
+    type Error = ConversionError;
+
+    fn try_from(value: Value) -> Result<bool, Self::Error> {
+        match value {
+            Value::Boolean(b) => Ok(b),
+            other => Err(ConversionError {
+                from: other.type_name(),
+                to: Type::Boolean,
+            }),
+        }
+    }
+}
+
+impl TryFrom<Value> for f64 {
+    type Error = ConversionError;
+
+    fn try_from(value: Value) -> Result<f64, Self::Error> {
+        match value {
+            Value::Number(f) => Ok(f),
+            other => Err(ConversionError {
+                from: other.type_name(),
+                to: Type::Number,
+            }),
+        }
+    }
+}
+
+impl TryFrom<Value> for Geometry {
+    type Error = ConversionError;
+
+    fn try_from(value: Value) -> Result<Geometry, Self::Error> {
+        match value {
+            Value::Geometry(g) => Ok(g),
+            other => Err(ConversionError {
+                from: other.type_name(),
+                to: Type::Geometry,
+            }),
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct BuiltinFunction {
     func: Arc<dyn Fn(Vec<Value>) -> Result<Value, RuntimeError> + Send + Sync>,
@@ -187,7 +257,7 @@ impl PartialEq for BuiltinFunction {
 }
 
 impl Debug for BuiltinFunction {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("BuiltinFunction").finish_non_exhaustive()
     }
 }

@@ -4,9 +4,9 @@ use std::{
     sync::Arc,
 };
 
-use scad_bytecode::{Chunk, Constant, Program};
+use scad_bytecode::{Chunk, Constant, Instruction, Program};
 
-use crate::{Callbacks, RuntimeError, Stack, Value};
+use crate::{Callbacks, Geometry, RuntimeError, Stack, Type, Value};
 
 /// The OpenSCAD virtual machine.
 #[derive(Debug)]
@@ -64,52 +64,54 @@ fn runtime_error(current_chunk: &Chunk, ip: usize, cause: RuntimeError) -> Runti
 
 #[inline(always)]
 fn evaluate(
-    instruction: scad_bytecode::Instruction,
+    instruction: Instruction,
     current_chunk: &Chunk,
     stack: &mut Stack,
     globals: &mut HashMap<Arc<str>, Value>,
-) -> Result<(), Break> {
+) -> Result<Vec<Geometry>, Break> {
+    let mut geometry = Vec::new();
+
     match instruction {
-        scad_bytecode::Instruction::Constant(ix) => {
+        Instruction::Constant(ix) => {
             let constant = &current_chunk.constants[ix as usize];
             stack.push(constant.into());
         }
-        scad_bytecode::Instruction::Negate => {
+        Instruction::Negate => {
             let value = stack.pop()?;
             stack.push(value.neg()?);
         }
-        scad_bytecode::Instruction::Not => {
+        Instruction::Not => {
             let value = stack.pop()?;
             stack.push(value.not()?);
         }
-        scad_bytecode::Instruction::Add => {
+        Instruction::Add => {
             let (lhs, rhs) = stack.pop2()?;
             stack.push(lhs.add(rhs)?);
         }
-        scad_bytecode::Instruction::Sub => {
+        Instruction::Sub => {
             let (lhs, rhs) = stack.pop2()?;
             stack.push(lhs.sub(rhs)?);
         }
-        scad_bytecode::Instruction::Mul => {
+        Instruction::Mul => {
             let (lhs, rhs) = stack.pop2()?;
             stack.push(lhs.mul(rhs)?);
         }
-        scad_bytecode::Instruction::Div => {
+        Instruction::Div => {
             let (lhs, rhs) = stack.pop2()?;
             stack.push(lhs.div(rhs)?);
         }
-        scad_bytecode::Instruction::Return => {
+        Instruction::Return => {
             let ret = stack.pop()?;
             println!("Returned {ret:?}");
             return Err(Break::Return);
         }
-        scad_bytecode::Instruction::Undef => stack.push(Value::Undef),
-        scad_bytecode::Instruction::True => stack.push(Value::Boolean(true)),
-        scad_bytecode::Instruction::False => stack.push(Value::Boolean(false)),
-        scad_bytecode::Instruction::Pop => {
+        Instruction::Undef => stack.push(Value::Undef),
+        Instruction::True => stack.push(Value::Boolean(true)),
+        Instruction::False => stack.push(Value::Boolean(false)),
+        Instruction::Pop => {
             stack.pop()?;
         }
-        scad_bytecode::Instruction::DefineGlobal(ix) => {
+        Instruction::DefineGlobal(ix) => {
             let name = match &current_chunk.constants[ix as usize] {
                 Constant::String(s) => Arc::clone(s),
                 other => panic!("Attempted to do a variable definition with a non-string name ({other:?}). This is a bug."),
@@ -118,7 +120,7 @@ fn evaluate(
             let value = stack.pop()?;
             globals.insert(name, value);
         }
-        scad_bytecode::Instruction::LookupVariable(ix) => {
+        Instruction::LookupVariable(ix) => {
             let name = match &current_chunk.constants[ix as usize] {
                 Constant::String(s) => s,
                 other => panic!("Attempted to do a variable lookup with a non-string name ({other:?}). This is a bug."),
@@ -134,7 +136,7 @@ fn evaluate(
                 }
             }
         }
-        scad_bytecode::Instruction::Call(num_args) => {
+        Instruction::Call(num_args) => {
             let function = stack.pop()?;
             let args = stack.pop_many(num_args as usize)?;
 
@@ -150,10 +152,10 @@ fn evaluate(
 
             stack.push(result);
         }
-        scad_bytecode::Instruction::CreateList => {
+        Instruction::CreateList => {
             stack.push(Value::List(Vec::new()));
         }
-        scad_bytecode::Instruction::AddToList => {
+        Instruction::AddToList => {
             let (list, item) = stack.pop2()?;
             match list {
                 Value::List(mut list) => {
@@ -162,16 +164,33 @@ fn evaluate(
                 }
                 other => {
                     return Err(RuntimeError::IncorrectType {
-                        expected: "list",
+                        expected: Type::List,
                         actual: other.type_name(),
                     }
                     .into());
                 }
             }
         }
+        Instruction::SaveGeometry => {
+            match stack.pop()? {
+                Value::Geometry(g) => {
+                    geometry.push(g);
+                }
+                Value::Undef => {
+                    // ignore it
+                }
+                other => {
+                    return Err(RuntimeError::IncorrectType {
+                        expected: Type::Geometry,
+                        actual: other.type_name(),
+                    }
+                    .into())
+                }
+            }
+        }
     }
 
-    Ok(())
+    Ok(geometry)
 }
 
 #[derive(Debug)]

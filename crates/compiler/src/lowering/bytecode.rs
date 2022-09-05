@@ -201,7 +201,8 @@ fn compile_module_instantiation(chunk: &mut Chunk, m: ast::ModuleInstantiation) 
         m.ident_token().unwrap(),
         m.arguments_opt(),
         m.syntax(),
-    )
+    );
+    chunk.push_instruction(Instruction::SaveGeometry, line_number(m.syntax()));
 }
 
 fn compile_function_call(chunk: &mut Chunk, f: ast::FunctionCall) {
@@ -233,7 +234,7 @@ mod tests {
 
                 eprintln!("---- AST ----");
                 let (ast, _) = db.parse(src.into());
-                eprintln!("{ast:?}");
+                eprintln!("{ast:#?}");
 
                 eprintln!("---- Program ----");
                 let (program, diags) = db.compile();

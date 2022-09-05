@@ -1,6 +1,5 @@
 ---
 source: crates/compiler/src/lowering/bytecode.rs
-assertion_line: 270
 description: "u=undef; echo(norm([])); echo(norm([1, 2, [1, 3]]));"
 ---
   0|  undef
@@ -10,6 +9,7 @@ description: "u=undef; echo(norm([])); echo(norm([1, 2, [1, 3]]));"
    |  call (1 arg)
    |  lookup echo
    |  call (1 arg)
+   |  save_geometry
    |  create_list
    |  load_constant 1
    |  add_to_list
@@ -25,5 +25,6 @@ description: "u=undef; echo(norm([])); echo(norm([1, 2, [1, 3]]));"
    |  call (1 arg)
    |  lookup echo
    |  call (1 arg)
+   |  save_geometry
    |  ret
 
