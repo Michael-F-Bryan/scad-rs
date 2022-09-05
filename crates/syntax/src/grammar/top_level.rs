@@ -286,11 +286,17 @@ mod tests {
         ),
          if_else_if_nested: statement("
             if (test1)
-                if (test2) {scope2_1();}
-                else {scope2_2();}
+                if (test2) {
+                    scope2_1();
+                } else {
+                    scope2_2();
+                }
             else
-                if (test3) {scope3_1();}
-                else {scope3_2();}"
+                if (test3) {
+                    scope3_1();
+                } else {
+                    scope3_2();
+                }"
         ),
         for_loop_with_module: statement("for(i = [0: 1]) cube(i);"),
         nested_for: statement("for(i = [0: 10], j = [0, 360]) cube(i, j);"),

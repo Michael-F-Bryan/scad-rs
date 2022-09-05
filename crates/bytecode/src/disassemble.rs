@@ -11,7 +11,7 @@ pub struct Disassembler {
 }
 
 impl Disassembler {
-    const INDENT: &str = "  ";
+    const INDENT: &'static str = "  ";
 
     pub fn new() -> Self {
         Disassembler::default()
