@@ -3,7 +3,7 @@ use std::{
     sync::Arc,
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RuntimeError {
     StackUnderflow,
     InvalidUnaryOperation {

@@ -88,16 +88,16 @@ jobs:
           profile: minimal
           toolchain: nightly
           components: rustfmt, clippy
+      - name: Clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --workspace --verbose -- --deny=warnings
       - name: Check Formatting
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all --verbose --check
-      - name: Clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --workspace --verbose
 
   api-docs:
     name: Publish API Docs to GitHub Pages

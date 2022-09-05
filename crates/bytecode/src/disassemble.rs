@@ -3,7 +3,7 @@
 use crate::{Chunk, Instruction, Program};
 
 /// An indent-aware pretty-printer.
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub struct Disassembler {
     buffer: String,
     indent_level: usize,
@@ -88,7 +88,7 @@ impl Disassembler {
     fn write_fmt(&mut self, args: std::fmt::Arguments<'_>) {
         let temp = args.to_string();
 
-        if temp.trim_end().contains("\n") {
+        if temp.trim_end().contains('\n') {
             for line in temp.lines() {
                 self.write_indent();
                 self.buffer.push_str(line);
