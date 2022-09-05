@@ -12,6 +12,12 @@ use std::{
 
 use noisy_float::types::R64;
 
+/// The name of the executable called via a [`Program`]'s shebang line.
+pub const EXECUTABLE: &str = "scad";
+/// This crate's version.
+///
+/// You can use this constant to check whether your program is compatible with
+/// some bytecode you've been provided.
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -36,7 +42,10 @@ impl Program {
 
     /// Serialize the [`Program`] into its on-disk format.
     pub fn serialize(&self, mut w: impl Write) -> Result<(), bincode::Error> {
-        writeln!(w, "#!/bin env scad run --requires-at-least={VERSION}")?;
+        writeln!(
+            w,
+            "#!/bin/env {EXECUTABLE} run --requires-at-least=^{VERSION}"
+        )?;
         w.write_all(b"\0")?;
 
         bincode::serialize_into(w, self)

@@ -4,15 +4,16 @@ use anyhow::Context;
 use clap::Parser;
 use scad_bytecode::{Disassembler, Program};
 use scad_runtime::{Callbacks, Stack, VirtualMachine};
+use semver::{Comparator, Version};
 
 #[derive(Debug, Parser)]
 pub struct Run {
     /// Run the VM in debug mode.
     #[clap(short, long)]
     debug: bool,
-    /// The minimum bytecode version.
+    /// The bytecode version for the provided file.
     #[clap(long, hide = true)]
-    requires_at_least: Option<String>,
+    bytecode_version: Option<String>,
     #[clap(parse(from_os_str))]
     filename: PathBuf,
 }
@@ -20,13 +21,13 @@ pub struct Run {
 impl Run {
     pub fn execute(self) -> Result<(), anyhow::Error> {
         let Run {
-            requires_at_least,
+            bytecode_version,
             filename,
             debug,
         } = self;
 
-        if let Some(min_bytecode_version) = requires_at_least {
-            assert_eq!(scad_bytecode::VERSION, min_bytecode_version);
+        if let Some(min_bytecode_version) = bytecode_version {
+            bytecode_version_check(&min_bytecode_version)?;
         }
 
         let f = File::open(&filename)
@@ -48,6 +49,22 @@ impl Run {
 
         Ok(())
     }
+}
+
+/// Check that [`scad_bytecode::VERSION`] is compatible with the requested
+/// bytecode version.
+fn bytecode_version_check(min_bytecode_version: &str) -> Result<(), anyhow::Error> {
+    let constraint: Comparator = min_bytecode_version.parse().context(
+        "Unable to parse the min bytecode version as a version constraint (e.g. \"^0.1.0\")",
+    )?;
+
+    let builtin_bytecode_version: Version = scad_bytecode::VERSION.parse().expect("Always valid");
+
+    if !constraint.matches(&builtin_bytecode_version) {
+        anyhow::bail!("The requested bytecode version isn't compatible with this program ({builtin_bytecode_version} doesn't satisfy {constraint}");
+    }
+
+    Ok(())
 }
 
 #[derive(Debug, Default)]

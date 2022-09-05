@@ -29,7 +29,7 @@ impl Compile {
             println!("{diag:?}");
         }
 
-        let output = output.unwrap_or_else(|| input.with_extension("bc"));
+        let output = output.unwrap_or_else(|| input.with_extension("scadc"));
         let mut f = File::create(&output)
             .with_context(|| format!("Unable to open \"{}\" for writing", output.display()))?;
 
