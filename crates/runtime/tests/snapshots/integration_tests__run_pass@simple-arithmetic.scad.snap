@@ -40,6 +40,14 @@ Output {
         ],
         [
             String(
+                "neg",
+            ),
+            Number(
+                -1.5,
+            ),
+        ],
+        [
+            String(
                 "add mul",
             ),
             Number(
@@ -68,6 +76,14 @@ Output {
             ),
             Number(
                 inf,
+            ),
+        ],
+        [
+            String(
+                "negative one div zero",
+            ),
+            Number(
+                -inf,
             ),
         ],
         [

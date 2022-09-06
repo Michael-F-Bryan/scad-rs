@@ -84,8 +84,6 @@ fn compile_expr(chunk: &mut Chunk, expr: ast::Expr) {
 fn compile_unary(chunk: &mut Chunk, unary: ast::UnaryExpr) {
     let expr = unary.expr().unwrap();
 
-    dbg!(&unary);
-
     match unary.unary_op().unwrap() {
         ast::UnaryOp::Bang(_) => compile_not(chunk, expr),
         // Note: Writing something like "+5" is a no-op.

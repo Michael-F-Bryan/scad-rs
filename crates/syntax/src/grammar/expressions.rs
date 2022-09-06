@@ -346,11 +346,17 @@ fn lookup_expr(p: &mut Parser<'_>) {
 pub(crate) fn unary_expr(p: &mut Parser<'_>) {
     let m = p.start();
 
-    assert!((T![-] | T![!] | T![+]).contains(p.current()));
-    p.bump(p.current());
+    unary_op(p);
 
     expr(p);
     p.complete(m, UNARY_EXPR);
+}
+
+fn unary_op(p: &mut Parser<'_>) {
+    let m = p.start();
+    let current = p.current();
+    p.bump(T![-] | T![!] | T![+]);
+    p.complete(m, current);
 }
 
 pub(crate) fn function_call(p: &mut Parser<'_>) {

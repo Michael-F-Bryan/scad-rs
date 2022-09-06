@@ -4,7 +4,8 @@ description: unary_expr(-(5*2))
 ---
 Node(
     UNARY_EXPR@0..6
-      MINUS@0..1 "-"
+      MINUS@0..1
+        MINUS@0..1 "-"
       PAREN_EXPR@1..6
         L_PAREN@1..2 "("
         BIN_EXPR@2..5

@@ -4,7 +4,8 @@ description: expr(!true)
 ---
 Node(
     UNARY_EXPR@0..5
-      BANG@0..1 "!"
+      BANG@0..1
+        BANG@0..1 "!"
       TRUE_KW@1..5
         TRUE_KW@1..5 "true"
     ,
