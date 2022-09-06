@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"trait":[["Difference","Convenient syntax to create an `fj::Difference2d`"],["Group","Convenient syntax to create an `fj::Group`"],["Sketch","Convenient syntax to create an `fj::Sketch`"],["Sweep","Convenient syntax to create an `fj::Sweep`"],["Transform","Convenient syntax to create an `fj::Transform`"]]};

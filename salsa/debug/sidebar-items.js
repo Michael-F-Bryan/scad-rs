@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["TableEntry","An entry from a query table, for debugging and inspecting the table state."]],"trait":[["DebugQueryTable","Additional methods on queries that can be used to “peek into” their current state. These methods are meant for debugging and observing the effects of garbage collection etc."]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Preorder",""],["PreorderWithTokens",""],["SyntaxElementChildren",""],["SyntaxNode",""],["SyntaxNodeChildren",""],["SyntaxToken",""]],"trait":[["Language",""]],"type":[["SyntaxElement",""]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["ParsingStorage","Representative struct for the query group."]],"trait":[["Parsing",""]]};

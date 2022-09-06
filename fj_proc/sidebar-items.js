@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"attr":[["model","Define a function-based model."]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["EXECUTABLE","The name of the executable called via a [`Program`]’s shebang line."],["VERSION","This crate’s version."]],"enum":[["Constant",""],["Instruction","A single instruction executed by the virtual machine."]],"struct":[["Chunk","A set of instructions."],["Disassembler","An indent-aware pretty-printer."],["Program",""]]};

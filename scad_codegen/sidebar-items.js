@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["add_preamble",""],["ensure_file_contents","Make sure a file contains the specified tokens. If it doesn’t, the file will be updated and this function will trigger a panic."],["pretty_print","Use `rustfmt` to pretty-print the tokens."],["project_root","Get the root directory for this repository."]],"mod":[["syntax",""]]};

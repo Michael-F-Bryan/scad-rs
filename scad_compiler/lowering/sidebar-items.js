@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["LoweringStorage","Representative struct for the query group."]],"trait":[["Lowering","Lowering from the [`ast`] representation to a [`Program`]."]]};

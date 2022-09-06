@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Severity","How severe a diagnostic is."]],"mod":[["lowering",""],["parsing",""]],"struct":[["Database",""],["Diagnostic","A message from the compiler."],["Diagnostics","A set of [`Diagnostic`]s."],["Location",""],["Spanned",""],["Text","A reference-counted string."]],"trait":[["IntoDiagnostic",""]]};

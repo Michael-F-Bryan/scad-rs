@@ -1,0 +1,260 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/insta-1.19.1/src/content/yaml.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>yaml.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../insta/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../insta/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../insta/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::content::{Content, Error};
+
+<span class="kw">use </span>yaml_rust::{yaml::Hash <span class="kw">as </span>YamlObj, Yaml <span class="kw">as </span>YamlValue};
+
+<span class="kw">pub fn </span>parse_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Content, Error&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>blobs =
+        yaml_rust::YamlLoader::load_from_str(s).map_err(|<span class="kw">_</span>| Error::FailedParsingYaml)<span class="question-mark">?</span>;
+
+    <span class="kw">match </span>(blobs.pop(), blobs.pop()) {
+        (<span class="prelude-val">Some</span>(blob), <span class="prelude-val">None</span>) =&gt; from_yaml_blob(blob).map_err(Into::into),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(Error::FailedParsingYaml),
+    }
+}
+
+<span class="kw">fn </span>from_yaml_blob(blob: YamlValue) -&gt; <span class="prelude-ty">Result</span>&lt;Content, Error&gt; {
+    <span class="kw">match </span>blob {
+        YamlValue::Null =&gt; <span class="prelude-val">Ok</span>(Content::None),
+        YamlValue::Boolean(b) =&gt; <span class="prelude-val">Ok</span>(Content::from(b)),
+        YamlValue::Integer(num) =&gt; <span class="prelude-val">Ok</span>(Content::from(num)),
+        YamlValue::Real(real_str) =&gt; {
+            <span class="kw">let </span>real: f64 = real_str.parse().unwrap();
+            <span class="prelude-val">Ok</span>(Content::from(real))
+        }
+        YamlValue::String(s) =&gt; <span class="prelude-val">Ok</span>(Content::from(s)),
+        YamlValue::Array(seq) =&gt; {
+            <span class="kw">let </span>seq = seq
+                .into_iter()
+                .map(from_yaml_blob)
+                .collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, Error&gt;&gt;()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(Content::Seq(seq))
+        }
+        YamlValue::Hash(obj) =&gt; {
+            <span class="kw">let </span>obj = obj
+                .into_iter()
+                .map(|(k, v)| <span class="prelude-val">Ok</span>((from_yaml_blob(k)<span class="question-mark">?</span>, from_yaml_blob(v)<span class="question-mark">?</span>)))
+                .collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, Error&gt;&gt;()<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(Content::Map(obj))
+        }
+        YamlValue::BadValue | YamlValue::Alias(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(Error::FailedParsingYaml),
+    }
+}
+
+<span class="kw">pub fn </span>to_string(content: <span class="kw-2">&amp;</span>Content) -&gt; String {
+    <span class="kw">let </span>yaml_blob = to_yaml_value(content);
+
+    <span class="kw">let </span><span class="kw-2">mut </span>buf = String::new();
+    <span class="kw">let </span><span class="kw-2">mut </span>emitter = yaml_rust::YamlEmitter::new(<span class="kw-2">&amp;mut </span>buf);
+    emitter.dump(<span class="kw-2">&amp;</span>yaml_blob).unwrap();
+
+    buf.push(<span class="string">&#39;\n&#39;</span>);
+    buf
+}
+
+<span class="kw">fn </span>to_yaml_value(content: <span class="kw-2">&amp;</span>Content) -&gt; YamlValue {
+    <span class="kw">fn </span>translate_seq(seq: <span class="kw-2">&amp;</span>[Content]) -&gt; YamlValue {
+        <span class="kw">let </span>seq = seq.iter().map(to_yaml_value).collect();
+        YamlValue::Array(seq)
+    }
+
+    <span class="kw">fn </span>translate_fields(fields: <span class="kw-2">&amp;</span>[(<span class="kw-2">&amp;</span>str, Content)]) -&gt; YamlValue {
+        <span class="kw">let </span>fields = fields
+            .iter()
+            .map(|(k, v)| (YamlValue::String(k.to_string()), to_yaml_value(v)))
+            .collect();
+        YamlValue::Hash(fields)
+    }
+
+    <span class="kw">match </span>content {
+        Content::Bool(b) =&gt; YamlValue::Boolean(<span class="kw-2">*</span>b),
+        Content::U8(n) =&gt; YamlValue::Integer(i64::from(<span class="kw-2">*</span>n)),
+        Content::U16(n) =&gt; YamlValue::Integer(i64::from(<span class="kw-2">*</span>n)),
+        Content::U32(n) =&gt; YamlValue::Integer(i64::from(<span class="kw-2">*</span>n)),
+        Content::U64(n) =&gt; YamlValue::Real(n.to_string()),
+        Content::U128(n) =&gt; YamlValue::Real(n.to_string()),
+        Content::I8(n) =&gt; YamlValue::Integer(i64::from(<span class="kw-2">*</span>n)),
+        Content::I16(n) =&gt; YamlValue::Integer(i64::from(<span class="kw-2">*</span>n)),
+        Content::I32(n) =&gt; YamlValue::Integer(i64::from(<span class="kw-2">*</span>n)),
+        Content::I64(n) =&gt; YamlValue::Integer(<span class="kw-2">*</span>n),
+        Content::I128(n) =&gt; YamlValue::Real(n.to_string()),
+        Content::F32(f) =&gt; YamlValue::Real(f.to_string()),
+        Content::F64(f) =&gt; YamlValue::Real(f.to_string()),
+        Content::Char(c) =&gt; YamlValue::String(c.to_string()),
+        Content::String(s) =&gt; YamlValue::String(s.to_owned()),
+        Content::Bytes(bytes) =&gt; {
+            <span class="kw">let </span>bytes = bytes
+                .iter()
+                .map(|b| YamlValue::Integer(i64::from(<span class="kw-2">*</span>b)))
+                .collect();
+            YamlValue::Array(bytes)
+        }
+        Content::None | Content::Unit | Content::UnitStruct(<span class="kw">_</span>) =&gt; YamlValue::Null,
+        Content::Some(content) =&gt; to_yaml_value(content),
+        Content::UnitVariant(<span class="kw">_</span>, <span class="kw">_</span>, variant) =&gt; YamlValue::String(variant.to_string()),
+        Content::NewtypeStruct(<span class="kw">_</span>, content) =&gt; to_yaml_value(content),
+        Content::NewtypeVariant(<span class="kw">_</span>, <span class="kw">_</span>, variant, content) =&gt; {
+            <span class="kw">let </span><span class="kw-2">mut </span>obj = YamlObj::new();
+            obj.insert(
+                YamlValue::String(variant.to_string()),
+                to_yaml_value(content),
+            );
+            YamlValue::Hash(obj)
+        }
+        Content::Seq(seq) =&gt; translate_seq(seq),
+        Content::Tuple(seq) =&gt; translate_seq(seq),
+        Content::TupleStruct(<span class="kw">_</span>, seq) =&gt; translate_seq(seq),
+        Content::TupleVariant(<span class="kw">_</span>, <span class="kw">_</span>, variant, seq) =&gt; {
+            <span class="kw">let </span><span class="kw-2">mut </span>obj = YamlObj::new();
+            obj.insert(YamlValue::String(variant.to_string()), translate_seq(seq));
+            YamlValue::Hash(obj)
+        }
+        Content::Map(map) =&gt; {
+            <span class="kw">let </span>map = map
+                .iter()
+                .map(|(k, v)| (to_yaml_value(k), to_yaml_value(v)))
+                .collect();
+
+            YamlValue::Hash(map)
+        }
+        Content::Struct(_name, fields) =&gt; translate_fields(fields),
+        Content::StructVariant(<span class="kw">_</span>, <span class="kw">_</span>, variant, fields) =&gt; {
+            <span class="kw">let </span><span class="kw-2">mut </span>obj = YamlObj::new();
+            obj.insert(
+                YamlValue::String(variant.to_string()),
+                translate_fields(fields),
+            );
+            YamlValue::Hash(obj)
+        }
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="insta" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (b44197abb 2022-09-05)" ></div></body></html>

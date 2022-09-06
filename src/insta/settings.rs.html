@@ -1,0 +1,1190 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/insta-1.19.1/src/settings.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>settings.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../insta/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../insta/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../insta/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+</pre><pre class="rust"><code><span class="kw">use </span>std::cell::RefCell;
+<span class="kw">use </span>std::future::Future;
+<span class="kw">use </span>std::mem;
+<span class="kw">use </span>std::path::{Path, PathBuf};
+<span class="kw">use </span>std::pin::Pin;
+<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>std::task::{Context, Poll};
+
+<span class="kw">use </span>once_cell::sync::Lazy;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+</span><span class="kw">use </span>serde::{de::value::Error <span class="kw">as </span>ValueError, Serialize};
+
+<span class="kw">use </span><span class="kw">crate</span>::content::Content;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::content::ContentSerializer;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;filters&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::filters::Filters;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::redaction::{dynamic_redaction, sorted_redaction, ContentPath, Redaction, Selector};
+
+<span class="kw">static </span>DEFAULT_SETTINGS: Lazy&lt;Arc&lt;ActualSettings&gt;&gt; = Lazy::new(|| {
+    Arc::new(ActualSettings {
+        sort_maps: <span class="bool-val">false</span>,
+        snapshot_path: <span class="string">&quot;snapshots&quot;</span>.into(),
+        snapshot_suffix: <span class="string">&quot;&quot;</span>.into(),
+        input_file: <span class="prelude-val">None</span>,
+        description: <span class="prelude-val">None</span>,
+        info: <span class="prelude-val">None</span>,
+        omit_expression: <span class="bool-val">false</span>,
+        prepend_module_to_snapshot: <span class="bool-val">true</span>,
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+        </span>redactions: Redactions::default(),
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;filters&quot;</span>)]
+        </span>filters: Filters::default(),
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;glob&quot;</span>)]
+        </span>allow_empty_glob: <span class="bool-val">false</span>,
+    })
+});
+<span class="macro">thread_local!</span>(<span class="kw">static </span>CURRENT_SETTINGS: RefCell&lt;Settings&gt; = RefCell::new(Settings::new()));
+
+<span class="doccomment">/// Represents stored redactions.
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+#[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;redactions&quot;</span>)))]
+#[derive(Clone, Default)]
+</span><span class="kw">pub struct </span>Redactions(Vec&lt;(Selector&lt;<span class="lifetime">&#39;static</span>&gt;, Arc&lt;Redaction&gt;)&gt;);
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; From&lt;Vec&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, Redaction)&gt;&gt; <span class="kw">for </span>Redactions {
+    <span class="kw">fn </span>from(value: Vec&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, Redaction)&gt;) -&gt; Redactions {
+        Redactions(
+            value
+                .into_iter()
+                .map(|x| (Selector::parse(x.<span class="number">0</span>).unwrap().make_static(), Arc::new(x.<span class="number">1</span>)))
+                .collect(),
+        )
+    }
+}
+
+<span class="attribute">#[derive(Clone)]
+#[doc(hidden)]
+</span><span class="kw">pub struct </span>ActualSettings {
+    <span class="kw">pub </span>sort_maps: bool,
+    <span class="kw">pub </span>snapshot_path: PathBuf,
+    <span class="kw">pub </span>snapshot_suffix: String,
+    <span class="kw">pub </span>input_file: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+    <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="kw">pub </span>info: <span class="prelude-ty">Option</span>&lt;Content&gt;,
+    <span class="kw">pub </span>omit_expression: bool,
+    <span class="kw">pub </span>prepend_module_to_snapshot: bool,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+    </span><span class="kw">pub </span>redactions: Redactions,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;filters&quot;</span>)]
+    </span><span class="kw">pub </span>filters: Filters,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;glob&quot;</span>)]
+    </span><span class="kw">pub </span>allow_empty_glob: bool,
+}
+
+<span class="kw">impl </span>ActualSettings {
+    <span class="kw">pub fn </span>sort_maps(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: bool) {
+        <span class="self">self</span>.sort_maps = value;
+    }
+
+    <span class="kw">pub fn </span>snapshot_path&lt;P: AsRef&lt;Path&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: P) {
+        <span class="self">self</span>.snapshot_path = path.as_ref().to_path_buf();
+    }
+
+    <span class="kw">pub fn </span>snapshot_suffix&lt;I: Into&lt;String&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, suffix: I) {
+        <span class="self">self</span>.snapshot_suffix = suffix.into();
+    }
+
+    <span class="kw">pub fn </span>input_file&lt;P: AsRef&lt;Path&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, p: P) {
+        <span class="self">self</span>.input_file = <span class="prelude-val">Some</span>(p.as_ref().to_path_buf());
+    }
+
+    <span class="kw">pub fn </span>description&lt;S: Into&lt;String&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: S) {
+        <span class="self">self</span>.description = <span class="prelude-val">Some</span>(value.into());
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+    </span><span class="kw">pub fn </span>info&lt;S: Serialize&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, s: <span class="kw-2">&amp;</span>S) {
+        <span class="kw">let </span>serializer = ContentSerializer::&lt;ValueError&gt;::new();
+        <span class="kw">let </span>content = Serialize::serialize(s, serializer).unwrap();
+        <span class="self">self</span>.info = <span class="prelude-val">Some</span>(content);
+    }
+
+    <span class="kw">pub fn </span>raw_info(<span class="kw-2">&amp;mut </span><span class="self">self</span>, content: <span class="kw-2">&amp;</span>Content) {
+        <span class="self">self</span>.info = <span class="prelude-val">Some</span>(content.to_owned());
+    }
+
+    <span class="kw">pub fn </span>omit_expression(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: bool) {
+        <span class="self">self</span>.omit_expression = value;
+    }
+
+    <span class="kw">pub fn </span>prepend_module_to_snapshot(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: bool) {
+        <span class="self">self</span>.prepend_module_to_snapshot = value;
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+    </span><span class="kw">pub fn </span>redactions&lt;R: Into&lt;Redactions&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, r: R) {
+        <span class="self">self</span>.redactions = r.into();
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;filters&quot;</span>)]
+    </span><span class="kw">pub fn </span>filters&lt;F: Into&lt;Filters&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, f: F) {
+        <span class="self">self</span>.filters = f.into();
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;glob&quot;</span>)]
+    </span><span class="kw">pub fn </span>allow_empty_glob(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: bool) {
+        <span class="self">self</span>.allow_empty_glob = value;
+    }
+}
+
+<span class="doccomment">/// Configures how insta operates at test time.
+///
+/// Settings are always bound to a thread and some default settings are always
+/// available.  These settings can be changed and influence how insta behaves on
+/// that thread.  They can either temporarily or permanently changed.
+///
+/// This can be used to influence how the snapshot macros operate.
+/// For instance it can be useful to force ordering of maps when
+/// unordered structures are used through settings.
+///
+/// Some of the settings can be changed but shouldn&#39;t as it will make it harder
+/// for tools like cargo-insta or an editor integration to locate the snapshot
+/// files.
+///
+/// Settings can also be configured with the [`with_settings!`] macro.
+///
+/// Example:
+///
+/// ```ignore
+/// use insta;
+///
+/// let mut settings = insta::Settings::clone_current();
+/// settings.set_sort_maps(true);
+/// settings.bind(|| {
+///     // runs the assertion with the changed settings enabled
+///     insta::assert_snapshot!(...);
+/// });
+/// ```
+</span><span class="attribute">#[derive(Clone)]
+</span><span class="kw">pub struct </span>Settings {
+    inner: Arc&lt;ActualSettings&gt;,
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>Settings {
+    <span class="kw">fn </span>default() -&gt; Settings {
+        Settings {
+            inner: DEFAULT_SETTINGS.clone(),
+        }
+    }
+}
+
+<span class="kw">impl </span>Settings {
+    <span class="doccomment">/// Returns the default settings.
+    ///
+    /// It&#39;s recommended to use `clone_current` instead so that
+    /// already applied modifications are not discarded.
+    </span><span class="kw">pub fn </span>new() -&gt; Settings {
+        Settings::default()
+    }
+
+    <span class="doccomment">/// Returns a copy of the current settings.
+    </span><span class="kw">pub fn </span>clone_current() -&gt; Settings {
+        Settings::with(|x| x.clone())
+    }
+
+    <span class="doccomment">/// Internal helper for macros
+    </span><span class="attribute">#[doc(hidden)]
+    </span><span class="kw">pub fn </span>_private_inner_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>ActualSettings {
+        Arc::make_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>.inner)
+    }
+
+    <span class="doccomment">/// Enables forceful sorting of maps before serialization.
+    ///
+    /// Note that this only applies to snapshots that undergo serialization
+    /// (eg: does not work for `assert_debug_snapshot!`.)
+    ///
+    /// The default value is `false`.
+    </span><span class="kw">pub fn </span>set_sort_maps(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: bool) {
+        <span class="self">self</span>._private_inner_mut().sort_maps = value;
+    }
+
+    <span class="doccomment">/// Returns the current value for map sorting.
+    </span><span class="kw">pub fn </span>sort_maps(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.inner.sort_maps
+    }
+
+    <span class="doccomment">/// Disables prepending of modules to the snapshot filename.
+    ///
+    /// By default the filename of a snapshot is `&lt;module&gt;__&lt;name&gt;.snap`.
+    /// Setting this flag to `false` changes the snapshot filename to just
+    /// `&lt;name&gt;.snap`.
+    ///
+    /// The default value is `true`.
+    </span><span class="kw">pub fn </span>set_prepend_module_to_snapshot(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: bool) {
+        <span class="self">self</span>._private_inner_mut().prepend_module_to_snapshot(value);
+    }
+
+    <span class="doccomment">/// Returns the current value for module name prepending.
+    </span><span class="kw">pub fn </span>prepend_module_to_snapshot(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.inner.prepend_module_to_snapshot
+    }
+
+    <span class="doccomment">/// Allows the [`glob!`] macro to succeed if it matches no files.
+    ///
+    /// By default the glob macro will fail the test if it does not find
+    /// any files to prevent accidental typos.  This can be disabled when
+    /// fixtures should be conditional.
+    ///
+    /// The default value is `false`.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;glob&quot;</span>)]
+    </span><span class="kw">pub fn </span>set_allow_empty_glob(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: bool) {
+        <span class="self">self</span>._private_inner_mut().allow_empty_glob(value);
+    }
+
+    <span class="doccomment">/// Returns the current value for the empty glob setting.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;glob&quot;</span>)]
+    </span><span class="kw">pub fn </span>allow_empty_glob(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.inner.allow_empty_glob
+    }
+
+    <span class="doccomment">/// Sets the snapshot suffix.
+    ///
+    /// The snapshot suffix is added to all snapshot names with an `@` sign
+    /// between.  For instance if the snapshot suffix is set to `&quot;foo&quot;` and
+    /// the snapshot would be named `&quot;snapshot&quot;` it turns into `&quot;snapshot@foo&quot;`.
+    /// This is useful to separate snapshots if you want to use test
+    /// parameterization.
+    </span><span class="kw">pub fn </span>set_snapshot_suffix&lt;I: Into&lt;String&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, suffix: I) {
+        <span class="self">self</span>._private_inner_mut().snapshot_suffix(suffix);
+    }
+
+    <span class="doccomment">/// Removes the snapshot suffix.
+    </span><span class="kw">pub fn </span>remove_snapshot_suffix(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.set_snapshot_suffix(<span class="string">&quot;&quot;</span>);
+    }
+
+    <span class="doccomment">/// Returns the current snapshot suffix.
+    </span><span class="kw">pub fn </span>snapshot_suffix(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="kw">if </span><span class="self">self</span>.inner.snapshot_suffix.is_empty() {
+            <span class="prelude-val">None
+        </span>} <span class="kw">else </span>{
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.inner.snapshot_suffix)
+        }
+    }
+
+    <span class="doccomment">/// Sets the input file reference.
+    ///
+    /// This value is completely unused by the snapshot testing system but
+    /// it lets you store some meta data with a snapshot that refers you back
+    /// to the input file.  The path stored here is made relative to the
+    /// workspace root before storing with the snapshot.
+    </span><span class="kw">pub fn </span>set_input_file&lt;P: AsRef&lt;Path&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, p: P) {
+        <span class="self">self</span>._private_inner_mut().input_file(p);
+    }
+
+    <span class="doccomment">/// Removes the input file reference.
+    </span><span class="kw">pub fn </span>remove_input_file(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>._private_inner_mut().input_file = <span class="prelude-val">None</span>;
+    }
+
+    <span class="doccomment">/// Returns the current input file reference.
+    </span><span class="kw">pub fn </span>input_file(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Path&gt; {
+        <span class="self">self</span>.inner.input_file.as_deref()
+    }
+
+    <span class="doccomment">/// Sets the description.
+    ///
+    /// The description is stored alongside the snapshot and will be displayed
+    /// in the diff UI.  When a snapshot is captured the Rust expression for that
+    /// snapshot is always retained.  However sometimes that information is not
+    /// super useful by itself, particularly when working with loops and generated
+    /// tests.  In that case the `description` can be set as extra information.
+    ///
+    /// See also [`set_info`](Self::set_info).
+    </span><span class="kw">pub fn </span>set_description&lt;S: Into&lt;String&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: S) {
+        <span class="self">self</span>._private_inner_mut().description(value);
+    }
+
+    <span class="doccomment">/// Removes the description.
+    </span><span class="kw">pub fn </span>remove_description(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>._private_inner_mut().description = <span class="prelude-val">None</span>;
+    }
+
+    <span class="doccomment">/// Returns the current description
+    </span><span class="kw">pub fn </span>description(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="self">self</span>.inner.description.as_deref()
+    }
+
+    <span class="doccomment">/// Sets the info.
+    ///
+    /// The `info` is similar to `description` but for structured data.  This is
+    /// stored with the snapshot and shown in the review UI.  This for instance
+    /// can be used to show extended information that can make a reviewer better
+    /// understand what the snapshot is supposed to be testing.
+    ///
+    /// As an example the input parameters to the function that creates the snapshot
+    /// can be persisted here.
+    ///
+    /// Alternatively you can use [`set_raw_info`](Self::set_raw_info) instead.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;serde&quot;</span>)))]
+    </span><span class="kw">pub fn </span>set_info&lt;S: Serialize&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, s: <span class="kw-2">&amp;</span>S) {
+        <span class="self">self</span>._private_inner_mut().info(s);
+    }
+
+    <span class="doccomment">/// Sets the info from a content object.
+    ///
+    /// This works like [`set_info`](Self::set_info) but does not require `serde`.
+    </span><span class="kw">pub fn </span>set_raw_info(<span class="kw-2">&amp;mut </span><span class="self">self</span>, content: <span class="kw-2">&amp;</span>Content) {
+        <span class="self">self</span>._private_inner_mut().raw_info(content);
+    }
+
+    <span class="doccomment">/// Removes the info.
+    </span><span class="kw">pub fn </span>remove_info(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>._private_inner_mut().info = <span class="prelude-val">None</span>;
+    }
+
+    <span class="doccomment">/// Returns the current info
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Content&gt; {
+        <span class="self">self</span>.inner.info.as_ref()
+    }
+
+    <span class="doccomment">/// Returns the current info
+    </span><span class="kw">pub fn </span>has_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.inner.info.is_some()
+    }
+
+    <span class="doccomment">/// If set to true, does not retain the expression in the snapshot.
+    </span><span class="kw">pub fn </span>set_omit_expression(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: bool) {
+        <span class="self">self</span>._private_inner_mut().omit_expression(value);
+    }
+
+    <span class="doccomment">/// Returns true if expressions are omitted from snapshots.
+    </span><span class="kw">pub fn </span>omit_expression(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.inner.omit_expression
+    }
+
+    <span class="doccomment">/// Registers redactions that should be applied.
+    ///
+    /// This can be useful if redactions must be shared across multiple
+    /// snapshots.
+    ///
+    /// Note that this only applies to snapshots that undergo serialization
+    /// (eg: does not work for `assert_debug_snapshot!`.)
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;redactions&quot;</span>)))]
+    </span><span class="kw">pub fn </span>add_redaction&lt;R: Into&lt;Redaction&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, selector: <span class="kw-2">&amp;</span>str, replacement: R) {
+        <span class="self">self</span>.add_redaction_impl(selector, replacement.into())
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+    </span><span class="kw">fn </span>add_redaction_impl(<span class="kw-2">&amp;mut </span><span class="self">self</span>, selector: <span class="kw-2">&amp;</span>str, replacement: Redaction) {
+        <span class="self">self</span>._private_inner_mut().redactions.<span class="number">0</span>.push((
+            Selector::parse(selector).unwrap().make_static(),
+            Arc::new(replacement),
+        ));
+    }
+
+    <span class="doccomment">/// Registers a replacement callback.
+    ///
+    /// This works similar to a redaction but instead of changing the value it
+    /// asserts the value at a certain place.  This function is internally
+    /// supposed to call things like `assert_eq!`.
+    ///
+    /// This is a shortcut to `add_redaction(selector, dynamic_redaction(...))`;
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;redactions&quot;</span>)))]
+    </span><span class="kw">pub fn </span>add_dynamic_redaction&lt;I, F&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, selector: <span class="kw-2">&amp;</span>str, func: F)
+    <span class="kw">where
+        </span>I: Into&lt;Content&gt;,
+        F: Fn(Content, ContentPath&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; I + Send + Sync + <span class="lifetime">&#39;static</span>,
+    {
+        <span class="self">self</span>.add_redaction(selector, dynamic_redaction(func));
+    }
+
+    <span class="doccomment">/// A special redaction that sorts a sequence or map.
+    ///
+    /// This is a shortcut to `add_redaction(selector, sorted_redaction())`.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;redactions&quot;</span>)))]
+    </span><span class="kw">pub fn </span>sort_selector(<span class="kw-2">&amp;mut </span><span class="self">self</span>, selector: <span class="kw-2">&amp;</span>str) {
+        <span class="self">self</span>.add_redaction(selector, sorted_redaction());
+    }
+
+    <span class="doccomment">/// Replaces the currently set redactions.
+    ///
+    /// The default set is empty.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;redactions&quot;</span>)))]
+    </span><span class="kw">pub fn </span>set_redactions&lt;R: Into&lt;Redactions&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, redactions: R) {
+        <span class="self">self</span>._private_inner_mut().redactions(redactions);
+    }
+
+    <span class="doccomment">/// Removes all redactions.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;redactions&quot;</span>)))]
+    </span><span class="kw">pub fn </span>clear_redactions(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>._private_inner_mut().redactions.<span class="number">0</span>.clear();
+    }
+
+    <span class="doccomment">/// Iterate over the redactions.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;redactions&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;redactions&quot;</span>)))]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>iter_redactions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (<span class="kw-2">&amp;</span>Selector, <span class="kw-2">&amp;</span>Redaction)&gt; {
+        <span class="self">self</span>.inner
+            .redactions
+            .<span class="number">0
+            </span>.iter()
+            .map(|<span class="kw-2">&amp;</span>(<span class="kw-2">ref </span>a, <span class="kw-2">ref </span>b)| (a, <span class="kw-2">&amp;**</span>b))
+    }
+
+    <span class="doccomment">/// Adds a new filter.
+    ///
+    /// Filters are similar to redactions but are applied as regex onto the final snapshot
+    /// value.  This can be used to perform modifications to the snapshot string that would
+    /// be impossible to do with redactions because for instance the value is just a string.
+    ///
+    /// The first argument is the [`regex`] pattern to apply, the second is a replacement
+    /// string.  The replacement string has the same functionality as the second argument
+    /// to [`Regex::replace`](regex::Regex::replace).
+    ///
+    /// This is useful to perform some cleanup procedures on the snapshot for unstable values.
+    ///
+    /// ```rust
+    /// # use insta::Settings;
+    /// # async fn foo() {
+    /// # let mut settings = Settings::new();
+    /// settings.add_filter(r&quot;\b[[:xdigit:]]{32}\b&quot;, &quot;[UID]&quot;);
+    /// # }
+    /// ```
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;filters&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;filters&quot;</span>)))]
+    </span><span class="kw">pub fn </span>add_filter&lt;S: Into&lt;String&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, regex: <span class="kw-2">&amp;</span>str, replacement: S) {
+        <span class="self">self</span>._private_inner_mut().filters.add(regex, replacement);
+    }
+
+    <span class="doccomment">/// Replaces the currently set filters.
+    ///
+    /// The default set is empty.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;filters&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;filters&quot;</span>)))]
+    </span><span class="kw">pub fn </span>set_filters&lt;F: Into&lt;Filters&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, filters: F) {
+        <span class="self">self</span>._private_inner_mut().filters(filters);
+    }
+
+    <span class="doccomment">/// Removes all filters.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;filters&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;filters&quot;</span>)))]
+    </span><span class="kw">pub fn </span>clear_filters(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>._private_inner_mut().filters.clear();
+    }
+
+    <span class="doccomment">/// Returns the current filters
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;filters&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;filters&quot;</span>)))]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>filters(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Filters {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.inner.filters
+    }
+
+    <span class="doccomment">/// Sets the snapshot path.
+    ///
+    /// If not absolute it&#39;s relative to where the test is in.
+    ///
+    /// Defaults to `snapshots`.
+    </span><span class="kw">pub fn </span>set_snapshot_path&lt;P: AsRef&lt;Path&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: P) {
+        <span class="self">self</span>._private_inner_mut().snapshot_path(path);
+    }
+
+    <span class="doccomment">/// Returns the snapshot path.
+    </span><span class="kw">pub fn </span>snapshot_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Path {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.inner.snapshot_path
+    }
+
+    <span class="doccomment">/// Runs a function with the current settings bound to the thread.
+    ///
+    /// This is an alternative to [`bind_to_scope`](Settings::bind_to_scope)
+    /// which does not require holding on to a drop guard.  The return value
+    /// of the closure is passed through.
+    ///
+    /// ```
+    /// # use insta::Settings;
+    /// let mut settings = Settings::clone_current();
+    /// settings.set_sort_maps(true);
+    /// settings.bind(|| {
+    ///     // do stuff here
+    /// });
+    /// ```
+    </span><span class="kw">pub fn </span>bind&lt;F: FnOnce() -&gt; R, R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; R {
+        <span class="kw">let </span>_guard = <span class="self">self</span>.bind_to_scope();
+        f()
+    }
+
+    <span class="doccomment">/// Like `bind` but for futures.
+    ///
+    /// This lets you bind settings for the duration of a future like this:
+    ///
+    /// ```rust
+    /// # use insta::Settings;
+    /// # async fn foo() {
+    /// let settings = Settings::new();
+    /// settings.bind_async(async {
+    ///     // do assertions here
+    /// }).await;
+    /// # }
+    /// ```
+    </span><span class="kw">pub fn </span>bind_async&lt;F: Future&lt;Output = T&gt;, T&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, future: F) -&gt; <span class="kw">impl </span>Future&lt;Output = T&gt; {
+        <span class="kw">struct </span>BindingFuture&lt;F&gt;(Arc&lt;ActualSettings&gt;, F);
+
+        <span class="kw">impl</span>&lt;F: Future&gt; Future <span class="kw">for </span>BindingFuture&lt;F&gt; {
+            <span class="kw">type </span>Output = F::Output;
+
+            <span class="kw">fn </span>poll(<span class="self">self</span>: Pin&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>&gt;, cx: <span class="kw-2">&amp;mut </span>Context) -&gt; Poll&lt;<span class="self">Self</span>::Output&gt; {
+                <span class="kw">let </span>inner = <span class="self">self</span>.<span class="number">0</span>.clone();
+                <span class="kw">let </span>future = <span class="kw">unsafe </span>{ <span class="self">self</span>.map_unchecked_mut(|s| <span class="kw-2">&amp;mut </span>s.<span class="number">1</span>) };
+                CURRENT_SETTINGS.with(|x| {
+                    <span class="kw">let </span>old = {
+                        <span class="kw">let </span><span class="kw-2">mut </span>current = x.borrow_mut();
+                        <span class="kw">let </span>old = current.inner.clone();
+                        current.inner = inner;
+                        old
+                    };
+                    <span class="kw">let </span>rv = future.poll(cx);
+                    <span class="kw">let </span><span class="kw-2">mut </span>current = x.borrow_mut();
+                    current.inner = old;
+                    rv
+                })
+            }
+        }
+
+        BindingFuture(<span class="self">self</span>.inner.clone(), future)
+    }
+
+    <span class="doccomment">/// Binds the settings to the current thread and resets when the drop
+    /// guard is released.
+    ///
+    /// This is the recommended way to temporarily bind settings and replaces
+    /// the earlier [`bind_to_scope`](Settings::bind_to_scope) and relies on
+    /// drop guards.  An alterantive is [`bind`](Settings::bind) which binds
+    /// for the duration of the block it wraps.
+    ///
+    /// ```
+    /// # use insta::Settings;
+    /// let mut settings = Settings::clone_current();
+    /// settings.set_sort_maps(true);
+    /// let _guard = settings.bind_to_scope();
+    /// // do stuff here
+    /// ```
+    </span><span class="kw">pub fn </span>bind_to_scope(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SettingsBindDropGuard {
+        CURRENT_SETTINGS.with(|x| {
+            <span class="kw">let </span><span class="kw-2">mut </span>x = x.borrow_mut();
+            <span class="kw">let </span>old = mem::replace(<span class="kw-2">&amp;mut </span>x.inner, <span class="self">self</span>.inner.clone());
+            SettingsBindDropGuard(<span class="prelude-val">Some</span>(old))
+        })
+    }
+
+    <span class="doccomment">/// Runs a function with the current settings.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>with&lt;R, F: FnOnce(<span class="kw-2">&amp;</span>Settings) -&gt; R&gt;(f: F) -&gt; R {
+        CURRENT_SETTINGS.with(|x| f(<span class="kw-2">&amp;*</span>x.borrow()))
+    }
+}
+
+<span class="doccomment">/// Returned from [`bind_to_scope`](Settings::bind_to_scope)
+</span><span class="kw">pub struct </span>SettingsBindDropGuard(<span class="prelude-ty">Option</span>&lt;Arc&lt;ActualSettings&gt;&gt;);
+
+<span class="kw">impl </span>Drop <span class="kw">for </span>SettingsBindDropGuard {
+    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        CURRENT_SETTINGS.with(|x| {
+            x.borrow_mut().inner = <span class="self">self</span>.<span class="number">0</span>.take().unwrap();
+        })
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="insta" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (b44197abb 2022-09-05)" ></div></body></html>

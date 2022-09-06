@@ -1,0 +1,928 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rowan-0.15.8/src/arc.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>arc.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../rowan/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../rowan/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../rowan/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Vendored and stripped down version of triomphe
+</span><span class="kw">use </span>std::{
+    alloc::{<span class="self">self</span>, Layout},
+    cmp::Ordering,
+    hash::{Hash, Hasher},
+    marker::PhantomData,
+    mem::{<span class="self">self</span>, ManuallyDrop},
+    ops::Deref,
+    ptr,
+    sync::atomic::{
+        <span class="self">self</span>,
+        Ordering::{Acquire, Relaxed, Release},
+    },
+};
+
+<span class="kw">use </span>memoffset::offset_of;
+
+<span class="doccomment">/// A soft limit on the amount of references that may be made to an `Arc`.
+///
+/// Going above this limit will abort your program (although not
+/// necessarily) at _exactly_ `MAX_REFCOUNT + 1` references.
+</span><span class="kw">const </span>MAX_REFCOUNT: usize = (isize::MAX) <span class="kw">as </span>usize;
+
+<span class="doccomment">/// The object allocated by an Arc&lt;T&gt;
+</span><span class="attribute">#[repr(C)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ArcInner&lt;T: <span class="question-mark">?</span>Sized&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) count: atomic::AtomicUsize,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) data: T,
+}
+
+<span class="kw">unsafe impl</span>&lt;T: <span class="question-mark">?</span>Sized + Sync + Send&gt; Send <span class="kw">for </span>ArcInner&lt;T&gt; {}
+<span class="kw">unsafe impl</span>&lt;T: <span class="question-mark">?</span>Sized + Sync + Send&gt; Sync <span class="kw">for </span>ArcInner&lt;T&gt; {}
+
+<span class="doccomment">/// An atomically reference counted shared pointer
+///
+/// See the documentation for [`Arc`] in the standard library. Unlike the
+/// standard library `Arc`, this `Arc` does not support weak reference counting.
+///
+/// [`Arc`]: https://doc.rust-lang.org/stable/std/sync/struct.Arc.html
+</span><span class="attribute">#[repr(transparent)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Arc&lt;T: <span class="question-mark">?</span>Sized&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) p: ptr::NonNull&lt;ArcInner&lt;T&gt;&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) phantom: PhantomData&lt;T&gt;,
+}
+
+<span class="kw">unsafe impl</span>&lt;T: <span class="question-mark">?</span>Sized + Sync + Send&gt; Send <span class="kw">for </span>Arc&lt;T&gt; {}
+<span class="kw">unsafe impl</span>&lt;T: <span class="question-mark">?</span>Sized + Sync + Send&gt; Sync <span class="kw">for </span>Arc&lt;T&gt; {}
+
+<span class="kw">impl</span>&lt;T&gt; Arc&lt;T&gt; {
+    <span class="doccomment">/// Reconstruct the Arc&lt;T&gt; from a raw pointer obtained from into_raw()
+    ///
+    /// Note: This raw pointer will be offset in the allocation and must be preceded
+    /// by the atomic count.
+    ///
+    /// It is recommended to use OffsetArc for this
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>from_raw(ptr: <span class="kw-2">*const </span>T) -&gt; <span class="self">Self </span>{
+        <span class="comment">// To find the corresponding pointer to the `ArcInner` we need
+        // to subtract the offset of the `data` field from the pointer.
+        </span><span class="kw">let </span>ptr = (ptr <span class="kw">as </span><span class="kw-2">*const </span>u8).sub(<span class="macro">offset_of!</span>(ArcInner&lt;T&gt;, data));
+        Arc { p: ptr::NonNull::new_unchecked(ptr <span class="kw">as </span><span class="kw-2">*mut </span>ArcInner&lt;T&gt;), phantom: PhantomData }
+    }
+}
+
+<span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized&gt; Arc&lt;T&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>inner(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ArcInner&lt;T&gt; {
+        <span class="comment">// This unsafety is ok because while this arc is alive we&#39;re guaranteed
+        // that the inner pointer is valid. Furthermore, we know that the
+        // `ArcInner` structure itself is `Sync` because the inner data is
+        // `Sync` as well, so we&#39;re ok loaning out an immutable pointer to these
+        // contents.
+        </span><span class="kw">unsafe </span>{ <span class="kw-2">&amp;*</span><span class="self">self</span>.ptr() }
+    }
+
+    <span class="comment">// Non-inlined part of `drop`. Just invokes the destructor.
+    </span><span class="attribute">#[inline(never)]
+    </span><span class="kw">unsafe fn </span>drop_slow(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">let _ </span>= Box::from_raw(<span class="self">self</span>.ptr());
+    }
+
+    <span class="doccomment">/// Test pointer equality between the two Arcs, i.e. they must be the _same_
+    /// allocation
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ptr_eq(this: <span class="kw-2">&amp;</span><span class="self">Self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
+        this.ptr() == other.ptr()
+    }
+
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ptr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">*mut </span>ArcInner&lt;T&gt; {
+        <span class="self">self</span>.p.as_ptr()
+    }
+}
+
+<span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized&gt; Clone <span class="kw">for </span>Arc&lt;T&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
+        <span class="comment">// Using a relaxed ordering is alright here, as knowledge of the
+        // original reference prevents other threads from erroneously deleting
+        // the object.
+        //
+        // As explained in the [Boost documentation][1], Increasing the
+        // reference counter can always be done with memory_order_relaxed: New
+        // references to an object can only be formed from an existing
+        // reference, and passing an existing reference from one thread to
+        // another must already provide any required synchronization.
+        //
+        // [1]: (www.boost.org/doc/libs/1_55_0/doc/html/atomic/usage_examples.html)
+        </span><span class="kw">let </span>old_size = <span class="self">self</span>.inner().count.fetch_add(<span class="number">1</span>, Relaxed);
+
+        <span class="comment">// However we need to guard against massive refcounts in case someone
+        // is `mem::forget`ing Arcs. If we don&#39;t do this the count can overflow
+        // and users will use-after free. We racily saturate to `isize::MAX` on
+        // the assumption that there aren&#39;t ~2 billion threads incrementing
+        // the reference count at once. This branch will never be taken in
+        // any realistic program.
+        //
+        // We abort because such a program is incredibly degenerate, and we
+        // don&#39;t care to support it.
+        </span><span class="kw">if </span>old_size &gt; MAX_REFCOUNT {
+            std::process::abort();
+        }
+
+        <span class="kw">unsafe </span>{ Arc { p: ptr::NonNull::new_unchecked(<span class="self">self</span>.ptr()), phantom: PhantomData } }
+    }
+}
+
+<span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized&gt; Deref <span class="kw">for </span>Arc&lt;T&gt; {
+    <span class="kw">type </span>Target = T;
+
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>T {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.inner().data
+    }
+}
+
+<span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized&gt; Arc&lt;T&gt; {
+    <span class="doccomment">/// Provides mutable access to the contents _if_ the `Arc` is uniquely owned.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_mut(this: <span class="kw-2">&amp;mut </span><span class="self">Self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>T&gt; {
+        <span class="kw">if </span>this.is_unique() {
+            <span class="kw">unsafe </span>{
+                <span class="comment">// See make_mut() for documentation of the threadsafety here.
+                </span><span class="prelude-val">Some</span>(<span class="kw-2">&amp;mut </span>(<span class="kw-2">*</span>this.ptr()).data)
+            }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
+    }
+
+    <span class="doccomment">/// Whether or not the `Arc` is uniquely owned (is the refcount 1?).
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>is_unique(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="comment">// See the extensive discussion in [1] for why this needs to be Acquire.
+        //
+        // [1] https://github.com/servo/servo/issues/21186
+        </span><span class="self">self</span>.inner().count.load(Acquire) == <span class="number">1
+    </span>}
+}
+
+<span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized&gt; Drop <span class="kw">for </span>Arc&lt;T&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="comment">// Because `fetch_sub` is already atomic, we do not need to synchronize
+        // with other threads unless we are going to delete the object.
+        </span><span class="kw">if </span><span class="self">self</span>.inner().count.fetch_sub(<span class="number">1</span>, Release) != <span class="number">1 </span>{
+            <span class="kw">return</span>;
+        }
+
+        <span class="comment">// FIXME(bholley): Use the updated comment when [2] is merged.
+        //
+        // This load is needed to prevent reordering of use of the data and
+        // deletion of the data.  Because it is marked `Release`, the decreasing
+        // of the reference count synchronizes with this `Acquire` load. This
+        // means that use of the data happens before decreasing the reference
+        // count, which happens before this load, which happens before the
+        // deletion of the data.
+        //
+        // As explained in the [Boost documentation][1],
+        //
+        // &gt; It is important to enforce any possible access to the object in one
+        // &gt; thread (through an existing reference) to *happen before* deleting
+        // &gt; the object in a different thread. This is achieved by a &quot;release&quot;
+        // &gt; operation after dropping a reference (any access to the object
+        // &gt; through this reference must obviously happened before), and an
+        // &gt; &quot;acquire&quot; operation before deleting the object.
+        //
+        // [1]: (www.boost.org/doc/libs/1_55_0/doc/html/atomic/usage_examples.html)
+        // [2]: https://github.com/rust-lang/rust/pull/41714
+        </span><span class="self">self</span>.inner().count.load(Acquire);
+
+        <span class="kw">unsafe </span>{
+            <span class="self">self</span>.drop_slow();
+        }
+    }
+}
+
+<span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized + PartialEq&gt; PartialEq <span class="kw">for </span>Arc&lt;T&gt; {
+    <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Arc&lt;T&gt;) -&gt; bool {
+        <span class="self">Self</span>::ptr_eq(<span class="self">self</span>, other) || <span class="kw-2">*</span>(<span class="kw-2">*</span><span class="self">self</span>) == <span class="kw-2">*</span>(<span class="kw-2">*</span>other)
+    }
+
+    <span class="kw">fn </span>ne(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Arc&lt;T&gt;) -&gt; bool {
+        !<span class="self">Self</span>::ptr_eq(<span class="self">self</span>, other) &amp;&amp; <span class="kw-2">*</span>(<span class="kw-2">*</span><span class="self">self</span>) != <span class="kw-2">*</span>(<span class="kw-2">*</span>other)
+    }
+}
+
+<span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized + PartialOrd&gt; PartialOrd <span class="kw">for </span>Arc&lt;T&gt; {
+    <span class="kw">fn </span>partial_cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Arc&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;Ordering&gt; {
+        (<span class="kw-2">**</span><span class="self">self</span>).partial_cmp(<span class="kw-2">&amp;**</span>other)
+    }
+
+    <span class="kw">fn </span>lt(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Arc&lt;T&gt;) -&gt; bool {
+        <span class="kw-2">*</span>(<span class="kw-2">*</span><span class="self">self</span>) &lt; <span class="kw-2">*</span>(<span class="kw-2">*</span>other)
+    }
+
+    <span class="kw">fn </span>le(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Arc&lt;T&gt;) -&gt; bool {
+        <span class="kw-2">*</span>(<span class="kw-2">*</span><span class="self">self</span>) &lt;= <span class="kw-2">*</span>(<span class="kw-2">*</span>other)
+    }
+
+    <span class="kw">fn </span>gt(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Arc&lt;T&gt;) -&gt; bool {
+        <span class="kw-2">*</span>(<span class="kw-2">*</span><span class="self">self</span>) &gt; <span class="kw-2">*</span>(<span class="kw-2">*</span>other)
+    }
+
+    <span class="kw">fn </span>ge(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Arc&lt;T&gt;) -&gt; bool {
+        <span class="kw-2">*</span>(<span class="kw-2">*</span><span class="self">self</span>) &gt;= <span class="kw-2">*</span>(<span class="kw-2">*</span>other)
+    }
+}
+
+<span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized + Ord&gt; Ord <span class="kw">for </span>Arc&lt;T&gt; {
+    <span class="kw">fn </span>cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Arc&lt;T&gt;) -&gt; Ordering {
+        (<span class="kw-2">**</span><span class="self">self</span>).cmp(<span class="kw-2">&amp;**</span>other)
+    }
+}
+
+<span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized + Eq&gt; Eq <span class="kw">for </span>Arc&lt;T&gt; {}
+
+<span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized + Hash&gt; Hash <span class="kw">for </span>Arc&lt;T&gt; {
+    <span class="kw">fn </span>hash&lt;H: Hasher&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>H) {
+        (<span class="kw-2">**</span><span class="self">self</span>).hash(state)
+    }
+}
+
+<span class="attribute">#[derive(Debug, Eq, PartialEq, Hash, PartialOrd)]
+#[repr(C)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>HeaderSlice&lt;H, T: <span class="question-mark">?</span>Sized&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) header: H,
+    length: usize,
+    slice: T,
+}
+
+<span class="kw">impl</span>&lt;H, T&gt; HeaderSlice&lt;H, [T]&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>slice(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[T] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.slice
+    }
+}
+
+<span class="kw">impl</span>&lt;H, T&gt; Deref <span class="kw">for </span>HeaderSlice&lt;H, [T; <span class="number">0</span>]&gt; {
+    <span class="kw">type </span>Target = HeaderSlice&lt;H, [T]&gt;;
+
+    <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Target {
+        <span class="kw">unsafe </span>{
+            <span class="kw">let </span>len = <span class="self">self</span>.length;
+            <span class="kw">let </span>fake_slice: <span class="kw-2">*const </span>[T] =
+                ptr::slice_from_raw_parts(<span class="self">self </span><span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_ as </span><span class="kw-2">*const </span>T, len);
+            <span class="kw-2">&amp;*</span>(fake_slice <span class="kw">as </span><span class="kw-2">*const </span>HeaderSlice&lt;H, [T]&gt;)
+        }
+    }
+}
+
+<span class="doccomment">/// A &quot;thin&quot; `Arc` containing dynamically sized data
+///
+/// This is functionally equivalent to `Arc&lt;(H, [T])&gt;`
+///
+/// When you create an `Arc` containing a dynamically sized type
+/// like `HeaderSlice&lt;H, [T]&gt;`, the `Arc` is represented on the stack
+/// as a &quot;fat pointer&quot;, where the length of the slice is stored
+/// alongside the `Arc`&#39;s pointer. In some situations you may wish to
+/// have a thin pointer instead, perhaps for FFI compatibility
+/// or space efficiency.
+///
+/// Note that we use `[T; 0]` in order to have the right alignment for `T`.
+///
+/// `ThinArc` solves this by storing the length in the allocation itself,
+/// via `HeaderSlice`.
+</span><span class="attribute">#[repr(transparent)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ThinArc&lt;H, T&gt; {
+    ptr: ptr::NonNull&lt;ArcInner&lt;HeaderSlice&lt;H, [T; <span class="number">0</span>]&gt;&gt;&gt;,
+    phantom: PhantomData&lt;(H, T)&gt;,
+}
+
+<span class="kw">unsafe impl</span>&lt;H: Sync + Send, T: Sync + Send&gt; Send <span class="kw">for </span>ThinArc&lt;H, T&gt; {}
+<span class="kw">unsafe impl</span>&lt;H: Sync + Send, T: Sync + Send&gt; Sync <span class="kw">for </span>ThinArc&lt;H, T&gt; {}
+
+<span class="comment">// Synthesize a fat pointer from a thin pointer.
+</span><span class="kw">fn </span>thin_to_thick&lt;H, T&gt;(
+    thin: <span class="kw-2">*mut </span>ArcInner&lt;HeaderSlice&lt;H, [T; <span class="number">0</span>]&gt;&gt;,
+) -&gt; <span class="kw-2">*mut </span>ArcInner&lt;HeaderSlice&lt;H, [T]&gt;&gt; {
+    <span class="kw">let </span>len = <span class="kw">unsafe </span>{ (<span class="kw-2">*</span>thin).data.length };
+    <span class="kw">let </span>fake_slice: <span class="kw-2">*mut </span>[T] = ptr::slice_from_raw_parts_mut(thin <span class="kw">as </span><span class="kw-2">*mut </span>T, len);
+    <span class="comment">// Transplants metadata.
+    </span>fake_slice <span class="kw">as </span><span class="kw-2">*mut </span>ArcInner&lt;HeaderSlice&lt;H, [T]&gt;&gt;
+}
+
+<span class="kw">impl</span>&lt;H, T&gt; ThinArc&lt;H, T&gt; {
+    <span class="doccomment">/// Temporarily converts |self| into a bonafide Arc and exposes it to the
+    /// provided callback. The refcount is not modified.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>with_arc&lt;F, U&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; U
+    <span class="kw">where
+        </span>F: FnOnce(<span class="kw-2">&amp;</span>Arc&lt;HeaderSlice&lt;H, [T]&gt;&gt;) -&gt; U,
+    {
+        <span class="comment">// Synthesize transient Arc, which never touches the refcount of the ArcInner.
+        </span><span class="kw">let </span>transient = <span class="kw">unsafe </span>{
+            ManuallyDrop::new(Arc {
+                p: ptr::NonNull::new_unchecked(thin_to_thick(<span class="self">self</span>.ptr.as_ptr())),
+                phantom: PhantomData,
+            })
+        };
+
+        <span class="comment">// Expose the transient Arc to the callback, which may clone it if it wants.
+        </span><span class="kw">let </span>result = f(<span class="kw-2">&amp;</span>transient);
+
+        <span class="comment">// Forward the result.
+        </span>result
+    }
+
+    <span class="doccomment">/// Creates a `ThinArc` for a HeaderSlice using the given header struct and
+    /// iterator to generate the slice.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_header_and_iter&lt;I&gt;(header: H, <span class="kw-2">mut </span>items: I) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>I: Iterator&lt;Item = T&gt; + ExactSizeIterator,
+    {
+        <span class="macro">assert_ne!</span>(mem::size_of::&lt;T&gt;(), <span class="number">0</span>, <span class="string">&quot;Need to think about ZST&quot;</span>);
+
+        <span class="kw">let </span>num_items = items.len();
+
+        <span class="comment">// Offset of the start of the slice in the allocation.
+        </span><span class="kw">let </span>inner_to_data_offset = <span class="macro">offset_of!</span>(ArcInner&lt;HeaderSlice&lt;H, [T; <span class="number">0</span>]&gt;&gt;, data);
+        <span class="kw">let </span>data_to_slice_offset = <span class="macro">offset_of!</span>(HeaderSlice&lt;H, [T; <span class="number">0</span>]&gt;, slice);
+        <span class="kw">let </span>slice_offset = inner_to_data_offset + data_to_slice_offset;
+
+        <span class="comment">// Compute the size of the real payload.
+        </span><span class="kw">let </span>slice_size = mem::size_of::&lt;T&gt;().checked_mul(num_items).expect(<span class="string">&quot;size overflows&quot;</span>);
+        <span class="kw">let </span>usable_size = slice_offset.checked_add(slice_size).expect(<span class="string">&quot;size overflows&quot;</span>);
+
+        <span class="comment">// Round up size to alignment.
+        </span><span class="kw">let </span>align = mem::align_of::&lt;ArcInner&lt;HeaderSlice&lt;H, [T; <span class="number">0</span>]&gt;&gt;&gt;();
+        <span class="kw">let </span>size = usable_size.wrapping_add(align - <span class="number">1</span>) &amp; !(align - <span class="number">1</span>);
+        <span class="macro">assert!</span>(size &gt;= usable_size, <span class="string">&quot;size overflows&quot;</span>);
+        <span class="kw">let </span>layout = Layout::from_size_align(size, align).expect(<span class="string">&quot;invalid layout&quot;</span>);
+
+        <span class="kw">let </span>ptr: <span class="kw-2">*mut </span>ArcInner&lt;HeaderSlice&lt;H, [T; <span class="number">0</span>]&gt;&gt;;
+        <span class="kw">unsafe </span>{
+            <span class="kw">let </span>buffer = alloc::alloc(layout);
+
+            <span class="kw">if </span>buffer.is_null() {
+                alloc::handle_alloc_error(layout);
+            }
+
+            <span class="comment">// // Synthesize the fat pointer. We do this by claiming we have a direct
+            // // pointer to a [T], and then changing the type of the borrow. The key
+            // // point here is that the length portion of the fat pointer applies
+            // // only to the number of elements in the dynamically-sized portion of
+            // // the type, so the value will be the same whether it points to a [T]
+            // // or something else with a [T] as its last member.
+            // let fake_slice: &amp;mut [T] = slice::from_raw_parts_mut(buffer as *mut T, num_items);
+            // ptr = fake_slice as *mut [T] as *mut ArcInner&lt;HeaderSlice&lt;H, [T]&gt;&gt;;
+            </span>ptr = buffer <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>;
+
+            <span class="kw">let </span>count = atomic::AtomicUsize::new(<span class="number">1</span>);
+
+            <span class="comment">// Write the data.
+            //
+            // Note that any panics here (i.e. from the iterator) are safe, since
+            // we&#39;ll just leak the uninitialized memory.
+            </span>ptr::write(<span class="macro">ptr::addr_of_mut!</span>((<span class="kw-2">*</span>ptr).count), count);
+            ptr::write(<span class="macro">ptr::addr_of_mut!</span>((<span class="kw-2">*</span>ptr).data.header), header);
+            ptr::write(<span class="macro">ptr::addr_of_mut!</span>((<span class="kw-2">*</span>ptr).data.length), num_items);
+            <span class="kw">if </span>num_items != <span class="number">0 </span>{
+                <span class="kw">let </span><span class="kw-2">mut </span>current = <span class="macro">ptr::addr_of_mut!</span>((<span class="kw-2">*</span>ptr).data.slice) <span class="kw">as </span><span class="kw-2">*mut </span>T;
+                <span class="macro">debug_assert_eq!</span>(current <span class="kw">as </span>usize - buffer <span class="kw">as </span>usize, slice_offset);
+                <span class="kw">for _ in </span><span class="number">0</span>..num_items {
+                    ptr::write(
+                        current,
+                        items.next().expect(<span class="string">&quot;ExactSizeIterator over-reported length&quot;</span>),
+                    );
+                    current = current.offset(<span class="number">1</span>);
+                }
+                <span class="macro">assert!</span>(items.next().is_none(), <span class="string">&quot;ExactSizeIterator under-reported length&quot;</span>);
+
+                <span class="comment">// We should have consumed the buffer exactly.
+                </span><span class="macro">debug_assert_eq!</span>(current <span class="kw">as </span><span class="kw-2">*mut </span>u8, buffer.add(usable_size));
+            }
+            <span class="macro">assert!</span>(items.next().is_none(), <span class="string">&quot;ExactSizeIterator under-reported length&quot;</span>);
+        }
+
+        ThinArc { ptr: <span class="kw">unsafe </span>{ ptr::NonNull::new_unchecked(ptr) }, phantom: PhantomData }
+    }
+}
+
+<span class="kw">impl</span>&lt;H, T&gt; Deref <span class="kw">for </span>ThinArc&lt;H, T&gt; {
+    <span class="kw">type </span>Target = HeaderSlice&lt;H, [T]&gt;;
+
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Target {
+        <span class="kw">unsafe </span>{ <span class="kw-2">&amp;</span>(<span class="kw-2">*</span>thin_to_thick(<span class="self">self</span>.ptr.as_ptr())).data }
+    }
+}
+
+<span class="kw">impl</span>&lt;H, T&gt; Clone <span class="kw">for </span>ThinArc&lt;H, T&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
+        ThinArc::with_arc(<span class="self">self</span>, |a| Arc::into_thin(a.clone()))
+    }
+}
+
+<span class="kw">impl</span>&lt;H, T&gt; Drop <span class="kw">for </span>ThinArc&lt;H, T&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">let _ </span>= Arc::from_thin(ThinArc { ptr: <span class="self">self</span>.ptr, phantom: PhantomData });
+    }
+}
+
+<span class="kw">impl</span>&lt;H, T&gt; Arc&lt;HeaderSlice&lt;H, [T]&gt;&gt; {
+    <span class="doccomment">/// Converts an `Arc` into a `ThinArc`. This consumes the `Arc`, so the refcount
+    /// is not modified.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>into_thin(a: <span class="self">Self</span>) -&gt; ThinArc&lt;H, T&gt; {
+        <span class="macro">assert_eq!</span>(a.length, a.slice.len(), <span class="string">&quot;Length needs to be correct for ThinArc to work&quot;</span>);
+        <span class="kw">let </span>fat_ptr: <span class="kw-2">*mut </span>ArcInner&lt;HeaderSlice&lt;H, [T]&gt;&gt; = a.ptr();
+        mem::forget(a);
+        <span class="kw">let </span>thin_ptr = fat_ptr <span class="kw">as </span><span class="kw-2">*mut </span>[usize] <span class="kw">as </span><span class="kw-2">*mut </span>usize;
+        ThinArc {
+            ptr: <span class="kw">unsafe </span>{
+                ptr::NonNull::new_unchecked(thin_ptr <span class="kw">as </span><span class="kw-2">*mut </span>ArcInner&lt;HeaderSlice&lt;H, [T; <span class="number">0</span>]&gt;&gt;)
+            },
+            phantom: PhantomData,
+        }
+    }
+
+    <span class="doccomment">/// Converts a `ThinArc` into an `Arc`. This consumes the `ThinArc`, so the refcount
+    /// is not modified.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_thin(a: ThinArc&lt;H, T&gt;) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>ptr = thin_to_thick(a.ptr.as_ptr());
+        mem::forget(a);
+        <span class="kw">unsafe </span>{ Arc { p: ptr::NonNull::new_unchecked(ptr), phantom: PhantomData } }
+    }
+}
+
+<span class="kw">impl</span>&lt;H: PartialEq, T: PartialEq&gt; PartialEq <span class="kw">for </span>ThinArc&lt;H, T&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>ThinArc&lt;H, T&gt;) -&gt; bool {
+        <span class="kw-2">**</span><span class="self">self </span>== <span class="kw-2">**</span>other
+    }
+}
+
+<span class="kw">impl</span>&lt;H: Eq, T: Eq&gt; Eq <span class="kw">for </span>ThinArc&lt;H, T&gt; {}
+
+<span class="kw">impl</span>&lt;H: Hash, T: Hash&gt; Hash <span class="kw">for </span>ThinArc&lt;H, T&gt; {
+    <span class="kw">fn </span>hash&lt;HSR: Hasher&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>HSR) {
+        (<span class="kw-2">**</span><span class="self">self</span>).hash(state)
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rowan" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (b44197abb 2022-09-05)" ></div></body></html>

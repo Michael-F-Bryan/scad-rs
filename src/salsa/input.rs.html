@@ -1,0 +1,564 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/salsa-0.16.1/src/input.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>input.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../salsa/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../salsa/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../salsa/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::debug::TableEntry;
+<span class="kw">use </span><span class="kw">crate</span>::durability::Durability;
+<span class="kw">use </span><span class="kw">crate</span>::plumbing::InputQueryStorageOps;
+<span class="kw">use </span><span class="kw">crate</span>::plumbing::QueryStorageMassOps;
+<span class="kw">use </span><span class="kw">crate</span>::plumbing::QueryStorageOps;
+<span class="kw">use </span><span class="kw">crate</span>::revision::Revision;
+<span class="kw">use </span><span class="kw">crate</span>::runtime::{FxIndexMap, StampedValue};
+<span class="kw">use </span><span class="kw">crate</span>::CycleError;
+<span class="kw">use </span><span class="kw">crate</span>::Database;
+<span class="kw">use </span><span class="kw">crate</span>::Query;
+<span class="kw">use crate</span>::{DatabaseKeyIndex, QueryDb, Runtime, SweepStrategy};
+<span class="kw">use </span>indexmap::map::Entry;
+<span class="kw">use </span>log::debug;
+<span class="kw">use </span>parking_lot::RwLock;
+<span class="kw">use </span>std::convert::TryFrom;
+<span class="kw">use </span>std::sync::Arc;
+
+<span class="doccomment">/// Input queries store the result plus a list of the other queries
+/// that they invoked. This means we can avoid recomputing them when
+/// none of those inputs have changed.
+</span><span class="kw">pub struct </span>InputStorage&lt;Q&gt;
+<span class="kw">where
+    </span>Q: Query,
+{
+    group_index: u16,
+    slots: RwLock&lt;FxIndexMap&lt;Q::Key, Arc&lt;Slot&lt;Q&gt;&gt;&gt;&gt;,
+}
+
+<span class="kw">struct </span>Slot&lt;Q&gt;
+<span class="kw">where
+    </span>Q: Query,
+{
+    key: Q::Key,
+    database_key_index: DatabaseKeyIndex,
+    stamped_value: RwLock&lt;StampedValue&lt;Q::Value&gt;&gt;,
+}
+
+<span class="kw">impl</span>&lt;Q&gt; std::panic::RefUnwindSafe <span class="kw">for </span>InputStorage&lt;Q&gt;
+<span class="kw">where
+    </span>Q: Query,
+    Q::Key: std::panic::RefUnwindSafe,
+    Q::Value: std::panic::RefUnwindSafe,
+{
+}
+
+<span class="kw">impl</span>&lt;Q&gt; InputStorage&lt;Q&gt;
+<span class="kw">where
+    </span>Q: Query,
+{
+    <span class="kw">fn </span>slot(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q::Key) -&gt; <span class="prelude-ty">Option</span>&lt;Arc&lt;Slot&lt;Q&gt;&gt;&gt; {
+        <span class="self">self</span>.slots.read().get(key).cloned()
+    }
+}
+
+<span class="kw">impl</span>&lt;Q&gt; QueryStorageOps&lt;Q&gt; <span class="kw">for </span>InputStorage&lt;Q&gt;
+<span class="kw">where
+    </span>Q: Query,
+{
+    <span class="kw">fn </span>new(group_index: u16) -&gt; <span class="self">Self </span>{
+        InputStorage {
+            group_index,
+            slots: Default::default(),
+        }
+    }
+
+    <span class="kw">fn </span>fmt_index(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        _db: <span class="kw-2">&amp;</span>&lt;Q <span class="kw">as </span>QueryDb&lt;<span class="lifetime">&#39;_</span>&gt;&gt;::DynDb,
+        index: DatabaseKeyIndex,
+        fmt: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; std::fmt::Result {
+        <span class="macro">assert_eq!</span>(index.group_index, <span class="self">self</span>.group_index);
+        <span class="macro">assert_eq!</span>(index.query_index, Q::QUERY_INDEX);
+        <span class="kw">let </span>slot_map = <span class="self">self</span>.slots.read();
+        <span class="kw">let </span>key = slot_map.get_index(index.key_index <span class="kw">as </span>usize).unwrap().<span class="number">0</span>;
+        <span class="macro">write!</span>(fmt, <span class="string">&quot;{}({:?})&quot;</span>, Q::QUERY_NAME, key)
+    }
+
+    <span class="kw">fn </span>maybe_changed_since(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        db: <span class="kw-2">&amp;</span>&lt;Q <span class="kw">as </span>QueryDb&lt;<span class="lifetime">&#39;_</span>&gt;&gt;::DynDb,
+        input: DatabaseKeyIndex,
+        revision: Revision,
+    ) -&gt; bool {
+        <span class="macro">assert_eq!</span>(input.group_index, <span class="self">self</span>.group_index);
+        <span class="macro">assert_eq!</span>(input.query_index, Q::QUERY_INDEX);
+        <span class="kw">let </span>slot = <span class="self">self
+            </span>.slots
+            .read()
+            .get_index(input.key_index <span class="kw">as </span>usize)
+            .unwrap()
+            .<span class="number">1
+            </span>.clone();
+        slot.maybe_changed_since(db, revision)
+    }
+
+    <span class="kw">fn </span>try_fetch(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        db: <span class="kw-2">&amp;</span>&lt;Q <span class="kw">as </span>QueryDb&lt;<span class="lifetime">&#39;_</span>&gt;&gt;::DynDb,
+        key: <span class="kw-2">&amp;</span>Q::Key,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Q::Value, CycleError&lt;DatabaseKeyIndex&gt;&gt; {
+        <span class="kw">let </span>slot = <span class="self">self
+            </span>.slot(key)
+            .unwrap_or_else(|| <span class="macro">panic!</span>(<span class="string">&quot;no value set for {:?}({:?})&quot;</span>, Q::default(), key));
+
+        <span class="kw">let </span>StampedValue {
+            value,
+            durability,
+            changed_at,
+        } = slot.stamped_value.read().clone();
+
+        db.salsa_runtime()
+            .report_query_read(slot.database_key_index, durability, changed_at);
+
+        <span class="prelude-val">Ok</span>(value)
+    }
+
+    <span class="kw">fn </span>durability(<span class="kw-2">&amp;</span><span class="self">self</span>, _db: <span class="kw-2">&amp;</span>&lt;Q <span class="kw">as </span>QueryDb&lt;<span class="lifetime">&#39;_</span>&gt;&gt;::DynDb, key: <span class="kw-2">&amp;</span>Q::Key) -&gt; Durability {
+        <span class="kw">match </span><span class="self">self</span>.slot(key) {
+            <span class="prelude-val">Some</span>(slot) =&gt; slot.stamped_value.read().durability,
+            <span class="prelude-val">None </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;no value set for {:?}({:?})&quot;</span>, Q::default(), key),
+        }
+    }
+
+    <span class="kw">fn </span>entries&lt;C&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, _db: <span class="kw-2">&amp;</span>&lt;Q <span class="kw">as </span>QueryDb&lt;<span class="lifetime">&#39;_</span>&gt;&gt;::DynDb) -&gt; C
+    <span class="kw">where
+        </span>C: std::iter::FromIterator&lt;TableEntry&lt;Q::Key, Q::Value&gt;&gt;,
+    {
+        <span class="kw">let </span>slots = <span class="self">self</span>.slots.read();
+        slots
+            .values()
+            .map(|slot| {
+                TableEntry::new(
+                    slot.key.clone(),
+                    <span class="prelude-val">Some</span>(slot.stamped_value.read().value.clone()),
+                )
+            })
+            .collect()
+    }
+}
+
+<span class="kw">impl</span>&lt;Q&gt; Slot&lt;Q&gt;
+<span class="kw">where
+    </span>Q: Query,
+{
+    <span class="kw">fn </span>maybe_changed_since(<span class="kw-2">&amp;</span><span class="self">self</span>, _db: <span class="kw-2">&amp;</span>&lt;Q <span class="kw">as </span>QueryDb&lt;<span class="lifetime">&#39;_</span>&gt;&gt;::DynDb, revision: Revision) -&gt; bool {
+        <span class="macro">debug!</span>(
+            <span class="string">&quot;maybe_changed_since(slot={:?}, revision={:?})&quot;</span>,
+            <span class="self">self</span>, revision,
+        );
+
+        <span class="kw">let </span>changed_at = <span class="self">self</span>.stamped_value.read().changed_at;
+
+        <span class="macro">debug!</span>(<span class="string">&quot;maybe_changed_since: changed_at = {:?}&quot;</span>, changed_at);
+
+        changed_at &gt; revision
+    }
+}
+
+<span class="kw">impl</span>&lt;Q&gt; QueryStorageMassOps <span class="kw">for </span>InputStorage&lt;Q&gt;
+<span class="kw">where
+    </span>Q: Query,
+{
+    <span class="kw">fn </span>sweep(<span class="kw-2">&amp;</span><span class="self">self</span>, _runtime: <span class="kw-2">&amp;</span>Runtime, _strategy: SweepStrategy) {}
+    <span class="kw">fn </span>purge(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="kw-2">*</span><span class="self">self</span>.slots.write() = Default::default();
+    }
+}
+
+<span class="kw">impl</span>&lt;Q&gt; InputQueryStorageOps&lt;Q&gt; <span class="kw">for </span>InputStorage&lt;Q&gt;
+<span class="kw">where
+    </span>Q: Query,
+{
+    <span class="kw">fn </span>set(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        db: <span class="kw-2">&amp;mut </span>&lt;Q <span class="kw">as </span>QueryDb&lt;<span class="lifetime">&#39;_</span>&gt;&gt;::DynDb,
+        key: <span class="kw-2">&amp;</span>Q::Key,
+        value: Q::Value,
+        durability: Durability,
+    ) {
+        <span class="macro">log::debug!</span>(
+            <span class="string">&quot;{:?}({:?}) = {:?} ({:?})&quot;</span>,
+            Q::default(),
+            key,
+            value,
+            durability
+        );
+
+        <span class="comment">// The value is changing, so we need a new revision (*). We also
+        // need to update the &#39;last changed&#39; revision by invoking
+        // `guard.mark_durability_as_changed`.
+        //
+        // CAREFUL: This will block until the global revision lock can
+        // be acquired. If there are still queries executing, they may
+        // need to read from this input. Therefore, we wait to acquire
+        // the lock on `map` until we also hold the global query write
+        // lock.
+        //
+        // (*) Technically, since you can&#39;t presently access an input
+        // for a non-existent key, and you can&#39;t enumerate the set of
+        // keys, we only need a new revision if the key used to
+        // exist. But we may add such methods in the future and this
+        // case doesn&#39;t generally seem worth optimizing for.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>value = <span class="prelude-val">Some</span>(value);
+        db.salsa_runtime_mut()
+            .with_incremented_revision(<span class="kw-2">&amp;mut </span>|next_revision| {
+                <span class="kw">let </span><span class="kw-2">mut </span>slots = <span class="self">self</span>.slots.write();
+
+                <span class="comment">// Do this *after* we acquire the lock, so that we are not
+                // racing with somebody else to modify this same cell.
+                // (Otherwise, someone else might write a *newer* revision
+                // into the same cell while we block on the lock.)
+                </span><span class="kw">let </span>stamped_value = StampedValue {
+                    value: value.take().unwrap(),
+                    durability,
+                    changed_at: next_revision,
+                };
+
+                <span class="kw">match </span>slots.entry(key.clone()) {
+                    Entry::Occupied(entry) =&gt; {
+                        <span class="kw">let </span><span class="kw-2">mut </span>slot_stamped_value = entry.get().stamped_value.write();
+                        <span class="kw">let </span>old_durability = slot_stamped_value.durability;
+                        <span class="kw-2">*</span>slot_stamped_value = stamped_value;
+                        <span class="prelude-val">Some</span>(old_durability)
+                    }
+
+                    Entry::Vacant(entry) =&gt; {
+                        <span class="kw">let </span>key_index = u32::try_from(entry.index()).unwrap();
+                        <span class="kw">let </span>database_key_index = DatabaseKeyIndex {
+                            group_index: <span class="self">self</span>.group_index,
+                            query_index: Q::QUERY_INDEX,
+                            key_index,
+                        };
+                        entry.insert(Arc::new(Slot {
+                            key: key.clone(),
+                            database_key_index,
+                            stamped_value: RwLock::new(stamped_value),
+                        }));
+                        <span class="prelude-val">None
+                    </span>}
+                }
+            });
+    }
+}
+
+<span class="doccomment">/// Check that `Slot&lt;Q, MP&gt;: Send + Sync` as long as
+/// `DB::DatabaseData: Send + Sync`, which in turn implies that
+/// `Q::Key: Send + Sync`, `Q::Value: Send + Sync`.
+</span><span class="attribute">#[allow(dead_code)]
+</span><span class="kw">fn </span>check_send_sync&lt;Q&gt;()
+<span class="kw">where
+    </span>Q: Query,
+    Q::Key: Send + Sync,
+    Q::Value: Send + Sync,
+{
+    <span class="kw">fn </span>is_send_sync&lt;T: Send + Sync&gt;() {}
+    is_send_sync::&lt;Slot&lt;Q&gt;&gt;();
+}
+
+<span class="doccomment">/// Check that `Slot&lt;Q, MP&gt;: &#39;static` as long as
+/// `DB::DatabaseData: &#39;static`, which in turn implies that
+/// `Q::Key: &#39;static`, `Q::Value: &#39;static`.
+</span><span class="attribute">#[allow(dead_code)]
+</span><span class="kw">fn </span>check_static&lt;Q&gt;()
+<span class="kw">where
+    </span>Q: Query + <span class="lifetime">&#39;static</span>,
+    Q::Key: <span class="lifetime">&#39;static</span>,
+    Q::Value: <span class="lifetime">&#39;static</span>,
+{
+    <span class="kw">fn </span>is_static&lt;T: <span class="lifetime">&#39;static</span>&gt;() {}
+    is_static::&lt;Slot&lt;Q&gt;&gt;();
+}
+
+<span class="kw">impl</span>&lt;Q&gt; std::fmt::Debug <span class="kw">for </span>Slot&lt;Q&gt;
+<span class="kw">where
+    </span>Q: Query,
+{
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        <span class="macro">write!</span>(fmt, <span class="string">&quot;{:?}({:?})&quot;</span>, Q::default(), <span class="self">self</span>.key)
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="salsa" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (b44197abb 2022-09-05)" ></div></body></html>

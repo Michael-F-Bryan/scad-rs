@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A parser and lexer for the OpenSCAD language."><meta name="keywords" content="rust, rustlang, rust-lang, scad_syntax"><title>scad_syntax - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../normalize.css"><link rel="stylesheet" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../ayu.css" disabled><link rel="stylesheet" href="../dark.css" disabled><link rel="stylesheet" href="../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../storage.js"></script><script defer src="../crates.js"></script><script defer src="../main.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../favicon.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../scad_syntax/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../scad_syntax/index.html"><div class="logo-container"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></div></a><h2 class="location"><a href="#">Crate scad_syntax</a></h2><div class="sidebar-elems"><div class="block"><ul><li class="version">Version 0.1.0</li><li><a id="all-types" href="all.html">All Items</a></li></ul></div><section><div class="block"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li><li><a href="#types">Type Definitions</a></li></ul></div></section></div></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../scad_syntax/index.html"><img class="rust-logo" src="../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="main-heading"><h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">scad_syntax</a><button id="copy-path" onclick="copy_path(this)" title="Copy item path to clipboard"><img src="../clipboard.svg" width="19" height="18" alt="Copy item path"></button></span></h1><span class="out-of-band"><a class="srclink" href="../src/scad_syntax/lib.rs.html#1-91">source</a> · <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span></div><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A parser and lexer for the OpenSCAD language.</p>
+<p>There are 4 key components in this crate,</p>
+<ul>
+<li><a href="enum.SyntaxKind.html" title="SyntaxKind"><code>SyntaxKind</code></a>: an enum representing the various terminal and
+non-terminal items in the OpenSCAD grammar</li>
+<li>the <a href="ast/index.html" title="ast"><code>ast</code></a> module: strongly-typed wrappers around the loosely-typed
+<a href="../rowan/api/struct.SyntaxNode.html" title="rowan::SyntaxNode"><code>rowan::SyntaxNode</code></a></li>
+<li><a href="fn.tokenize.html" title="tokenize()"><code>tokenize()</code></a> - Convert a string into a stream of tokens (a
+<a href="enum.SyntaxKind.html" title="SyntaxKind"><code>SyntaxKind</code></a> and its text)</li>
+<li><a href="fn.parse.html" title="parse()"><code>parse()</code></a> - Parse a stream of tokens into the top-level <a href="ast/struct.Package.html" title="ast::Package"><code>ast::Package</code></a>
+it contains</li>
+</ul>
+<p>Here is a typical use of this crate:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span>src = <span class="string">r#&quot;
+  use &lt;MCAD/math.scad&gt;
+
+  x = 1;
+  y = 2;
+  x_plus_y = x + y;
+&quot;#</span>;
+
+<span class="kw">let </span>tokens = scad_syntax::tokenize(src);
+<span class="kw">let </span>(package, errors) = scad_syntax::parse(tokens);
+
+<span class="macro">assert!</span>(errors.is_empty(), <span class="string">&quot;{errors:?}&quot;</span>);</code></pre></div>
+<p>An important thing to notice is that we will <em>always</em> get a <a href="ast/struct.Package.html" title="ast::Package"><code>ast::Package</code></a>
+back from parsing, even if the tokens contain utter garbage. The parser
+borrows a lot of inspiration from <code>rust-analyzer</code>, so a lot of things
+mentioned in <a href="https://github.com/rust-lang/rust-analyzer">their architecture docs</a> will also apply here.</p>
+<p>In particular, we have the following design goals:</p>
+<ul>
+<li>Syntax trees are lossless, or full fidelity. All comments and whitespace
+get preserved.</li>
+<li>Syntax trees are semantic-less. They describe strictly the structure of a
+sequence of characters, they don’t have hygiene, name resolution or type
+information attached.</li>
+<li>Syntax trees are simple value types. It is possible to create trees for a
+syntax without any external context.</li>
+<li>Syntax trees have intuitive traversal API (parent, children, siblings,
+etc).</li>
+<li>Parsing is lossless (even if the input is invalid, the tree produced by
+the parser represents it exactly).</li>
+<li>Parsing is resilient (even if the input is invalid, parser tries to see as
+much syntax tree fragments in the input as it can).</li>
+</ul>
+</div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="mod" href="ast/index.html" title="scad_syntax::ast mod">ast</a></div><div class="item-right docblock-short"><p>Automatically generated, strongly-typed <a href="../rowan/ast/trait.AstNode.html" title="AstNode"><code>AstNode</code></a>s.</p>
+</div></div></div><h2 id="macros" class="small-section-header"><a href="#macros">Macros</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="macro" href="macro.T.html" title="scad_syntax::T macro">T</a></div><div class="item-right docblock-short"><p>A helper macro for getting the <a href="enum.SyntaxKind.html" title="SyntaxKind"><code>SyntaxKind</code></a> that corresponds
+to a particular token.</p>
+</div></div></div><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.OpenSCAD.html" title="scad_syntax::OpenSCAD struct">OpenSCAD</a></div><div class="item-right docblock-short"><p>A tag type used by <a href="../rowan/index.html" title="rowan"><code>rowan</code></a> to represent the OpenSCAD language.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.ParseError.html" title="scad_syntax::ParseError struct">ParseError</a></div><div class="item-right docblock-short"><p>A basic parser error.</p>
+</div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SyntaxKind.html" title="scad_syntax::SyntaxKind enum">SyntaxKind</a></div><div class="item-right docblock-short"><p>The different types of terminals and non-terminals in the
+OpenSCAD language grammar.</p>
+</div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.parse.html" title="scad_syntax::parse fn">parse</a></div><div class="item-right docblock-short"><p>Parse a set of tokens into a <a href="ast/struct.Package.html" title="Package"><code>Package</code></a>.</p>
+</div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.tokenize.html" title="scad_syntax::tokenize fn">tokenize</a></div><div class="item-right docblock-short"><p>Split the input text into its tokens.</p>
+</div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.SyntaxNode.html" title="scad_syntax::SyntaxNode type">SyntaxNode</a></div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.SyntaxToken.html" title="scad_syntax::SyntaxToken type">SyntaxToken</a></div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="scad_syntax" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (b44197abb 2022-09-05)" ></div></body></html>

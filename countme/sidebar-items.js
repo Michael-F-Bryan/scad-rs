@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["enable","Enable or disable counting at runtime."],["get","Returns the counts for the `T` type."],["get_all","Returns a collection of counts for all types."]],"struct":[["AllCounts","A collection of counts for all types."],["Count","Store this inside your struct as `_c: countme::Count<Self>`."],["Counts",""]]};
