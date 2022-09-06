@@ -19,12 +19,12 @@ I'll typically use [`cargo watch`][cargo-watch] to automatically recompile the
 project and run the test suite.
 
 ```console
-$ cargo watch --clear --ignore "snapshots/*.snap.new" \
+$ cargo watch --clear --ignore '*.snap.new' \
     -x "check --workspace" \
     -x "test --workspace" \
     -x "doc --workspace --document-private-items" \
     -x "build --workspace --release" \
-    -x "integration-tests"
+    -x "clippy --workspace -- --deny warnings"
 ```
 
 ## License

@@ -231,9 +231,12 @@ impl TryFrom<Value> for Geometry {
     }
 }
 
+type RawFunction =
+    dyn Fn(&mut dyn Context, Vec<Value>) -> Result<Value, RuntimeError> + Send + Sync;
+
 #[derive(Clone)]
 pub struct BuiltinFunction {
-    func: Arc<dyn Fn(&mut dyn Context, Vec<Value>) -> Result<Value, RuntimeError> + Send + Sync>,
+    func: Arc<RawFunction>,
 }
 
 impl BuiltinFunction {
@@ -258,12 +261,8 @@ impl PartialEq for BuiltinFunction {
         // Note: There isn't a well-defined way to check whether two functions
         // are the "equal", so we just do an identity check using the function
         // object.
-        let lhs = &*self.func
-            as *const dyn Fn(&mut dyn Context, Vec<Value>) -> Result<Value, RuntimeError>
-            as *const u8;
-        let rhs = &*other.func
-            as *const dyn Fn(&mut dyn Context, Vec<Value>) -> Result<Value, RuntimeError>
-            as *const u8;
+        let lhs = &*self.func as *const RawFunction as *const u8;
+        let rhs = &*other.func as *const RawFunction as *const u8;
 
         std::ptr::eq(lhs, rhs)
     }
