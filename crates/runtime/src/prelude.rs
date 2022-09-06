@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::{BuiltinFunction, RuntimeError, Value};
+use crate::{BuiltinFunction, Context, RuntimeError, Value};
 
 /// All functions and constants that are available on startup.
 pub fn prelude() -> HashMap<Arc<str>, Value> {
@@ -12,20 +12,12 @@ pub fn prelude() -> HashMap<Arc<str>, Value> {
     prelude
 }
 
-fn echo(args: Vec<Value>) -> Result<Value, RuntimeError> {
-    for (i, arg) in args.into_iter().enumerate() {
-        if i > 0 {
-            print!(" ");
-        }
-
-        print!("{arg:?}");
-    }
-    println!();
-
+fn echo(ctx: &mut dyn Context, args: Vec<Value>) -> Result<Value, RuntimeError> {
+    ctx.print(&args)?;
     Ok(Value::Undef)
 }
 
-fn norm(args: Vec<Value>) -> Result<Value, RuntimeError> {
+fn norm(_: &mut dyn Context, args: Vec<Value>) -> Result<Value, RuntimeError> {
     match args.len() {
         0 => Ok(Value::Undef),
         1 => Ok(args.into_iter().next().unwrap()),

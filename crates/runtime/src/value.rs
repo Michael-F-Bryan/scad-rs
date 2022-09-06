@@ -7,7 +7,7 @@ use std::{
 
 use scad_bytecode::Constant;
 
-use crate::{ConversionError, Geometry, RuntimeError};
+use crate::{Context, ConversionError, Geometry, RuntimeError};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Type {
@@ -231,22 +231,28 @@ impl TryFrom<Value> for Geometry {
     }
 }
 
+type RawFunction =
+    dyn Fn(&mut dyn Context, Vec<Value>) -> Result<Value, RuntimeError> + Send + Sync;
+
 #[derive(Clone)]
 pub struct BuiltinFunction {
-    func: Arc<dyn Fn(Vec<Value>) -> Result<Value, RuntimeError> + Send + Sync>,
+    func: Arc<RawFunction>,
 }
 
 impl BuiltinFunction {
     pub fn new(
-        func: impl Fn(Vec<Value>) -> Result<Value, RuntimeError> + Send + Sync + 'static,
+        func: impl Fn(&mut dyn Context, Vec<Value>) -> Result<Value, RuntimeError>
+            + Send
+            + Sync
+            + 'static,
     ) -> Self {
         BuiltinFunction {
             func: Arc::new(func),
         }
     }
 
-    pub fn call(&self, args: Vec<Value>) -> Result<Value, RuntimeError> {
-        (self.func)(args)
+    pub fn call(&self, ctx: &mut dyn Context, args: Vec<Value>) -> Result<Value, RuntimeError> {
+        (self.func)(ctx, args)
     }
 }
 
@@ -255,10 +261,8 @@ impl PartialEq for BuiltinFunction {
         // Note: There isn't a well-defined way to check whether two functions
         // are the "equal", so we just do an identity check using the function
         // object.
-        let lhs =
-            &*self.func as *const dyn Fn(Vec<Value>) -> Result<Value, RuntimeError> as *const u8;
-        let rhs =
-            &*other.func as *const dyn Fn(Vec<Value>) -> Result<Value, RuntimeError> as *const u8;
+        let lhs = &*self.func as *const RawFunction as *const u8;
+        let rhs = &*other.func as *const RawFunction as *const u8;
 
         std::ptr::eq(lhs, rhs)
     }
@@ -276,7 +280,7 @@ mod tests {
 
     #[test]
     fn builting_function_partialeq_only_works_on_identity() {
-        fn some_func(_: Vec<Value>) -> Result<Value, RuntimeError> {
+        fn some_func(_: &mut dyn Context, _: Vec<Value>) -> Result<Value, RuntimeError> {
             unreachable!();
         }
 

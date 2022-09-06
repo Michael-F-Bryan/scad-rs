@@ -23,8 +23,9 @@ Node(
                 IDENT@41..46 "steps"
               COMMA@46..47 ","
               UNARY_EXPR@47..50
-                WHITESPACE@47..48 " "
-                MINUS@48..49 "-"
+                MINUS@47..49
+                  WHITESPACE@47..48 " "
+                  MINUS@48..49 "-"
                 INTEGER@49..50
                   INTEGER@49..50 "1"
               COMMA@50..51 ","

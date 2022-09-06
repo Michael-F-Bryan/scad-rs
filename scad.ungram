@@ -70,7 +70,9 @@ BinExpr = Expr (BinOp Expr)*
 
 BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '!=' | '<=' | '<' | '&&' | '||'
 
-UnaryExpr = ('!' | '+' | '-') Expr
+UnaryExpr = UnaryOp Expr
+
+UnaryOp = '!' | '+' | '-'
 
 RangeExpr = RangeExprFromTo | RangeExprFromToStep
 

@@ -1,0 +1,12 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: "atom([1])"
+---
+Node(
+    LIST_EXPR@0..3
+      L_BRACKET@0..1 "["
+      INTEGER@1..2
+        INTEGER@1..2 "1"
+      R_BRACKET@2..3 "]"
+    ,
+)

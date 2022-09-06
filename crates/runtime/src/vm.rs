@@ -6,7 +6,7 @@ use std::{
 
 use scad_bytecode::{Chunk, Constant, Instruction, Program};
 
-use crate::{Callbacks, RuntimeError, Stack, Type, Value};
+use crate::{Callbacks, Context, RuntimeError, Stack, Type, Value};
 
 /// The OpenSCAD virtual machine.
 #[derive(Debug)]
@@ -73,7 +73,7 @@ fn evaluate(
     current_chunk: &Chunk,
     stack: &mut Stack,
     globals: &mut HashMap<Arc<str>, Value>,
-    callbacks: &mut impl Callbacks,
+    cb: &mut impl Callbacks,
 ) -> Result<(), Break> {
     match instruction {
         Instruction::Constant(ix) => {
@@ -105,8 +105,7 @@ fn evaluate(
             stack.push(lhs.div(rhs)?);
         }
         Instruction::Return => {
-            let ret = stack.pop()?;
-            println!("Returned {ret:?}");
+            let _ret = stack.pop()?;
             return Err(Break::Return);
         }
         Instruction::Undef => stack.push(Value::Undef),
@@ -144,8 +143,14 @@ fn evaluate(
             let function = stack.pop()?;
             let args = stack.pop_many(num_args as usize)?;
 
+            let mut ctx = BuiltinContext {
+                _stack: stack,
+                _globals: globals,
+                cb,
+            };
+
             let result = match function {
-                Value::BuiltinFunction(f) => f.call(args)?,
+                Value::BuiltinFunction(f) => f.call(&mut ctx, args)?,
                 other => {
                     return Err(RuntimeError::NotCallable {
                         type_name: other.type_name(),
@@ -178,7 +183,7 @@ fn evaluate(
         Instruction::SaveGeometry => {
             match stack.pop()? {
                 Value::Geometry(g) => {
-                    callbacks.consume_geometry(g);
+                    cb.consume_geometry(g);
                 }
                 Value::Undef => {
                     // ignore it
@@ -206,5 +211,18 @@ enum Break {
 impl From<RuntimeError> for Break {
     fn from(r: RuntimeError) -> Self {
         Break::Error(r)
+    }
+}
+
+#[derive(Debug)]
+struct BuiltinContext<'a, C> {
+    _stack: &'a mut Stack,
+    _globals: &'a mut HashMap<Arc<str>, Value>,
+    cb: &'a mut C,
+}
+
+impl<C: Callbacks> Context for BuiltinContext<'_, C> {
+    fn print(&mut self, values: &[Value]) -> Result<(), RuntimeError> {
+        self.cb.print(values)
     }
 }

@@ -40,7 +40,7 @@ ListExpr = '[' Expr (',' Expr)* ']';
 
 RangeExpr = RangeExprFromTo | RangeExprFromToStep;
 
-UnaryExpr = ('!' | '+' | '-') Expr;
+UnaryExpr = UnaryOp Expr;
 
 TernaryExpr = Expr '?' Expr ':' Expr;
 
@@ -61,6 +61,8 @@ FunctionCall = 'ident' '(' args:Arguments? ')';
 ForClause = 'for' '(' assignments:Assignments ')' ListComprehensionElementOrExpr;
 
 BinOp = '+' | '-' | '*' | '/' | '%' | '^' | '>=' | '>' | '==' | '!=' | '<=' | '<' | '&&' | '||';
+
+UnaryOp = '!' | '+' | '-';
 
 RangeExprFromTo = '[' Expr ':' Expr ']';
 

@@ -8,3 +8,8 @@ edition = "2021"
 [dependencies]
 scad-bytecode = { version = "0.1.0", path = "../bytecode" }
 tracing = "0.1.36"
+
+[dev-dependencies]
+insta = { version = "1.17.0", features = ["glob"] }
+scad-compiler = { path = "../compiler" }
+serde = { version = "1.0.144", features = ["derive"] }

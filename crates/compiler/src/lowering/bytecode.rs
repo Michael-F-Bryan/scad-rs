@@ -73,12 +73,36 @@ fn compile_expr(chunk: &mut Chunk, expr: ast::Expr) {
         ast::Expr::Atom(ast::Atom::LookupExpr(lookup)) => compile_lookup(chunk, lookup),
         ast::Expr::ListExpr(list) => compile_list(chunk, list),
         ast::Expr::RangeExpr(_) => todo!(),
-        ast::Expr::UnaryExpr(_) => todo!(),
+        ast::Expr::UnaryExpr(unary) => compile_unary(chunk, unary),
         ast::Expr::TernaryExpr(_) => todo!(),
-        ast::Expr::ParenExpr(_) => todo!(),
+        ast::Expr::ParenExpr(p) => compile_expr(chunk, p.expr().unwrap()),
         ast::Expr::ListComprehensionExpr(_) => todo!(),
         ast::Expr::BinExpr(bin) => compile_bin_expr(chunk, bin),
     }
+}
+
+fn compile_unary(chunk: &mut Chunk, unary: ast::UnaryExpr) {
+    let expr = unary.expr().unwrap();
+
+    match unary.unary_op().unwrap() {
+        ast::UnaryOp::Bang(_) => compile_not(chunk, expr),
+        // Note: Writing something like "+5" is a no-op.
+        ast::UnaryOp::Plus(_) => compile_expr(chunk, expr),
+        ast::UnaryOp::Minus(_) => compile_negative(chunk, expr),
+    }
+}
+
+fn compile_negative(chunk: &mut Chunk, expr: ast::Expr) {
+    let line_number = line_number(expr.syntax());
+    compile_expr(chunk, expr);
+    chunk.push_instruction(Instruction::Negate, line_number);
+}
+
+fn compile_not(chunk: &mut Chunk, expr: ast::Expr) {
+    let line_number = line_number(expr.syntax());
+
+    compile_expr(chunk, expr);
+    chunk.push_instruction(Instruction::Not, line_number);
 }
 
 fn compile_list(chunk: &mut Chunk, list: ast::ListExpr) {

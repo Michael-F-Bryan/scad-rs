@@ -1,0 +1,98 @@
+---
+source: crates/runtime/tests/integration-tests.rs
+description: "echo(\"add\", 1 + 1);\necho(\"sub\", 5 - 1);\necho(\"mul\", 2 * 2.25);\necho(\"div\", 2 / 3);\necho(\"neg\", -1.5);\necho(\"add mul\", 2 + 2*5);\necho(\"mul add\", 2*2 + 5);\necho(\"mul div\", 2*2 / 5);\necho(\"one div zero\", 1/0);\necho(\"negative one div zero\", (-1)/0);\necho(\"zero div zero\", 0/0);"
+input_file: crates/runtime/tests/run-pass/simple-arithmetic.scad
+---
+Output {
+    geometry: [],
+    printed: [
+        [
+            String(
+                "add",
+            ),
+            Number(
+                2.0,
+            ),
+        ],
+        [
+            String(
+                "sub",
+            ),
+            Number(
+                4.0,
+            ),
+        ],
+        [
+            String(
+                "mul",
+            ),
+            Number(
+                4.5,
+            ),
+        ],
+        [
+            String(
+                "div",
+            ),
+            Number(
+                0.6666666666666666,
+            ),
+        ],
+        [
+            String(
+                "neg",
+            ),
+            Number(
+                -1.5,
+            ),
+        ],
+        [
+            String(
+                "add mul",
+            ),
+            Number(
+                12.0,
+            ),
+        ],
+        [
+            String(
+                "mul add",
+            ),
+            Number(
+                9.0,
+            ),
+        ],
+        [
+            String(
+                "mul div",
+            ),
+            Number(
+                0.8,
+            ),
+        ],
+        [
+            String(
+                "one div zero",
+            ),
+            Number(
+                inf,
+            ),
+        ],
+        [
+            String(
+                "negative one div zero",
+            ),
+            Number(
+                -inf,
+            ),
+        ],
+        [
+            String(
+                "zero div zero",
+            ),
+            Number(
+                NaN,
+            ),
+        ],
+    ],
+}

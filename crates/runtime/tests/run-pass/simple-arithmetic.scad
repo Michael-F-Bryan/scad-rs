@@ -1,0 +1,11 @@
+echo("add", 1 + 1);
+echo("sub", 5 - 1);
+echo("mul", 2 * 2.25);
+echo("div", 2 / 3);
+echo("neg", -1.5);
+echo("add mul", 2 + 2*5);
+echo("mul add", 2*2 + 5);
+echo("mul div", 2*2 / 5);
+echo("one div zero", 1/0);
+echo("negative one div zero", (-1)/0);
+echo("zero div zero", 0/0);

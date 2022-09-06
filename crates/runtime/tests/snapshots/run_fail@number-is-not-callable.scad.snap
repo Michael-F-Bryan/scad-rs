@@ -1,0 +1,14 @@
+---
+source: crates/runtime/tests/integration-tests.rs
+description: "x = 5;\nx();"
+input_file: crates/runtime/tests/run-fail/number-is-not-callable.scad
+---
+Result {
+    output: Output {
+        geometry: [],
+        printed: [],
+    },
+    error: NotCallable {
+        type_name: Number,
+    },
+}
