@@ -294,12 +294,14 @@ fn rest_of_list_expr(p: &mut Parser<'_>, m: Mark) {
 }
 
 /// ```ebnf
-/// atom        → NUMBER
-///             | STRING
-///             | function_call
-///             | "true"
-///             | "false"
-///             | "undef"
+/// atom → NUMBER
+///      | STRING
+///      | function_call
+///      | "true"
+///      | "false"
+///      | "undef"
+///      | list
+///      | range
 /// ```
 fn atom(p: &mut Parser<'_>) {
     match p.current() {
@@ -312,6 +314,7 @@ fn atom(p: &mut Parser<'_>) {
         }
         T!["("] => paren_expr(p),
         STRING | INTEGER | FLOAT | T![true] | T![false] | T![undef] => literal(p),
+        T!["["] => list_or_range_expr(p),
         other => todo!("{other:?}"),
     }
 }
@@ -436,6 +439,8 @@ mod tests {
         expr_sub: expr("1 - 1"),
         expr_mul: expr("1 * 1"),
         expr_div: expr("1 / 1"),
+        list_atom: atom("[1]"),
+        range_atom: atom("[0 : 360 : 30]"),
         expr_add_and_mul_with_precedence: expr("1 + 2*2"),
         expr_mul_and_add_with_precedence: expr("1*2 + 2"),
         expr_add_and_mul_with_parens: expr("(1+2) * 2"),

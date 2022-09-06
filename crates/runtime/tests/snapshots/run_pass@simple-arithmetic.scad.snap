@@ -1,6 +1,6 @@
 ---
 source: crates/runtime/tests/integration-tests.rs
-expression: output
+description: "echo(\"add\", 1 + 1);\necho(\"sub\", 5 - 1);\necho(\"mul\", 2 * 2.25);\necho(\"div\", 2 / 3);\necho(\"neg\", -1.5);\necho(\"add mul\", 2 + 2*5);\necho(\"mul add\", 2*2 + 5);\necho(\"mul div\", 2*2 / 5);\necho(\"one div zero\", 1/0);\necho(\"negative one div zero\", (-1)/0);\necho(\"zero div zero\", 0/0);"
 input_file: crates/runtime/tests/run-pass/simple-arithmetic.scad
 ---
 Output {

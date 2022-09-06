@@ -12,7 +12,14 @@ fn run_pass() {
         let mut vm = VirtualMachine::load(program);
         vm.run(Callbacks(&mut output)).expect("Execution failed");
 
-        insta::assert_debug_snapshot!(output);
+        insta::with_settings!(
+            {
+                description => src.trim(),
+                omit_expression => true,
+                prepend_module_to_snapshot => false,
+            },
+            { insta::assert_debug_snapshot!(output) }
+        );
     });
 }
 
@@ -35,7 +42,14 @@ fn run_fail() {
             error: RuntimeError,
         }
 
-        insta::assert_debug_snapshot!(Result { output, error });
+        insta::with_settings!(
+            {
+                description => src.trim(),
+                omit_expression => true,
+                prepend_module_to_snapshot => false,
+            },
+            { insta::assert_debug_snapshot!(Result { output, error }) }
+        );
     });
 }
 

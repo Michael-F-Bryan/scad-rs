@@ -1,0 +1,16 @@
+---
+source: crates/runtime/tests/integration-tests.rs
+description: "x = 5 + \"\";"
+input_file: crates/runtime/tests/run-fail/add-number-and-string.scad
+---
+Result {
+    output: Output {
+        geometry: [],
+        printed: [],
+    },
+    error: InvalidBinaryOperation {
+        operation: "add",
+        lhs: Number,
+        rhs: String,
+    },
+}

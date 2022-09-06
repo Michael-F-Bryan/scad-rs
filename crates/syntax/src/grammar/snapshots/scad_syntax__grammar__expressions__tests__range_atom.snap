@@ -1,0 +1,22 @@
+---
+source: crates/syntax/src/grammar/expressions.rs
+description: "atom([0 : 360 : 30])"
+---
+Node(
+    RANGE_EXPR_FROM_TO_STEP@0..14
+      L_BRACKET@0..1 "["
+      INTEGER@1..2
+        INTEGER@1..2 "0"
+      WHITESPACE@2..3 " "
+      COLON@3..4 ":"
+      INTEGER@4..8
+        WHITESPACE@4..5 " "
+        INTEGER@5..8 "360"
+      WHITESPACE@8..9 " "
+      COLON@9..10 ":"
+      INTEGER@10..13
+        WHITESPACE@10..11 " "
+        INTEGER@11..13 "30"
+      R_BRACKET@13..14 "]"
+    ,
+)

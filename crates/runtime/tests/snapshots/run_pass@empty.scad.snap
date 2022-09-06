@@ -1,6 +1,6 @@
 ---
 source: crates/runtime/tests/integration-tests.rs
-expression: output
+description: ""
 input_file: crates/runtime/tests/run-pass/empty.scad
 ---
 Output {
