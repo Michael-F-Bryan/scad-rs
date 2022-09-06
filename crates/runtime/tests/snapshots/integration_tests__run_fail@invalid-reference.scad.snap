@@ -1,0 +1,14 @@
+---
+source: crates/runtime/tests/integration-tests.rs
+expression: "Result { output, error }"
+input_file: crates/runtime/tests/run-fail/invalid-reference.scad
+---
+Result {
+    output: Output {
+        geometry: [],
+        printed: [],
+    },
+    error: UnknownVariable {
+        name: "y",
+    },
+}

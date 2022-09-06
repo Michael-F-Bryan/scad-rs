@@ -1,6 +1,7 @@
 //! The OpenSCAD virtual machine and runtime environment.
 
 mod callbacks;
+mod context;
 mod errors;
 mod geometry;
 mod prelude;
@@ -10,6 +11,7 @@ mod vm;
 
 pub use crate::{
     callbacks::Callbacks,
+    context::Context,
     errors::{ConversionError, RuntimeError},
     geometry::Geometry,
     prelude::prelude,

@@ -1049,7 +1049,7 @@ impl AstNode for RangeExpr {
 #[doc = ""]
 #[doc = "Grammar:"]
 #[doc = "```text"]
-#[doc = "UnaryExpr = ('!' | '+' | '-') Expr;\n"]
+#[doc = "UnaryExpr = UnaryOp Expr;\n"]
 #[doc = "```"]
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UnaryExpr(SyntaxNode);
@@ -1076,23 +1076,8 @@ impl AstNode for UnaryExpr {
     }
 }
 impl UnaryExpr {
-    pub fn bang_token(&self) -> Option<SyntaxToken> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::BANG)
-    }
-    pub fn plus_token(&self) -> Option<SyntaxToken> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::PLUS)
-    }
-    pub fn minus_token(&self) -> Option<SyntaxToken> {
-        self.0
-            .children_with_tokens()
-            .filter_map(|t| t.into_token())
-            .find(|tok| tok.kind() == SyntaxKind::MINUS)
+    pub fn unary_op(&self) -> Option<UnaryOp> {
+        self.0.children().find_map(UnaryOp::cast)
     }
     pub fn expr(&self) -> Option<Expr> {
         self.0.children().find_map(Expr::cast)
@@ -1677,6 +1662,49 @@ impl AstNode for BinOp {
             BinOp::LessThan(node) => node.syntax(),
             BinOp::And(node) => node.syntax(),
             BinOp::Or(node) => node.syntax(),
+        }
+    }
+}
+#[doc = "A strongly typed `UnaryOp` node."]
+#[doc = ""]
+#[doc = "Grammar:"]
+#[doc = "```text"]
+#[doc = "UnaryOp = '!' | '+' | '-';\n"]
+#[doc = "```"]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum UnaryOp {
+    Bang(BangToken),
+    Plus(PlusToken),
+    Minus(MinusToken),
+}
+impl AstNode for UnaryOp {
+    type Language = crate::OpenSCAD;
+    fn can_cast(kind: SyntaxKind) -> bool
+    where
+        Self: Sized,
+    {
+        kind == SyntaxKind::BANG || kind == SyntaxKind::PLUS || kind == SyntaxKind::MINUS
+    }
+    fn cast(node: SyntaxNode) -> Option<Self>
+    where
+        Self: Sized,
+    {
+        if let Some(token) = BangToken::cast(node.clone()) {
+            return Some(UnaryOp::Bang(token));
+        }
+        if let Some(token) = PlusToken::cast(node.clone()) {
+            return Some(UnaryOp::Plus(token));
+        }
+        if let Some(token) = MinusToken::cast(node.clone()) {
+            return Some(UnaryOp::Minus(token));
+        }
+        None
+    }
+    fn syntax(&self) -> &SyntaxNode {
+        match self {
+            UnaryOp::Bang(node) => node.syntax(),
+            UnaryOp::Plus(node) => node.syntax(),
+            UnaryOp::Minus(node) => node.syntax(),
         }
     }
 }

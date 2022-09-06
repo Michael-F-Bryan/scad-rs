@@ -1,6 +1,6 @@
 use scad_bytecode::{Chunk, Instruction};
 
-use crate::{Geometry, Stack};
+use crate::{Geometry, RuntimeError, Stack, Value};
 
 pub trait Callbacks {
     /// A callback that is fired immediately *before* executing the next
@@ -20,6 +20,11 @@ pub trait Callbacks {
 
     #[inline]
     fn consume_geometry(&mut self, _geometry: Geometry) {}
+
+    #[inline]
+    fn print(&mut self, _values: &[Value]) -> Result<(), RuntimeError> {
+        Ok(())
+    }
 }
 
 macro_rules! defer_callbacks_impl {
